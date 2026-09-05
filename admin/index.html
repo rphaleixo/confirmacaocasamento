@@ -50,6 +50,10 @@
   .campo-foto{display:flex;align-items:center;gap:12px;margin-top:6px;}
   .campo-foto img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--blush-deep);}
   .campo-foto .sem-foto{width:64px;height:64px;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-soft);text-align:center;}
+
+  .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .subnav button{background:var(--cream);border:1px solid var(--border);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;}
+  .subnav button.active{background:var(--wine);border-color:var(--wine);color:#fff;font-weight:600;}
 </style>
 </head>
 <body>
@@ -118,10 +122,9 @@
   </section>
 
   <section id="tab-conteudo" class="tab">
-    <p class="hint">Textos e fotos do site público. A posição de cada bloco não muda por aqui — só o conteúdo. Desligar uma seção some com ela inteira no site.</p>
+    <p class="hint">Textos e fotos do site público, por seção. A posição de cada bloco não muda por aqui — só o conteúdo. Salvar uma seção já atualiza o site na hora.</p>
+    <div class="subnav" id="ct-subnav"></div>
     <div id="ct-form">Carregando...</div>
-    <button class="action" id="ct-btn">Salvar conteúdo</button>
-    <div class="msg" id="ct-msg"></div>
   </section>
 
 </main>
@@ -341,102 +344,130 @@
     ]},
   ];
 
+  let ctDados = null;
+  let ctGrupoAtivo = 0;
+
   async function carregarConteudo() {
+    const subnav = document.getElementById('ct-subnav');
     const form = document.getElementById('ct-form');
-    let dados;
     try {
-      dados = await fetch('/api/conteudo').then((r) => r.json());
+      ctDados = await fetch('/api/conteudo').then((r) => r.json());
     } catch (e) {
+      subnav.innerHTML = '';
       form.textContent = 'Não consegui carregar o conteúdo agora. Recarregue a página pra tentar de novo.';
       return;
     }
-    form.innerHTML = '';
 
-    GRUPOS_CONTEUDO.forEach((grupo) => {
-      const fs = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      legend.append(grupo.titulo);
-      if (grupo.toggle) {
-        const chaveAtiva = 'secao.' + grupo.toggle + '.ativa';
-        const wrap = document.createElement('label');
-        wrap.className = 'toggle-ativa';
-        const chk = document.createElement('input');
-        chk.type = 'checkbox';
-        chk.dataset.chave = chaveAtiva;
-        chk.checked = dados[chaveAtiva] !== '0';
-        wrap.append(chk, ' Seção ativa');
-        legend.appendChild(wrap);
-      }
-      fs.appendChild(legend);
-
-      grupo.campos.forEach((campo) => {
-        const label = document.createElement('label');
-        label.textContent = campo.label;
-        fs.appendChild(label);
-
-        if (campo.tipo === 'foto') {
-          const wrap = document.createElement('div');
-          wrap.className = 'campo-foto';
-          const preview = document.createElement(dados[campo.chave] ? 'img' : 'div');
-          if (dados[campo.chave]) { preview.src = dados[campo.chave]; }
-          else { preview.className = 'sem-foto'; preview.textContent = 'sem foto'; }
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.accept = 'image/*';
-          const hidden = document.createElement('input');
-          hidden.type = 'hidden';
-          hidden.dataset.chave = campo.chave;
-          hidden.value = dados[campo.chave] || '';
-          fileInput.addEventListener('change', async () => {
-            const arquivo = fileInput.files[0];
-            if (!arquivo) return;
-            fileInput.disabled = true;
-            const r = await fetch('/api/admin/upload?nome=' + encodeURIComponent(arquivo.name), {
-              method: 'POST',
-              headers: { 'Content-Type': arquivo.type || 'application/octet-stream' },
-              body: arquivo,
-            });
-            const d = await r.json();
-            fileInput.disabled = false;
-            if (d.erro) { msg('ct-msg', d.erro, false); return; }
-            hidden.value = d.url;
-            const novoPreview = document.createElement('img');
-            novoPreview.src = d.url;
-            preview.replaceWith(novoPreview);
-          });
-          wrap.append(preview, fileInput, hidden);
-          fs.appendChild(wrap);
-        } else if (campo.tipo === 'textarea') {
-          const textarea = document.createElement('textarea');
-          textarea.dataset.chave = campo.chave;
-          textarea.value = dados[campo.chave] || '';
-          fs.appendChild(textarea);
-        } else {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.dataset.chave = campo.chave;
-          input.value = dados[campo.chave] || '';
-          fs.appendChild(input);
-        }
-      });
-
-      form.appendChild(fs);
+    subnav.innerHTML = '';
+    GRUPOS_CONTEUDO.forEach((grupo, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = grupo.titulo;
+      btn.addEventListener('click', () => { ctGrupoAtivo = i; renderConteudoGrupo(); });
+      subnav.appendChild(btn);
     });
+    renderConteudoGrupo();
   }
 
-  document.getElementById('ct-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('ct-btn');
-    btn.disabled = true;
-    const payload = {};
-    document.querySelectorAll('#ct-form [data-chave]').forEach((el) => {
-      payload[el.dataset.chave] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+  function renderCampoConteudo(fs, campo) {
+    const label = document.createElement('label');
+    label.textContent = campo.label;
+    fs.appendChild(label);
+
+    if (campo.tipo === 'foto') {
+      const wrap = document.createElement('div');
+      wrap.className = 'campo-foto';
+      const preview = document.createElement(ctDados[campo.chave] ? 'img' : 'div');
+      if (ctDados[campo.chave]) { preview.src = ctDados[campo.chave]; }
+      else { preview.className = 'sem-foto'; preview.textContent = 'sem foto'; }
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.dataset.chave = campo.chave;
+      hidden.value = ctDados[campo.chave] || '';
+      fileInput.addEventListener('change', async () => {
+        const arquivo = fileInput.files[0];
+        if (!arquivo) return;
+        fileInput.disabled = true;
+        const r = await fetch('/api/admin/upload?nome=' + encodeURIComponent(arquivo.name), {
+          method: 'POST',
+          headers: { 'Content-Type': arquivo.type || 'application/octet-stream' },
+          body: arquivo,
+        });
+        const d = await r.json();
+        fileInput.disabled = false;
+        if (d.erro) { msg('ct-msg', d.erro, false); return; }
+        hidden.value = d.url;
+        const novoPreview = document.createElement('img');
+        novoPreview.src = d.url;
+        preview.replaceWith(novoPreview);
+      });
+      wrap.append(preview, fileInput, hidden);
+      fs.appendChild(wrap);
+    } else if (campo.tipo === 'textarea') {
+      const textarea = document.createElement('textarea');
+      textarea.dataset.chave = campo.chave;
+      textarea.value = ctDados[campo.chave] || '';
+      fs.appendChild(textarea);
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.dataset.chave = campo.chave;
+      input.value = ctDados[campo.chave] || '';
+      fs.appendChild(input);
+    }
+  }
+
+  function renderConteudoGrupo() {
+    Array.from(document.getElementById('ct-subnav').children).forEach((btn, i) => {
+      btn.classList.toggle('active', i === ctGrupoAtivo);
     });
-    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
-    const d = await r.json();
-    btn.disabled = false;
-    if (d.erro) { msg('ct-msg', d.erro, false); return; }
-    msg('ct-msg', d.atualizados + ' campo(s) salvo(s).', true);
-  });
+
+    const grupo = GRUPOS_CONTEUDO[ctGrupoAtivo];
+    const form = document.getElementById('ct-form');
+    form.innerHTML = '';
+
+    const fs = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.append(grupo.titulo);
+    if (grupo.toggle) {
+      const chaveAtiva = 'secao.' + grupo.toggle + '.ativa';
+      const wrap = document.createElement('label');
+      wrap.className = 'toggle-ativa';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.dataset.chave = chaveAtiva;
+      chk.checked = ctDados[chaveAtiva] !== '0';
+      wrap.append(chk, ' Seção ativa');
+      legend.appendChild(wrap);
+    }
+    fs.appendChild(legend);
+    grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
+    form.appendChild(fs);
+
+    const btnSalvar = document.createElement('button');
+    btnSalvar.className = 'action';
+    btnSalvar.textContent = 'Salvar esta seção';
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg';
+    msgDiv.id = 'ct-msg';
+    btnSalvar.addEventListener('click', async () => {
+      btnSalvar.disabled = true;
+      const payload = {};
+      fs.querySelectorAll('[data-chave]').forEach((el) => {
+        payload[el.dataset.chave] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+      });
+      const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
+      const d = await r.json();
+      btnSalvar.disabled = false;
+      if (d.erro) { msg('ct-msg', d.erro, false); return; }
+      Object.assign(ctDados, payload);
+      msg('ct-msg', 'Salvo — o site já está com essa versão.', true);
+    });
+    form.appendChild(btnSalvar);
+    form.appendChild(msgDiv);
+  }
 
   carregarPainel();
 </script>
