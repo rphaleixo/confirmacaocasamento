@@ -8,20 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --wine:#75003D;         /* --primary */
-    --wine-soft:#AC0070;    /* --secondary */
-    --wine-pale:#F6AFD4;    /* light tint of --accent, for text on dark */
-    --blush:#FFE8F2;        /* --background */
-    --blush-deep:#F3DEE7;   /* --muted */
-    --cream:#FFF8FB;        /* --card */
-    --cream-2:#FFF0F7;      /* top of --gradient-soft */
-    --gold:#ED0190;         /* --accent */
-    --ink:#4C002A;          /* --foreground */
-    --ink-soft:#704757;     /* --muted-foreground */
-    --border:#E7C7D5;
-    --shadow-soft:0 12px 40px -12px #AC007040;
-    --shadow-romance:0 25px 60px -25px #75003D59;
-    --gradient-romance:linear-gradient(135deg,#75003D,#AC0070 50%,#ED0190);
+    --wine:#0B2545;         /* --primary */
+    --wine-soft:#2F5D9A;    /* --secondary */
+    --wine-pale:#AFC7E8;    /* light tint of --accent, for text on dark */
+    --blush:#EAF1FB;        /* --background */
+    --blush-deep:#DCE6F3;   /* --muted */
+    --cream:#F9FBFF;        /* --card */
+    --cream-2:#F0F5FC;      /* top of --gradient-soft */
+    --gold:#C9A227;         /* --accent */
+    --ink:#14213D;          /* --foreground */
+    --ink-soft:#4A5A72;     /* --muted-foreground */
+    --border:#C9D6E8;
+    --shadow-soft:0 12px 40px -12px #2F5D9A40;
+    --shadow-romance:0 25px 60px -25px #0B254559;
+    --gradient-romance:linear-gradient(135deg,#0B2545,#2F5D9A 50%,#C9A227);
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -40,44 +40,44 @@
 
   .pill{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:#FFF5F9;color:var(--wine);
+    background:#F3F7FC;color:var(--wine);
     border:none;border-radius:999px;
     padding:16px 26px;font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:.01em;
     box-shadow:var(--shadow-romance);
     transition:transform .3s ease, box-shadow .3s ease, background .3s ease, color .3s ease;
     width:100%;
   }
-  .pill:hover{transform:scale(1.05);background:var(--gold);color:#FFFAFC;}
+  .pill:hover{transform:scale(1.05);background:var(--gold);color:#FBFDFF;}
   .pill.outline{background:transparent;color:var(--wine);border:1px solid var(--wine-soft);box-shadow:none;}
   .pill.outline:hover{background:var(--wine);color:var(--cream);}
   .pill.on-dark{background:var(--cream);color:var(--wine);}
-  .pill.ghost-dark{background:transparent;color:var(--cream);border:1px solid rgba(251,245,238,.55);box-shadow:none;}
-  .pill.ghost-dark:hover{background:rgba(251,245,238,.12);}
+  .pill.ghost-dark{background:transparent;color:var(--cream);border:1px solid rgba(230,238,248,.55);box-shadow:none;}
+  .pill.ghost-dark:hover{background:rgba(230,238,248,.12);}
 
   /* ---------- HERO ---------- */
   .hero{position:relative;height:100svh;min-height:580px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;overflow:hidden;}
   .hero-img{
     position:absolute;inset:0;
-    background:linear-gradient(160deg, #8C4258 0%, #75003D 60%, #47182A 100%);
+    background:linear-gradient(160deg, #1B3A63 0%, #0B2545 60%, #061529 100%);
     display:flex;align-items:center;justify-content:center;
     color:rgba(255,255,255,.55);font-size:13px;letter-spacing:.05em;text-align:center;
     transform:scale(1.08);transition:transform 6s ease-out;
   }
   .hero.loaded .hero-img{transform:scale(1);}
   .hero-veil{position:absolute;inset:0;background:
-    linear-gradient(180deg, rgba(60,15,25,.18) 0%, rgba(60,15,25,.05) 30%, rgba(45,12,20,.72) 92%),
+    linear-gradient(180deg, rgba(6,15,30,.18) 0%, rgba(6,15,30,.05) 30%, rgba(4,10,20,.72) 92%),
     linear-gradient(0deg, var(--blush) 0%, transparent 14%);
   }
   .hero-content{position:relative;padding:0 30px 34px;text-align:center;}
-  .hero .eyebrow{color:#F3DEDA;opacity:0;transform:translateY(10px);animation:riseIn .9s .3s ease forwards;}
+  .hero .eyebrow{color:#DCE7F5;opacity:0;transform:translateY(10px);animation:riseIn .9s .3s ease forwards;}
   .hero h1{font-size:58px;font-weight:400;margin:8px 0 12px;line-height:.98;opacity:0;transform:translateY(14px);animation:riseIn 1s .5s ease forwards;}
   .hero .amp{display:block;font-size:30px;color:var(--gold);margin:2px 0;}
-  .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:#F3DEDA;margin-bottom:6px;opacity:0;transform:translateY(14px);animation:riseIn 1s .7s ease forwards;}
-  .hero-time{font-size:12px;color:#e9d3ce;font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
+  .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:#DCE7F5;margin-bottom:6px;opacity:0;transform:translateY(14px);animation:riseIn 1s .7s ease forwards;}
+  .hero-time{font-size:12px;color:#CFE0F0;font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
   .hero-cta-wrap{opacity:0;transform:translateY(14px);animation:riseIn 1s .95s ease forwards;}
   @keyframes riseIn{to{opacity:1;transform:translateY(0);}}
-  .deadline-chip{text-align:center;font-size:11px;color:#f2ece0;margin-top:10px;letter-spacing:.03em;}
-  .scroll-cue{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#f2ece0;animation:bob 2.2s ease-in-out infinite;}
+  .deadline-chip{text-align:center;font-size:11px;color:#E4EDF8;margin-top:10px;letter-spacing:.03em;}
+  .scroll-cue{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#E4EDF8;animation:bob 2.2s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,6px);}}
 
   /* ---------- ORGANIC DIVIDERS ---------- */
@@ -98,7 +98,7 @@
   .countdown{background:var(--blush);padding:40px 24px 40px;text-align:center;position:relative;}
   .countdown h2{font-size:26px;font-weight:500;margin:8px 0 26px;color:var(--wine);}
   .cd-row{display:flex;gap:8px;}
-  .cd-cell{flex:1;padding:16px 0;background:rgba(251,245,238,.6);border:1px solid rgba(140,66,88,.18);border-radius:10px;}
+  .cd-cell{flex:1;padding:16px 0;background:rgba(230,238,248,.6);border:1px solid rgba(47,93,154,.18);border-radius:10px;}
   .cd-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;color:var(--wine);}
   .cd-label{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px;}
 
@@ -141,9 +141,9 @@
   .map-section{background:var(--wine);color:var(--cream);padding:46px 24px;text-align:center;}
   .map-section .eyebrow{color:var(--wine-pale);}
   .map-section h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:28px;margin:8px 0 10px;color:var(--cream);}
-  .map-address{font-size:12.5px;color:#E9D3CE;margin-bottom:22px;}
-  .map-frame-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(251,245,238,.25);margin-bottom:18px;}
-  .map-frame{width:100%;height:250px;border:0;display:block;filter:sepia(.12) saturate(.85);}
+  .map-address{font-size:12.5px;color:#CFE0F0;margin-bottom:22px;}
+  .map-frame-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(230,238,248,.25);margin-bottom:18px;}
+  .map-frame{width:100%;height:250px;border:0;display:block;filter:saturate(.9);}
   .map-cta-bar{display:flex;gap:10px;}
 
   /* ---------- GALLERY ---------- */
@@ -152,7 +152,7 @@
   .slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.12);transition:opacity 1.1s ease;}
   .slide.active{opacity:1;animation:kenburns 7s ease-out forwards;}
   @keyframes kenburns{from{transform:scale(1.12);}to{transform:scale(1) translateY(-1.5%);}}
-  .gallery-veil{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(45,15,22,.55) 100%);}
+  .gallery-veil{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(5,12,24,.6) 100%);}
   .gallery-caption{position:absolute;left:24px;bottom:18px;color:#fff;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;}
   .gallery-dots{position:absolute;bottom:20px;right:24px;display:flex;gap:6px;}
   .g-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);border:none;padding:0;transition:background .3s, transform .3s;}
@@ -171,16 +171,16 @@
   .rsvp-input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--blush-deep);border-radius:8px;font-size:13.5px;font-family:'Inter',sans-serif;background:#fff;}
 
   /* ---------- GIFTS full ---------- */
-  .gift-section{background:linear-gradient(165deg, var(--wine) 0%, #47182A 100%);color:var(--cream);padding:46px 24px;text-align:center;}
+  .gift-section{background:linear-gradient(165deg, var(--wine) 0%, #061529 100%);color:var(--cream);padding:46px 24px;text-align:center;}
   .gift-section .eyebrow{color:var(--wine-pale);}
   .gift-section h2{font-size:24px;margin:8px 0 12px;color:var(--cream);}
-  .gift-section p{font-size:13px;color:#E9D3CE;margin:0 0 24px;}
+  .gift-section p{font-size:13px;color:#CFE0F0;margin:0 0 24px;}
 
   /* ---------- FOOTER ---------- */
-  footer{background:var(--ink);color:#D9C9C4;padding:38px 24px 110px;text-align:center;font-size:12px;}
+  footer{background:var(--ink);color:#C7D2E0;padding:38px 24px 110px;text-align:center;font-size:12px;}
   footer .display{font-size:20px;color:var(--cream);display:block;margin-bottom:6px;}
   footer .flinks{display:flex;justify-content:center;gap:20px;margin:16px 0;font-size:11.5px;}
-  footer .flinks a{border-bottom:1px solid rgba(217,201,196,.35);padding-bottom:2px;}
+  footer .flinks a{border-bottom:1px solid rgba(199,210,224,.35);padding-bottom:2px;}
 
   /* ---------- STICKY BAR ---------- */
   .sticky-bar{
@@ -191,7 +191,7 @@
     box-shadow:0 -10px 30px rgba(0,0,0,.15);
   }
   .sticky-bar.show{transform:translateY(0);}
-  .sticky-info{font-size:11px;line-height:1.3;color:#E9D3CE;}
+  .sticky-info{font-size:11px;line-height:1.3;color:#CFE0F0;}
   .sticky-info b{display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;font-weight:500;color:var(--cream);}
   .sticky-cta{background:var(--cream);color:var(--wine);border:none;padding:11px 18px;font-size:12px;white-space:nowrap;border-radius:999px;}
 </style>
@@ -233,14 +233,14 @@
       <span class="gift-box-icon">🎁</span>
       <h3 class="gift-box-title">Um mimo pra gente?</h3>
       <p class="gift-box-text">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
-      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(91,34,51,.28);">Ver lista de presentes →</a>
+      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);">Ver lista de presentes →</a>
     </div>
   </section>
 
   <!-- divider countdown -> timeline -->
   <div class="divider">
     <div class="glow" style="width:200px;height:110px;right:10%;bottom:-15px;background:var(--gold);opacity:.25;"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z" fill="#FBF5EE"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z" fill="#F5F8FC"/></svg>
   </div>
 
   <!-- TIMELINE -->
@@ -253,12 +253,12 @@
       <div class="track" id="track">
         <svg class="paths" viewBox="0 0 2260 210">
           <defs>
-            <linearGradient id="gradTop" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#C98FA0"/><stop offset="1" stop-color="#C7A468"/></linearGradient>
-            <linearGradient id="gradBottom" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#8C4258"/><stop offset="1" stop-color="#C7A468"/></linearGradient>
+            <linearGradient id="gradTop" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#6F97C9"/><stop offset="1" stop-color="#C9A227"/></linearGradient>
+            <linearGradient id="gradBottom" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#163A63"/><stop offset="1" stop-color="#C9A227"/></linearGradient>
           </defs>
           <path class="path-line" stroke="url(#gradTop)" d="M140,45 C 320,45 360,45 520,105"/>
           <path class="path-line" stroke="url(#gradBottom)" d="M140,165 C 320,165 360,165 520,105"/>
-          <path class="path-line" stroke="#C7A468" d="M520,105 L 2080,105"/>
+          <path class="path-line" stroke="#C9A227" d="M520,105 L 2080,105"/>
         </svg>
         <div class="node top" style="left:140px; top:45px;">
           <div class="node-dot"></div>
@@ -348,7 +348,7 @@
 
   <!-- divider timeline -> map (deep wine) -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z" fill="#5B2233"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z" fill="#0B2545"/></svg>
   </div>
 
   <!-- MAP -->
@@ -368,7 +368,7 @@
 
   <!-- divider map -> gallery -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z" fill="#F6EEE3"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z" fill="#F0F5FC"/></svg>
   </div>
 
   <!-- GALLERY -->
@@ -379,12 +379,12 @@
     </div>
     <div class="gallery-shell">
       <div class="gallery-viewport" id="gallery">
-        <div class="slide active" data-i="0" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 1</div>
-        <div class="slide" data-i="1" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 2</div>
-        <div class="slide" data-i="2" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 3</div>
-        <div class="slide" data-i="3" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 4</div>
-        <div class="slide" data-i="4" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 5</div>
-        <div class="slide" data-i="5" style="background:linear-gradient(155deg,#EAC9D4,#C98FA0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 6</div>
+        <div class="slide active" data-i="0" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 1</div>
+        <div class="slide" data-i="1" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 2</div>
+        <div class="slide" data-i="2" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 3</div>
+        <div class="slide" data-i="3" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 4</div>
+        <div class="slide" data-i="4" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 5</div>
+        <div class="slide" data-i="5" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 6</div>
         <div class="gallery-veil"></div>
         <div class="gallery-caption">01 / 06</div>
         <div class="gallery-dots" id="g-dots"></div>
@@ -396,7 +396,7 @@
   <!-- divider gallery -> rsvp -->
   <div class="divider">
     <div class="glow" style="width:220px;height:120px;left:30%;bottom:-20px;background:var(--blush-deep);"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z" fill="#FBF5EE"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z" fill="#F5F8FC"/></svg>
   </div>
 
   <!-- RSVP -->
@@ -422,7 +422,7 @@
         <input class="rsvp-input" id="rsvpResponsavel" type="text" placeholder="Quem está confirmando" required>
         <label class="rsvp-label">Seu telefone (com DDD)</label>
         <input class="rsvp-input" id="rsvpContato" type="tel" placeholder="(21) 90000-0000" required>
-        <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(91,34,51,.28);margin-top:16px;">Confirmar Presença →</button>
+        <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Confirmar Presença →</button>
       </form>
 
       <div id="rsvpSucesso" style="display:none;">
@@ -433,7 +433,7 @@
 
   <!-- divider rsvp -> gifts (deep wine) -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,44 C 100,16 200,52 300,26 C 370,8 420,32 460,18 L460,64 L0,64 Z" fill="#5B2233"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,44 C 100,16 200,52 300,26 C 370,8 420,32 460,18 L460,64 L0,64 Z" fill="#0B2545"/></svg>
   </div>
 
   <!-- GIFTS full -->
@@ -491,6 +491,34 @@
   document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(CONFIG.localNome + ', ' + CONFIG.localEndereco) + '&output=embed';
   document.querySelector('.map-cta-bar a').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(CONFIG.localNome + ', ' + CONFIG.localEndereco);
   // ======================================================================
+
+  // Cada marco da linha do tempo tem 2 variações de texto — uma é sorteada a cada carregamento,
+  // pra a página não parecer sempre idêntica de visita pra visita.
+  const variantesTimeline = [
+    ['A noiva chegou ao mundo, sem imaginar as surpresas que a vida ainda guardava pra ela.',
+     'Nascia a noiva, sem imaginar o quanto de bom a vida ainda reservava pra ela.'],
+    ['O noivo chegou ao mundo, sem imaginar que um dia encontraria o amor da sua vida.',
+     'Nascia o noivo, sem imaginar que, anos depois, encontraria o amor da sua vida.'],
+    ['Nossas famílias se conheceram e construíram uma bonita amizade, sem imaginar o que o futuro reservava pra gente.',
+     'Nossas famílias se aproximaram e construíram um laço bonito, sem imaginar o que o destino preparava pra gente.'],
+    ['Nos vimos pela primeira vez em um encontro casual entre amigos. Naquele momento, éramos apenas dois desconhecidos, sem imaginar que ali começava a nossa história.',
+     'Nos cruzamos pela primeira vez num encontro casual entre amigos — dois desconhecidos que não faziam ideia de que ali começava tudo.'],
+    ['Nos reencontramos de um jeito especial, e foi ali que nasceu uma amizade sincera que, com o tempo, se transformaria em algo ainda mais bonito.',
+     'Um reencontro especial fez nascer uma amizade sincera, que o tempo cuidou de transformar em algo ainda mais bonito.'],
+    ['Com a bênção de nossas famílias, iniciamos oficialmente o nosso namoro, dando início a uma caminhada de amor, companheirismo e crescimento juntos.',
+     'Com a bênção de quem amamos, começamos oficialmente o namoro — o primeiro passo de uma caminhada de amor e companheirismo.'],
+    ['Depois de muita conversa e certeza um do outro, decidimos dar o próximo passo e iniciar os preparativos para o nosso casamento.',
+     'Depois de muita conversa e certeza um do outro, resolvemos dar o próximo passo: começar os preparativos do nosso casamento.'],
+    ['Veio o tão esperado pedido de casamento. Com muita alegria e emoção, dissemos "sim" ao futuro que queremos construir juntos.',
+     'Chegou o tão sonhado pedido de casamento — e, entre lágrimas e sorrisos, dissemos "sim" ao futuro que queremos construir juntos.'],
+    ['Chegou o grande dia! Cercados de quem amamos, celebraremos o início de uma nova história, que pretendemos escrever juntos por toda a vida.',
+     'Chegou o grande dia! Rodeados de quem amamos, começamos aqui uma nova história, que pretendemos escrever juntos pra sempre.'],
+  ];
+  document.querySelectorAll('#track .node-text').forEach(function (el, i) {
+    const opcoes = variantesTimeline[i];
+    if (opcoes) el.textContent = opcoes[Math.floor(Math.random() * opcoes.length)];
+  });
+
   const target = new Date(CONFIG.dataCasamentoISO).getTime();
   const rsvpDeadline = new Date(CONFIG.prazoConfirmacaoISO).getTime();
   function tick(){
