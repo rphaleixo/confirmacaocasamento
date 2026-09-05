@@ -103,6 +103,8 @@
       <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
       <label>Código do link (opcional)</label>
       <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
+      <label>Responsável pelo grupo (opcional)</label>
+      <input type="text" id="ng-responsavel" placeholder="Quem responde por esse grupo">
       <button class="action" id="ng-btn">Criar grupo</button>
       <div class="msg" id="ng-msg"></div>
 
@@ -133,6 +135,8 @@
       <label>Telefone (opcional)</label>
       <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
       <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
+      <label>Responsável pelo grupo (opcional — atualiza o grupo)</label>
+      <input type="text" id="ad-responsavel" placeholder="Quem responde por esse grupo">
       <div class="row" style="margin-top:16px;">
         <button class="action" id="ad-btn">Salvar</button>
         <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
@@ -144,9 +148,10 @@
     <div style="overflow-x:auto;">
     <table>
       <thead><tr>
-        <th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th>
-        <th>Link aberto</th><th>Data abertura</th><th>Status confirmação</th><th>Data confirmação</th>
-        <th>Responsável</th><th>Contato do responsável</th><th>Link</th><th>Mensagem</th>
+        <th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Grupo</th>
+        <th>Responsável pelo grupo</th><th>Contato do responsável</th><th>Telefone</th>
+        <th>Link de confirmação</th><th>Mensagem</th>
+        <th>Link Aberto</th><th>Data abertura</th><th>Status confirmação</th><th>Data Confirmação</th>
       </tr></thead>
       <tbody id="p-tbody"><tr><td colspan="13">Carregando...</td></tr></tbody>
     </table>
@@ -170,8 +175,8 @@
   </section>
 
   <section id="tab-importar" class="tab">
-    <p class="hint">Cole linhas com: Nome [tab] Grupo [tab] Telefone (opcional) [tab] "crianca" (opcional, senão vira adulto). Grupos novos são criados automaticamente.</p>
-    <textarea id="im-texto" style="min-height:200px;font-family:monospace;" placeholder="Maria Silva&#9;Família Silva&#9;(21) 90000-0000&#10;Pedrinho Silva&#9;Família Silva&#9;&#9;crianca"></textarea>
+    <p class="hint">Cole linhas com: Nome [tab] Grupo [tab] Telefone (opcional) [tab] "crianca" (opcional, senão vira adulto) [tab] Responsável pelo grupo (opcional). Grupos novos são criados automaticamente.</p>
+    <textarea id="im-texto" style="min-height:200px;font-family:monospace;" placeholder="Maria Silva&#9;Família Silva&#9;(21) 90000-0000&#9;adulto&#9;Maria Silva&#10;Pedrinho Silva&#9;Família Silva&#9;&#9;crianca"></textarea>
     <button class="action" id="im-btn">Importar</button>
     <div class="msg" id="im-msg"></div>
   </section>
@@ -257,7 +262,7 @@
       const msgBtn = document.createElement('button'); msgBtn.textContent = 'copiar mensagem'; msgBtn.type = 'button';
       msgBtn.addEventListener('click', () => navigator.clipboard.writeText(mensagem));
       tdMsg.appendChild(msgBtn);
-      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo, tdAbertura, tdDataAbertura, tdStatusConf, tdDataConf, tdResp, tdContatoResp, tdLink, tdMsg);
+      tr.append(tdChk, tdNome, tdTipo, tdGrupo, tdResp, tdContatoResp, tdTel, tdLink, tdMsg, tdAbertura, tdDataAbertura, tdStatusConf, tdDataConf);
       tbody.appendChild(tr);
     });
 
@@ -295,6 +300,7 @@
     ngCodigoAtual = null;
     document.getElementById('ng-nome').value = '';
     document.getElementById('ng-codigo').value = '';
+    document.getElementById('ng-responsavel').value = '';
     document.getElementById('ng-pos-criacao').hidden = true;
     document.getElementById('ng-msg').textContent = '';
     document.getElementById('ng2-msg').textContent = '';
@@ -308,6 +314,7 @@
     const payload = {
       nomeGrupo: document.getElementById('ng-nome').value,
       codigo: document.getElementById('ng-codigo').value,
+      responsavel: document.getElementById('ng-responsavel').value,
     };
     const r = await fetch('/api/admin/grupos', { method: 'POST', body: JSON.stringify(payload) });
     const d = await r.json();
@@ -357,6 +364,7 @@
     document.getElementById('ad-nome').value = '';
     document.getElementById('ad-telefone').value = '';
     document.getElementById('ad-crianca').checked = false;
+    document.getElementById('ad-responsavel').value = '';
     document.getElementById('ad-msg').textContent = '';
     await carregarAdicionar();
     abrirModal(document.getElementById('modal-adicionar'));
@@ -369,6 +377,7 @@
       telefone: document.getElementById('ad-telefone').value,
       codigoGrupo: document.getElementById('ad-grupo').value,
       tipo: document.getElementById('ad-crianca').checked ? 'crianca' : 'adulto',
+      responsavel: document.getElementById('ad-responsavel').value,
     };
     const r = await fetch('/api/admin/convidados', { method: 'POST', body: JSON.stringify(payload) });
     const d = await r.json();

@@ -11,7 +11,7 @@ export async function onRequestGet({ env }) {
   return jsonResponse(results);
 }
 
-// body: { nome, telefone, codigoGrupo, tipo } — adiciona 1 convidado a um grupo já existente
+// body: { nome, telefone, codigoGrupo, tipo, responsavel? } — adiciona 1 convidado a um grupo já existente
 export async function onRequestPost({ request, env }) {
   const payload = await request.json().catch(() => ({}));
   const nome = (payload.nome || '').trim();
@@ -28,6 +28,11 @@ export async function onRequestPost({ request, env }) {
     .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES (?, ?, ?, ?, ?)')
     .bind(nome, payload.telefone || '', codigoGrupo, tipo === 'crianca' ? 1 : 0, tipo)
     .run();
+
+  const responsavel = (payload.responsavel || '').trim();
+  if (responsavel) {
+    await db.prepare('UPDATE grupos SET responsavel = ? WHERE codigo = ?').bind(responsavel, codigoGrupo).run();
+  }
 
   await recalcularStatusGrupo(db, codigoGrupo);
   return jsonResponse({ ok: true });

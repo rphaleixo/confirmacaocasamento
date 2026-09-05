@@ -7,7 +7,7 @@ export async function onRequestGet({ env }) {
   return jsonResponse(results);
 }
 
-// body: { nomeGrupo, codigo? } — cria o grupo vazio; convidados entram depois por /api/admin/convidados
+// body: { nomeGrupo, codigo?, responsavel? } — cria o grupo vazio; convidados entram depois por /api/admin/convidados
 export async function onRequestPost({ request, env }) {
   const payload = await request.json().catch(() => ({}));
   const nomeGrupo = (payload.nomeGrupo || '').trim();
@@ -24,9 +24,9 @@ export async function onRequestPost({ request, env }) {
 
   await db
     .prepare(
-      "INSERT INTO grupos (codigo, nome_grupo, status_abertura, status_confirmacao) VALUES (?, ?, 'Não aberto', 'Pendente')"
+      "INSERT INTO grupos (codigo, nome_grupo, status_abertura, status_confirmacao, responsavel) VALUES (?, ?, 'Não aberto', 'Pendente', ?)"
     )
-    .bind(codigo, nomeGrupo)
+    .bind(codigo, nomeGrupo, (payload.responsavel || '').trim() || null)
     .run();
 
   return jsonResponse({ codigo });
