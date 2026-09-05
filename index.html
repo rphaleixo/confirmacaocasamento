@@ -204,21 +204,21 @@
     <div class="hero-img"></div>
     <div class="hero-veil"></div>
     <div class="hero-content">
-      <div class="eyebrow">Nosso casamento</div>
+      <div class="eyebrow" id="heroEyebrow">Nosso casamento</div>
       <h1 class="display"><span id="nomeNoiva">Noiva</span><span class="amp">&amp;</span><span id="nomeNoivo">Noivo</span></h1>
       <div class="hero-date flanked"><span class="ln"></span><span id="heroData">12 de junho de 2027</span><span class="ln"></span></div>
       <div class="hero-time display" id="heroHorario">às 15h00</div>
       <div class="hero-cta-wrap">
-        <a href="#rsvp" class="pill on-dark">Confirmar Presença →</a>
+        <a href="#rsvp" class="pill on-dark" id="heroCta">Confirmar Presença →</a>
         <div class="deadline-chip" id="deadlineChip">confirme até 01 de maio</div>
       </div>
     </div>
   </section>
 
   <!-- COUNTDOWN -->
-  <section class="countdown">
-    <div class="eyebrow">Para o grande dia</div>
-    <h2 class="display">Faltam apenas</h2>
+  <section class="countdown" id="secCountdown">
+    <div class="eyebrow" id="countdownEyebrow">Para o grande dia</div>
+    <h2 class="display" id="countdownTitulo">Faltam apenas</h2>
     <div class="cd-row">
       <div class="cd-cell"><div class="cd-num" id="cd-d">00</div><div class="cd-label">dias</div></div>
       <div class="cd-cell"><div class="cd-num" id="cd-h">00</div><div class="cd-label">horas</div></div>
@@ -228,12 +228,12 @@
   </section>
 
   <!-- GIFT BOX -->
-  <section style="background:var(--blush);padding:6px 24px 46px;text-align:center;">
+  <section style="background:var(--blush);padding:6px 24px 46px;text-align:center;" id="secPresenteTeaser">
     <div class="gift-box">
       <span class="gift-box-icon">🎁</span>
-      <h3 class="gift-box-title">Um mimo pra gente?</h3>
-      <p class="gift-box-text">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
-      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);">Ver lista de presentes →</a>
+      <h3 class="gift-box-title" id="presenteTeaserTitulo">Um mimo pra gente?</h3>
+      <p class="gift-box-text" id="presenteTeaserTexto">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
+      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);" id="presenteTeaserCta">Ver lista de presentes →</a>
     </div>
   </section>
 
@@ -244,10 +244,10 @@
   </div>
 
   <!-- TIMELINE -->
-  <section class="section on-cream" style="padding-bottom:14px;">
+  <section class="section on-cream" style="padding-bottom:14px;" id="secTimeline">
     <div class="section-head">
-      <div class="eyebrow">Nossa história ❤️</div>
-      <h2 class="display">Duas vidas, um caminho</h2>
+      <div class="eyebrow" id="timelineEyebrow">Nossa história ❤️</div>
+      <h2 class="display" id="timelineTitulo">Duas vidas, um caminho</h2>
     </div>
     <div class="timeline-scroll">
       <div class="track" id="track">
@@ -353,8 +353,8 @@
 
   <!-- MAP -->
   <section class="map-section" id="map">
-    <div class="eyebrow">Localização</div>
-    <h2 class="display">Local da realização de nossos sonhos</h2>
+    <div class="eyebrow" id="mapaEyebrow">Localização</div>
+    <h2 class="display" id="mapaTitulo">Local da realização de nossos sonhos</h2>
     <div class="map-address" id="mapEndereco">Copacabana Palace — Av. Atlântica, 1702, Copacabana, Rio de Janeiro</div>
     <div class="map-frame-wrap">
       <iframe class="map-frame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
@@ -362,7 +362,7 @@
       </iframe>
     </div>
     <div class="map-cta-bar">
-      <a class="pill ghost-dark" href="https://www.google.com/maps/dir/?api=1&destination=Copacabana%20Palace%2C%20Rio%20de%20Janeiro" target="_blank">Como chegar ↗</a>
+      <a class="pill ghost-dark" id="mapaCta" href="https://www.google.com/maps/dir/?api=1&destination=Copacabana%20Palace%2C%20Rio%20de%20Janeiro" target="_blank">Como chegar ↗</a>
     </div>
   </section>
 
@@ -372,10 +372,10 @@
   </div>
 
   <!-- GALLERY -->
-  <section class="on-cream2" style="padding:46px 24px;">
+  <section class="on-cream2" style="padding:46px 24px;" id="secGaleria">
     <div class="section-head">
-      <div class="eyebrow">Galeria</div>
-      <h2 class="display">Momentos para sempre</h2>
+      <div class="eyebrow" id="galeriaEyebrow">Galeria</div>
+      <h2 class="display" id="galeriaTitulo">Momentos para sempre</h2>
     </div>
     <div class="gallery-shell">
       <div class="gallery-viewport" id="gallery">
@@ -402,15 +402,15 @@
   <!-- RSVP -->
   <section class="section on-cream" id="rsvp" style="padding-top:8px;">
     <div class="section-head">
-      <div class="eyebrow">Confirme sua presença</div>
-      <h2 class="display">Estamos preparando cada detalhe</h2>
+      <div class="eyebrow" id="rsvpEyebrow">Confirme sua presença</div>
+      <h2 class="display" id="rsvpTitulo">Estamos preparando cada detalhe</h2>
     </div>
     <div class="rsvp-card">
-      <p>Com muito carinho, para celebrar esse dia especial com você. Por favor, confirme a presença de cada pessoa do seu grupo até a data indicada. 🤍</p>
+      <p id="rsvpTexto">Com muito carinho, para celebrar esse dia especial com você. Por favor, confirme a presença de cada pessoa do seu grupo até a data indicada. 🤍</p>
       <div class="rsvp-mini-countdown">restam <span id="rsvp-days">--</span> dias para confirmar</div>
 
       <div id="rsvpSemCodigo">
-        <p style="font-size:12px;">Não encontramos um código de convite nesta página. Peça o link personalizado de confirmação a quem te convidou.</p>
+        <p style="font-size:12px;" id="rsvpSemCodigoTexto">Não encontramos um código de convite nesta página. Peça o link personalizado de confirmação a quem te convidou.</p>
       </div>
 
       <div id="rsvpCarregando" style="display:none;font-size:12.5px;color:var(--ink-soft);">Carregando sua lista...</div>
@@ -422,11 +422,11 @@
         <input class="rsvp-input" id="rsvpResponsavel" type="text" placeholder="Quem está confirmando" required>
         <label class="rsvp-label">Seu telefone (com DDD)</label>
         <input class="rsvp-input" id="rsvpContato" type="tel" placeholder="(21) 90000-0000" required>
-        <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Confirmar Presença →</button>
+        <button type="submit" class="pill" id="rsvpSubmitBtn" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Confirmar Presença →</button>
       </form>
 
       <div id="rsvpSucesso" style="display:none;">
-        <p style="font-size:14px;color:var(--wine);font-family:'Cormorant Garamond',serif;font-style:italic;">Presença confirmada! Obrigado 💛</p>
+        <p style="font-size:14px;color:var(--wine);font-family:'Cormorant Garamond',serif;font-style:italic;" id="rsvpSucessoTexto">Presença confirmada! Obrigado 💛</p>
       </div>
     </div>
   </section>
@@ -438,10 +438,10 @@
 
   <!-- GIFTS full -->
   <section class="gift-section" id="presentes">
-    <div class="eyebrow">Lista de presentes</div>
-    <h2 class="display">Seja protagonista da nossa história</h2>
-    <p>Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
-    <a href="#" class="pill on-dark">Escolher Presente →</a>
+    <div class="eyebrow" id="presentesEyebrow">Lista de presentes</div>
+    <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
+    <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
+    <a href="#" class="pill on-dark" id="presentesCta">Escolher Presente →</a>
   </section>
 
   <footer>
@@ -451,13 +451,13 @@
       <a href="#rsvp">Confirmar presença</a>
       <a href="#presentes">Lista de presentes</a>
     </div>
-    Feito com amor
+    <span id="footerTexto">Feito com amor</span>
   </footer>
 
   <!-- STICKY CTA -->
   <div class="sticky-bar" id="sticky">
-    <div class="sticky-info"><b>Confirme sua presença</b><span id="stickyPrazo">até 01 de maio</span></div>
-    <a href="#rsvp" class="sticky-cta">Confirmar →</a>
+    <div class="sticky-info"><b id="stickyTitulo">Confirme sua presença</b><span id="stickyPrazo">até 01 de maio</span></div>
+    <a href="#rsvp" class="sticky-cta" id="stickyCta">Confirmar →</a>
   </div>
 
 </div>
@@ -466,71 +466,104 @@
   const hero = document.getElementById('hero');
   requestAnimationFrame(()=> setTimeout(()=> hero.classList.add('loaded'), 60));
 
-  // ======= CONFIGURAÇÃO DO EVENTO — troque estes valores pra reutilizar o site com outro casal =======
-  const CONFIG = {
-    noiva: 'Noiva',
-    noivo: 'Noivo',
-    dataCasamentoISO: '2027-06-12T15:00:00-03:00',
-    dataCasamentoDisplay: '12 de junho de 2027',
-    horarioDisplay: 'às 15h00',
-    prazoConfirmacaoISO: '2027-05-01T23:59:59-03:00',
-    prazoConfirmacaoDisplay: '01 de maio',
-    localNome: 'Copacabana Palace',
-    localEndereco: 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro'
-  };
-  document.title = CONFIG.noiva + ' & ' + CONFIG.noivo + ' • Casamento';
-  document.getElementById('nomeNoiva').textContent = CONFIG.noiva;
-  document.getElementById('nomeNoivo').textContent = CONFIG.noivo;
-  document.getElementById('heroData').textContent = CONFIG.dataCasamentoDisplay;
-  document.getElementById('heroHorario').textContent = CONFIG.horarioDisplay;
-  document.getElementById('deadlineChip').textContent = 'confirme até ' + CONFIG.prazoConfirmacaoDisplay;
-  document.getElementById('stickyPrazo').textContent = 'até ' + CONFIG.prazoConfirmacaoDisplay;
-  document.getElementById('footerNomes').textContent = CONFIG.noiva + ' & ' + CONFIG.noivo;
-  document.getElementById('footerDataLocal').textContent = CONFIG.dataCasamentoDisplay + ' · ' + CONFIG.localNome + ', Rio de Janeiro';
-  document.getElementById('mapEndereco').textContent = CONFIG.localNome + ' — ' + CONFIG.localEndereco;
-  document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(CONFIG.localNome + ', ' + CONFIG.localEndereco) + '&output=embed';
-  document.querySelector('.map-cta-bar a').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(CONFIG.localNome + ', ' + CONFIG.localEndereco);
-  // ======================================================================
-
-  // Cada marco da linha do tempo tem 2 variações de texto — uma é sorteada a cada carregamento,
-  // pra a página não parecer sempre idêntica de visita pra visita.
-  const variantesTimeline = [
-    ['A noiva chegou ao mundo, sem imaginar as surpresas que a vida ainda guardava pra ela.',
-     'Nascia a noiva, sem imaginar o quanto de bom a vida ainda reservava pra ela.'],
-    ['O noivo chegou ao mundo, sem imaginar que um dia encontraria o amor da sua vida.',
-     'Nascia o noivo, sem imaginar que, anos depois, encontraria o amor da sua vida.'],
-    ['Nossas famílias se conheceram e construíram uma bonita amizade, sem imaginar o que o futuro reservava pra gente.',
-     'Nossas famílias se aproximaram e construíram um laço bonito, sem imaginar o que o destino preparava pra gente.'],
-    ['Nos vimos pela primeira vez em um encontro casual entre amigos. Naquele momento, éramos apenas dois desconhecidos, sem imaginar que ali começava a nossa história.',
-     'Nos cruzamos pela primeira vez num encontro casual entre amigos — dois desconhecidos que não faziam ideia de que ali começava tudo.'],
-    ['Nos reencontramos de um jeito especial, e foi ali que nasceu uma amizade sincera que, com o tempo, se transformaria em algo ainda mais bonito.',
-     'Um reencontro especial fez nascer uma amizade sincera, que o tempo cuidou de transformar em algo ainda mais bonito.'],
-    ['Com a bênção de nossas famílias, iniciamos oficialmente o nosso namoro, dando início a uma caminhada de amor, companheirismo e crescimento juntos.',
-     'Com a bênção de quem amamos, começamos oficialmente o namoro — o primeiro passo de uma caminhada de amor e companheirismo.'],
-    ['Depois de muita conversa e certeza um do outro, decidimos dar o próximo passo e iniciar os preparativos para o nosso casamento.',
-     'Depois de muita conversa e certeza um do outro, resolvemos dar o próximo passo: começar os preparativos do nosso casamento.'],
-    ['Veio o tão esperado pedido de casamento. Com muita alegria e emoção, dissemos "sim" ao futuro que queremos construir juntos.',
-     'Chegou o tão sonhado pedido de casamento — e, entre lágrimas e sorrisos, dissemos "sim" ao futuro que queremos construir juntos.'],
-    ['Chegou o grande dia! Cercados de quem amamos, celebraremos o início de uma nova história, que pretendemos escrever juntos por toda a vida.',
-     'Chegou o grande dia! Rodeados de quem amamos, começamos aqui uma nova história, que pretendemos escrever juntos pra sempre.'],
-  ];
-  document.querySelectorAll('#track .node-text').forEach(function (el, i) {
-    const opcoes = variantesTimeline[i];
-    if (opcoes) el.textContent = opcoes[Math.floor(Math.random() * opcoes.length)];
-  });
-
-  const target = new Date(CONFIG.dataCasamentoISO).getTime();
-  const rsvpDeadline = new Date(CONFIG.prazoConfirmacaoISO).getTime();
-  function tick(){
-    const now = Date.now();
-    const diff = Math.max(0, target - now);
-    document.getElementById('cd-d').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
-    document.getElementById('cd-h').textContent = String(Math.floor(diff%86400000/3600000)).padStart(2,'0');
-    document.getElementById('cd-m').textContent = String(Math.floor(diff%3600000/60000)).padStart(2,'0');
-    document.getElementById('cd-s').textContent = String(Math.floor(diff%60000/1000)).padStart(2,'0');
-    document.getElementById('rsvp-days').textContent = Math.ceil(Math.max(0, rsvpDeadline - now)/86400000);
+  // ======= CONTEÚDO DO SITE — vem do banco (editável pela aba "Conteúdo" do /admin) =======
+  let conteudo = {};
+  function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
+  function aplicar(id, chave) { const el = document.getElementById(id); if (el) el.textContent = t(chave, el.textContent); }
+  function secaoAtiva(nome) { return conteudo['secao.' + nome + '.ativa'] !== '0'; }
+  function escondeSeInativa(nome, elId) {
+    if (!secaoAtiva(nome)) { const el = document.getElementById(elId); if (el) el.style.display = 'none'; }
   }
-  tick(); setInterval(tick,1000);
+
+  fetch('/api/conteudo').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (dados) {
+    conteudo = dados || {};
+
+    aplicar('heroEyebrow', 'hero.eyebrow');
+    aplicar('nomeNoiva', 'hero.noiva');
+    aplicar('nomeNoivo', 'hero.noivo');
+    aplicar('heroData', 'hero.data_display');
+    aplicar('heroHorario', 'hero.horario_display');
+    aplicar('heroCta', 'hero.cta_label');
+    document.title = t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo') + ' • Casamento';
+    document.getElementById('deadlineChip').textContent = 'confirme até ' + t('hero.prazo_display', '01 de maio');
+    document.getElementById('stickyPrazo').textContent = 'até ' + t('hero.prazo_display', '01 de maio');
+    if (t('hero.foto_url', '')) document.querySelector('.hero-img').style.background = 'center/cover url(' + t('hero.foto_url', '') + ')';
+
+    aplicar('stickyTitulo', 'sticky.titulo');
+    aplicar('stickyCta', 'sticky.cta_label');
+    aplicar('footerTexto', 'footer.texto');
+    document.getElementById('footerNomes').textContent = t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
+    document.getElementById('footerDataLocal').textContent = t('hero.data_display', '12 de junho de 2027') + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + ', Rio de Janeiro';
+
+    aplicar('countdownEyebrow', 'countdown.eyebrow');
+    aplicar('countdownTitulo', 'countdown.titulo');
+    escondeSeInativa('countdown', 'secCountdown');
+
+    aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');
+    aplicar('presenteTeaserTexto', 'presente_teaser.texto');
+    aplicar('presenteTeaserCta', 'presente_teaser.cta_label');
+    escondeSeInativa('presente_teaser', 'secPresenteTeaser');
+
+    aplicar('timelineEyebrow', 'timeline.eyebrow');
+    aplicar('timelineTitulo', 'timeline.titulo');
+    const anos = document.querySelectorAll('#track .node-year');
+    const titulos = document.querySelectorAll('#track .node-title');
+    const textos = document.querySelectorAll('#track .node-text');
+    for (let i = 0; i < 9; i++) {
+      const n = i + 1;
+      if (anos[i]) anos[i].textContent = t('timeline.node' + n + '.ano', anos[i].textContent);
+      if (titulos[i]) titulos[i].textContent = t('timeline.node' + n + '.titulo', titulos[i].textContent);
+      if (textos[i]) textos[i].textContent = t('timeline.node' + n + '.texto', textos[i].textContent);
+    }
+    escondeSeInativa('timeline', 'secTimeline');
+
+    aplicar('mapaEyebrow', 'mapa.eyebrow');
+    aplicar('mapaTitulo', 'mapa.titulo');
+    aplicar('mapaCta', 'mapa.cta_label');
+    const localNome = t('mapa.local_nome', 'Copacabana Palace');
+    const localEndereco = t('mapa.local_endereco', 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro');
+    document.getElementById('mapEndereco').textContent = localNome + ' — ' + localEndereco;
+    document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(localNome + ', ' + localEndereco) + '&output=embed';
+    document.getElementById('mapaCta').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localNome + ', ' + localEndereco);
+    escondeSeInativa('mapa', 'map');
+
+    aplicar('galeriaEyebrow', 'galeria.eyebrow');
+    aplicar('galeriaTitulo', 'galeria.titulo');
+    document.querySelectorAll('.slide').forEach(function (s, i) {
+      const url = t('galeria.foto' + (i + 1) + '_url', '');
+      if (url) { s.style.background = 'center/cover url(' + url + ')'; s.textContent = ''; }
+    });
+    escondeSeInativa('galeria', 'secGaleria');
+
+    aplicar('rsvpEyebrow', 'rsvp.eyebrow');
+    aplicar('rsvpTitulo', 'rsvp.titulo');
+    aplicar('rsvpTexto', 'rsvp.texto');
+    aplicar('rsvpSemCodigoTexto', 'rsvp.sem_codigo_texto');
+    aplicar('rsvpSucessoTexto', 'rsvp.sucesso_texto');
+    aplicar('rsvpSubmitBtn', 'rsvp.cta_label');
+
+    aplicar('presentesEyebrow', 'presentes.eyebrow');
+    aplicar('presentesTitulo', 'presentes.titulo');
+    aplicar('presentesTexto', 'presentes.texto');
+    aplicar('presentesCta', 'presentes.cta_label');
+    document.getElementById('presentesCta').href = t('presentes.cta_url', '#');
+    escondeSeInativa('presentes', 'presentes');
+
+    const target = new Date(t('hero.data_iso', '2027-06-12T15:00:00-03:00')).getTime();
+    const rsvpDeadline = new Date(t('hero.prazo_iso', '2027-05-01T23:59:59-03:00')).getTime();
+    function tick() {
+      const now = Date.now();
+      const diff = Math.max(0, target - now);
+      document.getElementById('cd-d').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
+      document.getElementById('cd-h').textContent = String(Math.floor(diff % 86400000 / 3600000)).padStart(2, '0');
+      document.getElementById('cd-m').textContent = String(Math.floor(diff % 3600000 / 60000)).padStart(2, '0');
+      document.getElementById('cd-s').textContent = String(Math.floor(diff % 60000 / 1000)).padStart(2, '0');
+      document.getElementById('rsvp-days').textContent = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
+    }
+    tick(); setInterval(tick, 1000);
+
+    initGallery();
+  });
 
   // ---- RSVP: busca o grupo pelo código na URL (?c=CODIGO) e envia a confirmação ----
   (function () {
@@ -601,30 +634,34 @@
     });
   })();
 
-
-  const slides = Array.from(document.querySelectorAll('.slide'));
-  const dotsWrap = document.getElementById('g-dots');
-  const stripWrap = document.getElementById('g-strip');
-  const caption = document.querySelector('.gallery-caption');
-  let gi = 0, timer;
-  slides.forEach((s,i)=>{
-    const d = document.createElement('button'); d.className='g-dot'+(i===0?' active':''); d.addEventListener('click',()=>goTo(i)); dotsWrap.appendChild(d);
-    const t = document.createElement('div'); t.className='g-thumb'+(i===0?' active':''); t.style.backgroundImage=s.style.backgroundImage; t.addEventListener('click',()=>goTo(i)); stripWrap.appendChild(t);
-  });
-  const dots = Array.from(dotsWrap.children), thumbs = Array.from(stripWrap.children);
-  function goTo(i){
-    slides[gi].classList.remove('active'); dots[gi].classList.remove('active'); thumbs[gi].classList.remove('active');
-    gi = i;
-    slides[gi].classList.add('active'); dots[gi].classList.add('active'); thumbs[gi].classList.add('active');
-    caption.textContent = String(gi+1).padStart(2,'0') + ' / ' + slides.length;
-    const t = thumbs[gi], strip = stripWrap;
-    const target = t.offsetLeft - (strip.clientWidth - t.clientWidth) / 2;
-    strip.scrollTo({left: target, behavior: 'smooth'});
+  // ---- GALERIA: montada (de novo) depois que as fotos do conteúdo são aplicadas ----
+  function initGallery() {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const dotsWrap = document.getElementById('g-dots');
+    const stripWrap = document.getElementById('g-strip');
+    const caption = document.querySelector('.gallery-caption');
+    dotsWrap.innerHTML = '';
+    stripWrap.innerHTML = '';
+    let gi = 0, timer;
+    slides.forEach((s, i) => {
+      const dot = document.createElement('button'); dot.className = 'g-dot' + (i === 0 ? ' active' : ''); dot.addEventListener('click', () => goTo(i)); dotsWrap.appendChild(dot);
+      const thumb = document.createElement('div'); thumb.className = 'g-thumb' + (i === 0 ? ' active' : ''); thumb.style.backgroundImage = s.style.backgroundImage; thumb.addEventListener('click', () => goTo(i)); stripWrap.appendChild(thumb);
+    });
+    const dots = Array.from(dotsWrap.children), thumbs = Array.from(stripWrap.children);
+    function goTo(i) {
+      slides[gi].classList.remove('active'); dots[gi].classList.remove('active'); thumbs[gi].classList.remove('active');
+      gi = i;
+      slides[gi].classList.add('active'); dots[gi].classList.add('active'); thumbs[gi].classList.add('active');
+      caption.textContent = String(gi + 1).padStart(2, '0') + ' / ' + slides.length;
+      const thumbAtivo = thumbs[gi];
+      const alvo = thumbAtivo.offsetLeft - (stripWrap.clientWidth - thumbAtivo.clientWidth) / 2;
+      stripWrap.scrollTo({ left: alvo, behavior: 'smooth' });
+      restart();
+    }
+    function next() { goTo((gi + 1) % slides.length); }
+    function restart() { clearInterval(timer); timer = setInterval(next, 4200); }
     restart();
   }
-  function next(){ goTo((gi+1) % slides.length); }
-  function restart(){ clearInterval(timer); timer = setInterval(next, 4200); }
-  restart();
 
   const sticky = document.getElementById('sticky');
   const heroCta = document.querySelector('.hero .pill');

@@ -6,3 +6,7 @@ compatibility_date = "2026-09-05"
 binding = "DB"
 database_name = "confirmacaocasamento"
 database_id = "0ece6983-d130-4724-841c-18288f1ddaa1"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "confirmacaocasamento-media"

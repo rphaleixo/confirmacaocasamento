@@ -19,3 +19,10 @@ CREATE TABLE convidados (
 );
 
 CREATE INDEX idx_convidados_grupo ON convidados(codigo_grupo);
+
+-- Conteúdo editável do site (textos, fotos, toggles de seção) — chave-valor livre,
+-- assim cada campo novo do front não exige migração de schema.
+CREATE TABLE conteudo (
+  chave TEXT PRIMARY KEY,
+  valor TEXT
+);

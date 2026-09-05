@@ -42,6 +42,14 @@
   .grupo-linha .info{flex:1;}
   .grupo-linha .status{font-size:11px;color:var(--ink-soft);}
   .hint{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+
+  fieldset{border:1px solid var(--border);border-radius:10px;margin:0 0 18px;padding:6px 16px 16px;}
+  legend{display:flex;align-items:center;gap:10px;padding:0 6px;font-weight:600;font-size:13.5px;}
+  .toggle-ativa{display:flex;align-items:center;gap:6px;font-weight:400;font-size:12px;color:var(--ink-soft);margin-left:auto;}
+  .toggle-ativa input{width:auto;}
+  .campo-foto{display:flex;align-items:center;gap:12px;margin-top:6px;}
+  .campo-foto img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--blush-deep);}
+  .campo-foto .sem-foto{width:64px;height:64px;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-soft);text-align:center;}
 </style>
 </head>
 <body>
@@ -52,6 +60,7 @@
   <button data-tab="mesclar">Mesclar grupos</button>
   <button data-tab="mover">Mover convidado</button>
   <button data-tab="importar">Importar lista</button>
+  <button data-tab="conteudo">Conteúdo</button>
 </nav>
 <main>
 
@@ -108,6 +117,13 @@
     <div class="msg" id="im-msg"></div>
   </section>
 
+  <section id="tab-conteudo" class="tab">
+    <p class="hint">Textos e fotos do site público. A posição de cada bloco não muda por aqui — só o conteúdo. Desligar uma seção some com ela inteira no site.</p>
+    <div id="ct-form">Carregando...</div>
+    <button class="action" id="ct-btn">Salvar conteúdo</button>
+    <div class="msg" id="ct-msg"></div>
+  </section>
+
 </main>
 
 <script>
@@ -120,6 +136,7 @@
     if (b.dataset.tab === 'painel') carregarPainel();
     if (b.dataset.tab === 'mesclar') carregarMesclar();
     if (b.dataset.tab === 'mover') carregarMover();
+    if (b.dataset.tab === 'conteudo') carregarConteudo();
   }));
 
   function msg(id, texto, ok) {
@@ -256,6 +273,169 @@
     if (d.erro) { msg('im-msg', d.erro, false); return; }
     msg('im-msg', d.convidados + ' convidado(s) importado(s), ' + d.gruposCriados + ' grupo(s) novo(s) criado(s).', true);
     document.getElementById('im-texto').value = '';
+  });
+
+  // ---------- CONTEÚDO ----------
+  const GRUPOS_CONTEUDO = [
+    { titulo: 'Hero (capa)', campos: [
+      { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome' },
+      { chave: 'hero.noiva', label: 'Nome da noiva' },
+      { chave: 'hero.noivo', label: 'Nome do noivo' },
+      { chave: 'hero.data_display', label: 'Data (texto)' },
+      { chave: 'hero.data_iso', label: 'Data (técnico ISO — usado na contagem regressiva)' },
+      { chave: 'hero.horario_display', label: 'Horário (texto)' },
+      { chave: 'hero.prazo_display', label: 'Prazo de confirmação (texto)' },
+      { chave: 'hero.prazo_iso', label: 'Prazo de confirmação (técnico ISO)' },
+      { chave: 'hero.cta_label', label: 'Texto do botão principal' },
+      { chave: 'hero.foto_url', label: 'Foto de capa', tipo: 'foto' },
+    ]},
+    { titulo: 'Contagem regressiva', toggle: 'countdown', campos: [
+      { chave: 'countdown.eyebrow', label: 'Texto pequeno' },
+      { chave: 'countdown.titulo', label: 'Título' },
+    ]},
+    { titulo: 'Aviso de presente (antes da contagem)', toggle: 'presente_teaser', campos: [
+      { chave: 'presente_teaser.titulo', label: 'Título' },
+      { chave: 'presente_teaser.texto', label: 'Texto', tipo: 'textarea' },
+      { chave: 'presente_teaser.cta_label', label: 'Texto do botão' },
+    ]},
+    { titulo: 'Nossa história (linha do tempo)', toggle: 'timeline', campos: [
+      { chave: 'timeline.eyebrow', label: 'Texto pequeno' },
+      { chave: 'timeline.titulo', label: 'Título' },
+      ...[1,2,3,4,5,6,7,8,9].flatMap((n) => [
+        { chave: `timeline.node${n}.ano`, label: `Marco ${n} — ano/legenda` },
+        { chave: `timeline.node${n}.titulo`, label: `Marco ${n} — título` },
+        { chave: `timeline.node${n}.texto`, label: `Marco ${n} — texto`, tipo: 'textarea' },
+      ]),
+    ]},
+    { titulo: 'Localização', toggle: 'mapa', campos: [
+      { chave: 'mapa.eyebrow', label: 'Texto pequeno' },
+      { chave: 'mapa.titulo', label: 'Título' },
+      { chave: 'mapa.local_nome', label: 'Nome do local' },
+      { chave: 'mapa.local_endereco', label: 'Endereço' },
+      { chave: 'mapa.cta_label', label: 'Texto do botão "como chegar"' },
+    ]},
+    { titulo: 'Galeria', toggle: 'galeria', campos: [
+      { chave: 'galeria.eyebrow', label: 'Texto pequeno' },
+      { chave: 'galeria.titulo', label: 'Título' },
+      ...[1,2,3,4,5,6].map((n) => ({ chave: `galeria.foto${n}_url`, label: `Foto ${n}`, tipo: 'foto' })),
+    ]},
+    { titulo: 'Confirmação de presença', campos: [
+      { chave: 'rsvp.eyebrow', label: 'Texto pequeno' },
+      { chave: 'rsvp.titulo', label: 'Título' },
+      { chave: 'rsvp.texto', label: 'Texto de apoio', tipo: 'textarea' },
+      { chave: 'rsvp.sem_codigo_texto', label: 'Texto quando o link não tem código', tipo: 'textarea' },
+      { chave: 'rsvp.sucesso_texto', label: 'Texto de sucesso ao confirmar' },
+      { chave: 'rsvp.cta_label', label: 'Texto do botão de confirmar' },
+    ]},
+    { titulo: 'Lista de presentes', toggle: 'presentes', campos: [
+      { chave: 'presentes.eyebrow', label: 'Texto pequeno' },
+      { chave: 'presentes.titulo', label: 'Título' },
+      { chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
+      { chave: 'presentes.cta_label', label: 'Texto do botão' },
+      { chave: 'presentes.cta_url', label: 'Link da lista de presentes' },
+    ]},
+    { titulo: 'Rodapé e barra fixa', campos: [
+      { chave: 'footer.texto', label: 'Texto do rodapé' },
+      { chave: 'sticky.titulo', label: 'Título da barra fixa' },
+      { chave: 'sticky.cta_label', label: 'Texto do botão da barra fixa' },
+    ]},
+  ];
+
+  async function carregarConteudo() {
+    const form = document.getElementById('ct-form');
+    let dados;
+    try {
+      dados = await fetch('/api/conteudo').then((r) => r.json());
+    } catch (e) {
+      form.textContent = 'Não consegui carregar o conteúdo agora. Recarregue a página pra tentar de novo.';
+      return;
+    }
+    form.innerHTML = '';
+
+    GRUPOS_CONTEUDO.forEach((grupo) => {
+      const fs = document.createElement('fieldset');
+      const legend = document.createElement('legend');
+      legend.append(grupo.titulo);
+      if (grupo.toggle) {
+        const chaveAtiva = 'secao.' + grupo.toggle + '.ativa';
+        const wrap = document.createElement('label');
+        wrap.className = 'toggle-ativa';
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.dataset.chave = chaveAtiva;
+        chk.checked = dados[chaveAtiva] !== '0';
+        wrap.append(chk, ' Seção ativa');
+        legend.appendChild(wrap);
+      }
+      fs.appendChild(legend);
+
+      grupo.campos.forEach((campo) => {
+        const label = document.createElement('label');
+        label.textContent = campo.label;
+        fs.appendChild(label);
+
+        if (campo.tipo === 'foto') {
+          const wrap = document.createElement('div');
+          wrap.className = 'campo-foto';
+          const preview = document.createElement(dados[campo.chave] ? 'img' : 'div');
+          if (dados[campo.chave]) { preview.src = dados[campo.chave]; }
+          else { preview.className = 'sem-foto'; preview.textContent = 'sem foto'; }
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = 'image/*';
+          const hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.dataset.chave = campo.chave;
+          hidden.value = dados[campo.chave] || '';
+          fileInput.addEventListener('change', async () => {
+            const arquivo = fileInput.files[0];
+            if (!arquivo) return;
+            fileInput.disabled = true;
+            const r = await fetch('/api/admin/upload?nome=' + encodeURIComponent(arquivo.name), {
+              method: 'POST',
+              headers: { 'Content-Type': arquivo.type || 'application/octet-stream' },
+              body: arquivo,
+            });
+            const d = await r.json();
+            fileInput.disabled = false;
+            if (d.erro) { msg('ct-msg', d.erro, false); return; }
+            hidden.value = d.url;
+            const novoPreview = document.createElement('img');
+            novoPreview.src = d.url;
+            preview.replaceWith(novoPreview);
+          });
+          wrap.append(preview, fileInput, hidden);
+          fs.appendChild(wrap);
+        } else if (campo.tipo === 'textarea') {
+          const textarea = document.createElement('textarea');
+          textarea.dataset.chave = campo.chave;
+          textarea.value = dados[campo.chave] || '';
+          fs.appendChild(textarea);
+        } else {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.dataset.chave = campo.chave;
+          input.value = dados[campo.chave] || '';
+          fs.appendChild(input);
+        }
+      });
+
+      form.appendChild(fs);
+    });
+  }
+
+  document.getElementById('ct-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ct-btn');
+    btn.disabled = true;
+    const payload = {};
+    document.querySelectorAll('#ct-form [data-chave]').forEach((el) => {
+      payload[el.dataset.chave] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
+    });
+    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    btn.disabled = false;
+    if (d.erro) { msg('ct-msg', d.erro, false); return; }
+    msg('ct-msg', d.atualizados + ' campo(s) salvo(s).', true);
   });
 
   carregarPainel();
