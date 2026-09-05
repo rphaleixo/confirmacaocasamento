@@ -55,6 +55,12 @@
   .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
   .subnav button{background:var(--cream);border:1px solid var(--border);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;}
   .subnav button.active{background:var(--wine);border-color:var(--wine);color:#fff;font-weight:600;}
+
+  dialog{border:none;border-radius:12px;padding:22px 24px;max-width:420px;width:90vw;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  dialog::backdrop{background:rgba(20,4,12,.45);}
+  dialog h3{margin:0 0 4px;font-size:16px;}
+  dialog hr{border:none;border-top:1px solid var(--blush-deep);margin:18px 0;}
+  dialog #ng-fechar, dialog #ad-fechar{background:none;border:none;color:var(--ink-soft);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;}
 </style>
 </head>
 <body>
@@ -86,33 +92,54 @@
       <div class="msg" id="cfg-msg"></div>
     </fieldset>
 
-    <div class="row">
-      <fieldset style="flex:1;">
-        <legend>Novo grupo</legend>
-        <label>Nome do grupo</label>
-        <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
-        <label>Código do link (opcional)</label>
-        <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
-        <button class="action" id="ng-btn">Criar grupo</button>
-        <div class="msg" id="ng-msg"></div>
-      </fieldset>
-
-      <fieldset style="flex:1;">
-        <legend>Adicionar convidado</legend>
-        <label>Grupo</label>
-        <select id="ad-grupo"><option>Carregando...</option></select>
-        <label>Nome do convidado</label>
-        <input type="text" id="ad-nome" placeholder="Ex: Maria Silva">
-        <label>Telefone (opcional)</label>
-        <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
-        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
-        <div class="row" style="margin-top:16px;">
-          <button class="action" id="ad-btn">Salvar</button>
-          <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
-        </div>
-        <div class="msg" id="ad-msg"></div>
-      </fieldset>
+    <div class="row" style="margin-bottom:8px;">
+      <button class="action" id="btn-abrir-novo-grupo">+ Novo grupo</button>
+      <button class="action" id="btn-abrir-adicionar" style="background:var(--wine-soft);">+ Adicionar convidado</button>
     </div>
+
+    <dialog id="modal-novo-grupo">
+      <h3>Novo grupo</h3>
+      <label>Nome do grupo</label>
+      <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
+      <label>Código do link (opcional)</label>
+      <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
+      <button class="action" id="ng-btn">Criar grupo</button>
+      <div class="msg" id="ng-msg"></div>
+
+      <div id="ng-pos-criacao" hidden>
+        <hr>
+        <p class="hint">Grupo criado! Já pode adicionar os convidados dele:</p>
+        <label>Nome do convidado</label>
+        <input type="text" id="ng2-nome" placeholder="Ex: Maria Silva">
+        <label>Telefone (opcional)</label>
+        <input type="tel" id="ng2-telefone" placeholder="(21) 90000-0000">
+        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ng2-crianca" style="width:auto;"> É criança</label>
+        <div class="row" style="margin-top:16px;">
+          <button class="action" id="ng2-btn">Salvar</button>
+          <button class="action" id="ng2-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
+        </div>
+        <div class="msg" id="ng2-msg"></div>
+      </div>
+
+      <button id="ng-fechar" style="margin-top:18px;">Fechar</button>
+    </dialog>
+
+    <dialog id="modal-adicionar">
+      <h3>Adicionar convidado</h3>
+      <label>Grupo</label>
+      <select id="ad-grupo"><option>Carregando...</option></select>
+      <label>Nome do convidado</label>
+      <input type="text" id="ad-nome" placeholder="Ex: Maria Silva">
+      <label>Telefone (opcional)</label>
+      <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
+      <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
+      <div class="row" style="margin-top:16px;">
+        <button class="action" id="ad-btn">Salvar</button>
+        <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
+      </div>
+      <div class="msg" id="ad-msg"></div>
+      <button id="ad-fechar" style="margin-top:18px;">Fechar</button>
+    </dialog>
 
     <div style="overflow-x:auto;">
     <table>
@@ -252,7 +279,29 @@
     carregarPainel();
   });
 
+  // ---------- MODAIS: abrir/fechar ----------
+  function abrirModal(dialog) {
+    dialog.showModal();
+  }
+  document.querySelectorAll('dialog').forEach((dialog) => {
+    dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => carregarPainel());
+  });
+
   // ---------- NOVO GRUPO ----------
+  let ngCodigoAtual = null;
+
+  document.getElementById('btn-abrir-novo-grupo').addEventListener('click', () => {
+    ngCodigoAtual = null;
+    document.getElementById('ng-nome').value = '';
+    document.getElementById('ng-codigo').value = '';
+    document.getElementById('ng-pos-criacao').hidden = true;
+    document.getElementById('ng-msg').textContent = '';
+    document.getElementById('ng2-msg').textContent = '';
+    abrirModal(document.getElementById('modal-novo-grupo'));
+  });
+  document.getElementById('ng-fechar').addEventListener('click', () => document.getElementById('modal-novo-grupo').close());
+
   document.getElementById('ng-btn').addEventListener('click', async () => {
     const btn = document.getElementById('ng-btn');
     btn.disabled = true;
@@ -264,12 +313,31 @@
     const d = await r.json();
     btn.disabled = false;
     if (d.erro) { msg('ng-msg', d.erro, false); return; }
-    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo + ' — já pode adicionar os convidados ao lado.', true);
-    document.getElementById('ng-nome').value = '';
-    document.getElementById('ng-codigo').value = '';
-    await carregarAdicionar();
-    document.getElementById('ad-grupo').value = d.codigo;
+    ngCodigoAtual = d.codigo;
+    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo, true);
+    document.getElementById('ng-pos-criacao').hidden = false;
+    document.getElementById('ng2-nome').focus();
   });
+
+  async function salvarConvidadoEmGrupoNovo(limpar) {
+    const payload = {
+      nome: document.getElementById('ng2-nome').value,
+      telefone: document.getElementById('ng2-telefone').value,
+      codigoGrupo: ngCodigoAtual,
+      tipo: document.getElementById('ng2-crianca').checked ? 'crianca' : 'adulto',
+    };
+    const r = await fetch('/api/admin/convidados', { method: 'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (d.erro) { msg('ng2-msg', d.erro, false); return; }
+    msg('ng2-msg', payload.nome + ' adicionado(a)!', true);
+    document.getElementById('ng2-nome').value = '';
+    document.getElementById('ng2-telefone').value = '';
+    document.getElementById('ng2-crianca').checked = false;
+    document.getElementById('ng2-nome').focus();
+    if (limpar) document.getElementById('modal-novo-grupo').close();
+  }
+  document.getElementById('ng2-btn').addEventListener('click', () => salvarConvidadoEmGrupoNovo(true));
+  document.getElementById('ng2-btn-outro').addEventListener('click', () => salvarConvidadoEmGrupoNovo(false));
 
   // ---------- ADICIONAR CONVIDADO ----------
   async function carregarAdicionar() {
@@ -284,7 +352,18 @@
     });
     if (selecionado) sel.value = selecionado;
   }
-  async function salvarConvidado(limparGrupo) {
+
+  document.getElementById('btn-abrir-adicionar').addEventListener('click', async () => {
+    document.getElementById('ad-nome').value = '';
+    document.getElementById('ad-telefone').value = '';
+    document.getElementById('ad-crianca').checked = false;
+    document.getElementById('ad-msg').textContent = '';
+    await carregarAdicionar();
+    abrirModal(document.getElementById('modal-adicionar'));
+  });
+  document.getElementById('ad-fechar').addEventListener('click', () => document.getElementById('modal-adicionar').close());
+
+  async function salvarConvidado(fechar) {
     const payload = {
       nome: document.getElementById('ad-nome').value,
       telefone: document.getElementById('ad-telefone').value,
@@ -294,13 +373,12 @@
     const r = await fetch('/api/admin/convidados', { method: 'POST', body: JSON.stringify(payload) });
     const d = await r.json();
     if (d.erro) { msg('ad-msg', d.erro, false); return; }
-    msg('ad-msg', payload.nome + ' adicionado(a)!', true);
+    if (fechar) { document.getElementById('modal-adicionar').close(); return; }
+    msg('ad-msg', payload.nome + ' adicionado(a)! Pode cadastrar o próximo.', true);
     document.getElementById('ad-nome').value = '';
     document.getElementById('ad-telefone').value = '';
     document.getElementById('ad-crianca').checked = false;
-    if (limparGrupo) document.getElementById('ad-grupo').value = '';
     document.getElementById('ad-nome').focus();
-    await carregarPainel();
   }
   document.getElementById('ad-btn').addEventListener('click', () => salvarConvidado(true));
   document.getElementById('ad-btn-outro').addEventListener('click', () => salvarConvidado(false));
