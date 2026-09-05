@@ -85,4 +85,7 @@ INSERT INTO conteudo (chave, valor) VALUES
 
 ('footer.texto', 'Feito com amor'),
 ('sticky.titulo', 'Confirme sua presença'),
-('sticky.cta_label', 'Confirmar →');
+('sticky.cta_label', 'Confirmar →'),
+
+('config.meta_convidados', '150'),
+('config.mensagem_template', 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛');

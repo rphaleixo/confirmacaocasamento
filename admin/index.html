@@ -28,6 +28,7 @@
   th,td{padding:9px 10px;text-align:left;font-size:13px;border-bottom:1px solid var(--blush-deep);}
   th{background:var(--blush-deep);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
   .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--blush-deep);color:var(--wine-soft);}
+  td button{font-size:11.5px;padding:4px 8px;border:1px solid var(--border);background:#fff;color:var(--wine);border-radius:6px;cursor:pointer;white-space:nowrap;}
   label{display:block;font-weight:600;font-size:12px;margin:14px 0 4px;color:var(--ink);}
   input[type=text],input[type=tel],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff;}
   textarea{min-height:110px;resize:vertical;}
@@ -61,6 +62,7 @@
 <nav>
   <button data-tab="painel" class="active">Painel</button>
   <button data-tab="novo">Novo grupo</button>
+  <button data-tab="adicionar">Adicionar convidado</button>
   <button data-tab="mesclar">Mesclar grupos</button>
   <button data-tab="mover">Mover convidado</button>
   <button data-tab="importar">Importar lista</button>
@@ -70,32 +72,52 @@
 
   <section id="tab-painel" class="tab active">
     <div class="cards">
-      <div class="card"><div class="num" id="p-adultos">--</div><div class="lbl">Adultos confirmados / limite</div></div>
-      <div class="card"><div class="num" id="p-criancas">--</div><div class="lbl">Crianças confirmadas (fora do limite)</div></div>
-      <div class="card"><div class="num" id="p-grupos">--</div><div class="lbl">Grupos 100% confirmados</div></div>
+      <div class="card"><div class="num" id="p-cadastrados">--</div><div class="lbl">Convidados cadastrados</div></div>
+      <div class="card"><div class="num" id="p-confirmados">--</div><div class="lbl" id="p-confirmados-lbl">Convidados confirmados</div></div>
+      <div class="card"><div class="num" id="p-meta">--</div><div class="lbl">Meta de convidados</div></div>
+      <div class="card"><div class="num" id="p-ocupacao">--</div><div class="lbl">% de vagas ocupadas (adultos)</div></div>
     </div>
+
+    <fieldset>
+      <legend>Configurações</legend>
+      <label>Meta de convidados (contrato com o local)</label>
+      <input type="text" id="cfg-meta" placeholder="Ex: 150">
+      <label>Mensagem padrão de cobrança (use {nome} e {link})</label>
+      <textarea id="cfg-mensagem" placeholder="Oi {nome}! Confirme sua presença em {link}"></textarea>
+      <button class="action" id="cfg-btn">Salvar configurações</button>
+      <div class="msg" id="cfg-msg"></div>
+    </fieldset>
+
+    <div style="overflow-x:auto;">
     <table>
-      <thead><tr><th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th></tr></thead>
-      <tbody id="p-tbody"><tr><td colspan="5">Carregando...</td></tr></tbody>
+      <thead><tr><th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th><th>Status</th><th>Link</th><th>Mensagem</th></tr></thead>
+      <tbody id="p-tbody"><tr><td colspan="8">Carregando...</td></tr></tbody>
     </table>
+    </div>
   </section>
 
   <section id="tab-novo" class="tab">
     <label>Nome do grupo</label>
     <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
-    <div class="row">
-      <div>
-        <label>Adultos (um por linha)</label>
-        <textarea id="ng-adultos" placeholder="Maria Silva&#10;João Silva"></textarea>
-      </div>
-      <div>
-        <label>Crianças (um por linha)</label>
-        <textarea id="ng-criancas" placeholder="Pedrinho Silva"></textarea>
-        <div class="hint">Crianças já entram confirmadas e não contam no limite de adultos.</div>
-      </div>
-    </div>
-    <button class="action" id="ng-btn">Criar grupo e gerar link</button>
+    <label>Código do link (opcional)</label>
+    <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
+    <button class="action" id="ng-btn">Criar grupo</button>
     <div class="msg" id="ng-msg"></div>
+  </section>
+
+  <section id="tab-adicionar" class="tab">
+    <label>Grupo</label>
+    <select id="ad-grupo"><option>Carregando...</option></select>
+    <label>Nome do convidado</label>
+    <input type="text" id="ad-nome" placeholder="Ex: Maria Silva">
+    <label>Telefone (opcional)</label>
+    <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
+    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
+    <div class="row" style="margin-top:16px;">
+      <button class="action" id="ad-btn">Salvar</button>
+      <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
+    </div>
+    <div class="msg" id="ad-msg"></div>
   </section>
 
   <section id="tab-mesclar" class="tab">
@@ -137,6 +159,7 @@
     b.classList.add('active');
     document.getElementById('tab-' + b.dataset.tab).classList.add('active');
     if (b.dataset.tab === 'painel') carregarPainel();
+    if (b.dataset.tab === 'adicionar') carregarAdicionar();
     if (b.dataset.tab === 'mesclar') carregarMesclar();
     if (b.dataset.tab === 'mover') carregarMover();
     if (b.dataset.tab === 'conteudo') carregarConteudo();
@@ -153,13 +176,23 @@
     const r = await fetch('/api/admin/painel');
     if (!r.ok) return;
     const d = await r.json();
-    document.getElementById('p-adultos').textContent = d.adultosConfirmados + ' / ' + d.limiteAdultos;
-    document.getElementById('p-criancas').textContent = d.criancasConfirmadas;
-    document.getElementById('p-grupos').textContent = d.gruposConfirmados + ' / ' + d.gruposTotal;
+
+    document.getElementById('p-cadastrados').textContent = d.totalCadastrados;
+    document.getElementById('p-confirmados').textContent = d.totalConfirmados;
+    document.getElementById('p-confirmados-lbl').textContent =
+      'Convidados confirmados (' + d.adultosConfirmados + ' adultos + ' + d.criancasConfirmadas + ' crianças)';
+    document.getElementById('p-meta').textContent = d.metaConvidados;
+    document.getElementById('p-ocupacao').textContent = d.percentualOcupacao + '%';
+
+    document.getElementById('cfg-meta').value = d.metaConvidados;
+    document.getElementById('cfg-mensagem').value = d.mensagemTemplate;
 
     const tbody = document.getElementById('p-tbody');
     tbody.innerHTML = '';
     d.convidados.forEach((c) => {
+      const link = location.origin + '/?c=' + c.codigoGrupo;
+      const mensagem = d.mensagemTemplate.replace('{nome}', c.nome).replace('{link}', link);
+
       const tr = document.createElement('tr');
       const tdChk = document.createElement('td');
       const chk = document.createElement('input');
@@ -177,10 +210,35 @@
       tdTipo.appendChild(tag);
       const tdTel = document.createElement('td'); tdTel.textContent = c.telefone || '—';
       const tdGrupo = document.createElement('td'); tdGrupo.textContent = c.grupo;
-      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo);
+      const tdStatus = document.createElement('td'); tdStatus.textContent = c.statusGrupo;
+      const tdLink = document.createElement('td');
+      const linkA = document.createElement('a'); linkA.href = link; linkA.target = '_blank'; linkA.textContent = 'abrir'; linkA.style.marginRight = '8px';
+      const linkBtn = document.createElement('button'); linkBtn.textContent = 'copiar'; linkBtn.type = 'button';
+      linkBtn.addEventListener('click', () => navigator.clipboard.writeText(link));
+      tdLink.append(linkA, linkBtn);
+      const tdMsg = document.createElement('td');
+      const msgBtn = document.createElement('button'); msgBtn.textContent = 'copiar mensagem'; msgBtn.type = 'button';
+      msgBtn.addEventListener('click', () => navigator.clipboard.writeText(mensagem));
+      tdMsg.appendChild(msgBtn);
+      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo, tdStatus, tdLink, tdMsg);
       tbody.appendChild(tr);
     });
   }
+
+  document.getElementById('cfg-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('cfg-btn');
+    btn.disabled = true;
+    const payload = {
+      'config.meta_convidados': document.getElementById('cfg-meta').value,
+      'config.mensagem_template': document.getElementById('cfg-mensagem').value,
+    };
+    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    btn.disabled = false;
+    if (d.erro) { msg('cfg-msg', d.erro, false); return; }
+    msg('cfg-msg', 'Configurações salvas.', true);
+    carregarPainel();
+  });
 
   // ---------- NOVO GRUPO ----------
   document.getElementById('ng-btn').addEventListener('click', async () => {
@@ -188,18 +246,49 @@
     btn.disabled = true;
     const payload = {
       nomeGrupo: document.getElementById('ng-nome').value,
-      adultosTexto: document.getElementById('ng-adultos').value,
-      criancasTexto: document.getElementById('ng-criancas').value,
+      codigo: document.getElementById('ng-codigo').value,
     };
     const r = await fetch('/api/admin/grupos', { method: 'POST', body: JSON.stringify(payload) });
     const d = await r.json();
     btn.disabled = false;
     if (d.erro) { msg('ng-msg', d.erro, false); return; }
-    msg('ng-msg', d.total + ' convidado(s) cadastrado(s). Link: ' + location.origin + '/?c=' + d.codigo, true);
+    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo + ' — agora adicione os convidados na aba "Adicionar convidado".', true);
     document.getElementById('ng-nome').value = '';
-    document.getElementById('ng-adultos').value = '';
-    document.getElementById('ng-criancas').value = '';
+    document.getElementById('ng-codigo').value = '';
   });
+
+  // ---------- ADICIONAR CONVIDADO ----------
+  async function carregarAdicionar() {
+    const grupos = await fetch('/api/admin/grupos').then((r) => r.json());
+    const sel = document.getElementById('ad-grupo');
+    const selecionado = sel.value;
+    sel.innerHTML = '';
+    grupos.forEach((g) => {
+      const op = document.createElement('option');
+      op.value = g.codigo; op.textContent = g.nome + ' (' + g.codigo + ')';
+      sel.appendChild(op);
+    });
+    if (selecionado) sel.value = selecionado;
+  }
+  async function salvarConvidado(limparGrupo) {
+    const payload = {
+      nome: document.getElementById('ad-nome').value,
+      telefone: document.getElementById('ad-telefone').value,
+      codigoGrupo: document.getElementById('ad-grupo').value,
+      tipo: document.getElementById('ad-crianca').checked ? 'crianca' : 'adulto',
+    };
+    const r = await fetch('/api/admin/convidados', { method: 'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (d.erro) { msg('ad-msg', d.erro, false); return; }
+    msg('ad-msg', payload.nome + ' adicionado(a)!', true);
+    document.getElementById('ad-nome').value = '';
+    document.getElementById('ad-telefone').value = '';
+    document.getElementById('ad-crianca').checked = false;
+    if (limparGrupo) document.getElementById('ad-grupo').value = '';
+    document.getElementById('ad-nome').focus();
+  }
+  document.getElementById('ad-btn').addEventListener('click', () => salvarConvidado(true));
+  document.getElementById('ad-btn-outro').addEventListener('click', () => salvarConvidado(false));
 
   // ---------- MESCLAR ----------
   async function carregarMesclar() {

@@ -1,8 +1,6 @@
 // Helpers compartilhados pelas rotas de /functions/api. Prefixo "_" faz a Cloudflare Pages
 // ignorar este arquivo como rota — só é importado pelos outros.
 
-export const LIMITE_ADULTOS = 150; // ajuste esse número conforme a capacidade do local
-
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sem O/0 e I/1, pra evitar confusão
 
 export function jsonResponse(obj, status = 200) {

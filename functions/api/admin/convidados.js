@@ -1,4 +1,4 @@
-import { jsonResponse } from '../../_lib.js';
+import { jsonResponse, recalcularStatusGrupo } from '../../_lib.js';
 
 export async function onRequestGet({ env }) {
   const { results } = await env.DB
@@ -9,4 +9,26 @@ export async function onRequestGet({ env }) {
     )
     .all();
   return jsonResponse(results);
+}
+
+// body: { nome, telefone, codigoGrupo, tipo } — adiciona 1 convidado a um grupo já existente
+export async function onRequestPost({ request, env }) {
+  const payload = await request.json().catch(() => ({}));
+  const nome = (payload.nome || '').trim();
+  const codigoGrupo = (payload.codigoGrupo || '').trim().toUpperCase();
+  const tipo = payload.tipo === 'crianca' ? 'crianca' : 'adulto';
+  if (!nome) return jsonResponse({ erro: 'Dê um nome pro convidado.' }, 400);
+  if (!codigoGrupo) return jsonResponse({ erro: 'Escolha um grupo.' }, 400);
+
+  const db = env.DB;
+  const grupo = await db.prepare('SELECT 1 FROM grupos WHERE codigo = ?').bind(codigoGrupo).first();
+  if (!grupo) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
+
+  await db
+    .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES (?, ?, ?, ?, ?)')
+    .bind(nome, payload.telefone || '', codigoGrupo, tipo === 'crianca' ? 1 : 0, tipo)
+    .run();
+
+  await recalcularStatusGrupo(db, codigoGrupo);
+  return jsonResponse({ ok: true });
 }

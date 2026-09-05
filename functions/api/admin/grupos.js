@@ -7,18 +7,20 @@ export async function onRequestGet({ env }) {
   return jsonResponse(results);
 }
 
-// body: { nomeGrupo, adultosTexto, criancasTexto } — um nome por linha em cada textarea
+// body: { nomeGrupo, codigo? } — cria o grupo vazio; convidados entram depois por /api/admin/convidados
 export async function onRequestPost({ request, env }) {
   const payload = await request.json().catch(() => ({}));
   const nomeGrupo = (payload.nomeGrupo || '').trim();
   if (!nomeGrupo) return jsonResponse({ erro: 'Dê um nome pro grupo.' }, 400);
 
-  const adultos = (payload.adultosTexto || '').split('\n').map((s) => s.trim()).filter(Boolean);
-  const criancas = (payload.criancasTexto || '').split('\n').map((s) => s.trim()).filter(Boolean);
-  if (adultos.length + criancas.length === 0) return jsonResponse({ erro: 'Adicione ao menos um convidado.' }, 400);
-
   const db = env.DB;
-  const codigo = await gerarCodigoUnico(db);
+  let codigo = (payload.codigo || '').trim().toUpperCase();
+  if (codigo) {
+    const existente = await db.prepare('SELECT 1 FROM grupos WHERE codigo = ?').bind(codigo).first();
+    if (existente) return jsonResponse({ erro: 'Esse código já está em uso por outro grupo.' }, 400);
+  } else {
+    codigo = await gerarCodigoUnico(db);
+  }
 
   await db
     .prepare(
@@ -27,14 +29,5 @@ export async function onRequestPost({ request, env }) {
     .bind(codigo, nomeGrupo)
     .run();
 
-  const stmt = db.prepare(
-    'INSERT INTO convidados (nome, codigo_grupo, confirmado, tipo) VALUES (?, ?, ?, ?)'
-  );
-  const inserts = [
-    ...adultos.map((nome) => stmt.bind(nome, codigo, 0, 'adulto')),
-    ...criancas.map((nome) => stmt.bind(nome, codigo, 1, 'crianca')),
-  ];
-  await db.batch(inserts);
-
-  return jsonResponse({ codigo, total: adultos.length + criancas.length });
+  return jsonResponse({ codigo });
 }
