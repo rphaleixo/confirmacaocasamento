@@ -61,8 +61,6 @@
 <header><h1>🎊 Confirmação de presença — Admin</h1></header>
 <nav>
   <button data-tab="painel" class="active">Painel</button>
-  <button data-tab="novo">Novo grupo</button>
-  <button data-tab="adicionar">Adicionar convidado</button>
   <button data-tab="mesclar">Mesclar grupos</button>
   <button data-tab="mover">Mover convidado</button>
   <button data-tab="importar">Importar lista</button>
@@ -88,36 +86,44 @@
       <div class="msg" id="cfg-msg"></div>
     </fieldset>
 
+    <div class="row">
+      <fieldset style="flex:1;">
+        <legend>Novo grupo</legend>
+        <label>Nome do grupo</label>
+        <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
+        <label>Código do link (opcional)</label>
+        <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
+        <button class="action" id="ng-btn">Criar grupo</button>
+        <div class="msg" id="ng-msg"></div>
+      </fieldset>
+
+      <fieldset style="flex:1;">
+        <legend>Adicionar convidado</legend>
+        <label>Grupo</label>
+        <select id="ad-grupo"><option>Carregando...</option></select>
+        <label>Nome do convidado</label>
+        <input type="text" id="ad-nome" placeholder="Ex: Maria Silva">
+        <label>Telefone (opcional)</label>
+        <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
+        <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
+        <div class="row" style="margin-top:16px;">
+          <button class="action" id="ad-btn">Salvar</button>
+          <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
+        </div>
+        <div class="msg" id="ad-msg"></div>
+      </fieldset>
+    </div>
+
     <div style="overflow-x:auto;">
     <table>
-      <thead><tr><th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th><th>Status</th><th>Link</th><th>Mensagem</th></tr></thead>
-      <tbody id="p-tbody"><tr><td colspan="8">Carregando...</td></tr></tbody>
+      <thead><tr>
+        <th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th>
+        <th>Link aberto</th><th>Data abertura</th><th>Status confirmação</th><th>Data confirmação</th>
+        <th>Responsável</th><th>Contato do responsável</th><th>Link</th><th>Mensagem</th>
+      </tr></thead>
+      <tbody id="p-tbody"><tr><td colspan="13">Carregando...</td></tr></tbody>
     </table>
     </div>
-  </section>
-
-  <section id="tab-novo" class="tab">
-    <label>Nome do grupo</label>
-    <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
-    <label>Código do link (opcional)</label>
-    <input type="text" id="ng-codigo" placeholder="Deixe em branco pra gerar automático">
-    <button class="action" id="ng-btn">Criar grupo</button>
-    <div class="msg" id="ng-msg"></div>
-  </section>
-
-  <section id="tab-adicionar" class="tab">
-    <label>Grupo</label>
-    <select id="ad-grupo"><option>Carregando...</option></select>
-    <label>Nome do convidado</label>
-    <input type="text" id="ad-nome" placeholder="Ex: Maria Silva">
-    <label>Telefone (opcional)</label>
-    <input type="tel" id="ad-telefone" placeholder="(21) 90000-0000">
-    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="ad-crianca" style="width:auto;"> É criança</label>
-    <div class="row" style="margin-top:16px;">
-      <button class="action" id="ad-btn">Salvar</button>
-      <button class="action" id="ad-btn-outro" style="background:var(--wine-soft);">Salvar e adicionar outro</button>
-    </div>
-    <div class="msg" id="ad-msg"></div>
   </section>
 
   <section id="tab-mesclar" class="tab">
@@ -159,7 +165,6 @@
     b.classList.add('active');
     document.getElementById('tab-' + b.dataset.tab).classList.add('active');
     if (b.dataset.tab === 'painel') carregarPainel();
-    if (b.dataset.tab === 'adicionar') carregarAdicionar();
     if (b.dataset.tab === 'mesclar') carregarMesclar();
     if (b.dataset.tab === 'mover') carregarMover();
     if (b.dataset.tab === 'conteudo') carregarConteudo();
@@ -210,7 +215,12 @@
       tdTipo.appendChild(tag);
       const tdTel = document.createElement('td'); tdTel.textContent = c.telefone || '—';
       const tdGrupo = document.createElement('td'); tdGrupo.textContent = c.grupo;
-      const tdStatus = document.createElement('td'); tdStatus.textContent = c.statusGrupo;
+      const tdAbertura = document.createElement('td'); tdAbertura.textContent = c.statusAbertura;
+      const tdDataAbertura = document.createElement('td'); tdDataAbertura.textContent = c.dataAbertura ? new Date(c.dataAbertura).toLocaleString('pt-BR') : '—';
+      const tdStatusConf = document.createElement('td'); tdStatusConf.textContent = c.statusConfirmacao;
+      const tdDataConf = document.createElement('td'); tdDataConf.textContent = c.dataConfirmacao ? new Date(c.dataConfirmacao).toLocaleString('pt-BR') : '—';
+      const tdResp = document.createElement('td'); tdResp.textContent = c.responsavel || '—';
+      const tdContatoResp = document.createElement('td'); tdContatoResp.textContent = c.contatoResponsavel || '—';
       const tdLink = document.createElement('td');
       const linkA = document.createElement('a'); linkA.href = link; linkA.target = '_blank'; linkA.textContent = 'abrir'; linkA.style.marginRight = '8px';
       const linkBtn = document.createElement('button'); linkBtn.textContent = 'copiar'; linkBtn.type = 'button';
@@ -220,9 +230,11 @@
       const msgBtn = document.createElement('button'); msgBtn.textContent = 'copiar mensagem'; msgBtn.type = 'button';
       msgBtn.addEventListener('click', () => navigator.clipboard.writeText(mensagem));
       tdMsg.appendChild(msgBtn);
-      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo, tdStatus, tdLink, tdMsg);
+      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo, tdAbertura, tdDataAbertura, tdStatusConf, tdDataConf, tdResp, tdContatoResp, tdLink, tdMsg);
       tbody.appendChild(tr);
     });
+
+    carregarAdicionar();
   }
 
   document.getElementById('cfg-btn').addEventListener('click', async () => {
@@ -252,9 +264,11 @@
     const d = await r.json();
     btn.disabled = false;
     if (d.erro) { msg('ng-msg', d.erro, false); return; }
-    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo + ' — agora adicione os convidados na aba "Adicionar convidado".', true);
+    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo + ' — já pode adicionar os convidados ao lado.', true);
     document.getElementById('ng-nome').value = '';
     document.getElementById('ng-codigo').value = '';
+    await carregarAdicionar();
+    document.getElementById('ad-grupo').value = d.codigo;
   });
 
   // ---------- ADICIONAR CONVIDADO ----------
@@ -286,6 +300,7 @@
     document.getElementById('ad-crianca').checked = false;
     if (limparGrupo) document.getElementById('ad-grupo').value = '';
     document.getElementById('ad-nome').focus();
+    await carregarPainel();
   }
   document.getElementById('ad-btn').addEventListener('click', () => salvarConvidado(true));
   document.getElementById('ad-btn-outro').addEventListener('click', () => salvarConvidado(false));

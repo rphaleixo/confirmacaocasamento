@@ -10,7 +10,9 @@ export async function onRequestGet({ env }) {
   const { results: convidados } = await db
     .prepare(
       `SELECT c.id, c.nome, c.telefone, c.confirmado, c.tipo, c.codigo_grupo AS codigoGrupo,
-              g.nome_grupo AS grupo, g.status_confirmacao AS statusGrupo
+              g.nome_grupo AS grupo, g.status_abertura AS statusAbertura, g.data_abertura AS dataAbertura,
+              g.status_confirmacao AS statusConfirmacao, g.data_confirmacao AS dataConfirmacao,
+              g.responsavel AS responsavel, g.contato_responsavel AS contatoResponsavel
        FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo
        ORDER BY g.nome_grupo, c.id`
     )
@@ -46,7 +48,12 @@ export async function onRequestGet({ env }) {
       confirmado: c.confirmado === 1,
       grupo: c.grupo,
       codigoGrupo: c.codigoGrupo,
-      statusGrupo: c.statusGrupo,
+      statusAbertura: c.statusAbertura,
+      dataAbertura: c.dataAbertura,
+      statusConfirmacao: c.statusConfirmacao,
+      dataConfirmacao: c.dataConfirmacao,
+      responsavel: c.responsavel,
+      contatoResponsavel: c.contatoResponsavel,
     })),
   });
 }
