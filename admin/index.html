@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin • Confirmação de presença</title>
+<style>
+  :root{
+    --wine:#75003D; --wine-soft:#AC0070; --blush:#FFE8F2; --blush-deep:#F3DEE7;
+    --cream:#FFF8FB; --gold:#ED0190; --ink:#4C002A; --ink-soft:#704757; --border:#E7C7D5;
+    --ok:#2E7D32; --err:#B00020;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--blush);color:var(--ink);font-family:system-ui,Arial,sans-serif;font-size:14px;}
+  header{background:var(--wine);color:var(--cream);padding:18px 24px;}
+  header h1{margin:0;font-size:20px;font-weight:600;}
+  nav{display:flex;gap:4px;background:var(--cream);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;}
+  nav button{background:none;border:none;padding:14px 16px;font-size:13.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+  nav button.active{color:var(--wine);border-bottom-color:var(--gold);font-weight:600;}
+  main{max-width:960px;margin:0 auto;padding:24px 16px 60px;}
+  .tab{display:none;}
+  .tab.active{display:block;}
+  .cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+  .card{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:14px 18px;min-width:180px;}
+  .card .num{font-size:24px;font-weight:700;color:var(--wine);}
+  .card .lbl{font-size:11.5px;color:var(--ink-soft);letter-spacing:.03em;text-transform:uppercase;}
+  table{width:100%;border-collapse:collapse;background:var(--cream);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  th,td{padding:9px 10px;text-align:left;font-size:13px;border-bottom:1px solid var(--blush-deep);}
+  th{background:var(--blush-deep);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+  .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--blush-deep);color:var(--wine-soft);}
+  label{display:block;font-weight:600;font-size:12px;margin:14px 0 4px;color:var(--ink);}
+  input[type=text],input[type=tel],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff;}
+  textarea{min-height:110px;resize:vertical;}
+  button.action{margin-top:16px;background:var(--wine);color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:13.5px;cursor:pointer;}
+  button.action:disabled{opacity:.5;cursor:default;}
+  .row{display:flex;gap:16px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:220px;}
+  .msg{margin-top:12px;font-size:13px;}
+  .msg.err{color:var(--err);}
+  .msg.ok{color:var(--ok);}
+  .grupo-linha{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--blush-deep);font-size:13px;}
+  .grupo-linha .info{flex:1;}
+  .grupo-linha .status{font-size:11px;color:var(--ink-soft);}
+  .hint{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+</style>
+</head>
+<body>
+<header><h1>🎊 Confirmação de presença — Admin</h1></header>
+<nav>
+  <button data-tab="painel" class="active">Painel</button>
+  <button data-tab="novo">Novo grupo</button>
+  <button data-tab="mesclar">Mesclar grupos</button>
+  <button data-tab="mover">Mover convidado</button>
+  <button data-tab="importar">Importar lista</button>
+</nav>
+<main>
+
+  <section id="tab-painel" class="tab active">
+    <div class="cards">
+      <div class="card"><div class="num" id="p-adultos">--</div><div class="lbl">Adultos confirmados / limite</div></div>
+      <div class="card"><div class="num" id="p-criancas">--</div><div class="lbl">Crianças confirmadas (fora do limite)</div></div>
+      <div class="card"><div class="num" id="p-grupos">--</div><div class="lbl">Grupos 100% confirmados</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Confirmado</th><th>Nome</th><th>Tipo</th><th>Telefone</th><th>Grupo</th></tr></thead>
+      <tbody id="p-tbody"><tr><td colspan="5">Carregando...</td></tr></tbody>
+    </table>
+  </section>
+
+  <section id="tab-novo" class="tab">
+    <label>Nome do grupo</label>
+    <input type="text" id="ng-nome" placeholder="Ex: Família Silva">
+    <div class="row">
+      <div>
+        <label>Adultos (um por linha)</label>
+        <textarea id="ng-adultos" placeholder="Maria Silva&#10;João Silva"></textarea>
+      </div>
+      <div>
+        <label>Crianças (um por linha)</label>
+        <textarea id="ng-criancas" placeholder="Pedrinho Silva"></textarea>
+        <div class="hint">Crianças já entram confirmadas e não contam no limite de adultos.</div>
+      </div>
+    </div>
+    <button class="action" id="ng-btn">Criar grupo e gerar link</button>
+    <div class="msg" id="ng-msg"></div>
+  </section>
+
+  <section id="tab-mesclar" class="tab">
+    <p class="hint">Marque os grupos que devem virar um só, e escolha à direita qual código/link vai sobreviver.</p>
+    <div id="mg-lista">Carregando...</div>
+    <button class="action" id="mg-btn" disabled>Mesclar selecionados</button>
+    <div class="msg" id="mg-msg"></div>
+  </section>
+
+  <section id="tab-mover" class="tab">
+    <label>Convidado</label>
+    <select id="mv-convidado"><option>Carregando...</option></select>
+    <label>Novo grupo</label>
+    <select id="mv-grupo"><option>Carregando...</option></select>
+    <button class="action" id="mv-btn">Mover convidado</button>
+    <div class="msg" id="mv-msg"></div>
+  </section>
+
+  <section id="tab-importar" class="tab">
+    <p class="hint">Cole linhas com: Nome [tab] Grupo [tab] Telefone (opcional) [tab] "crianca" (opcional, senão vira adulto). Grupos novos são criados automaticamente.</p>
+    <textarea id="im-texto" style="min-height:200px;font-family:monospace;" placeholder="Maria Silva&#9;Família Silva&#9;(21) 90000-0000&#10;Pedrinho Silva&#9;Família Silva&#9;&#9;crianca"></textarea>
+    <button class="action" id="im-btn">Importar</button>
+    <div class="msg" id="im-msg"></div>
+  </section>
+
+</main>
+
+<script>
+  const tabs = document.querySelectorAll('nav button');
+  tabs.forEach((b) => b.addEventListener('click', () => {
+    tabs.forEach((x) => x.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-' + b.dataset.tab).classList.add('active');
+    if (b.dataset.tab === 'painel') carregarPainel();
+    if (b.dataset.tab === 'mesclar') carregarMesclar();
+    if (b.dataset.tab === 'mover') carregarMover();
+  }));
+
+  function msg(id, texto, ok) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+  }
+
+  // ---------- PAINEL ----------
+  async function carregarPainel() {
+    const r = await fetch('/api/admin/painel');
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById('p-adultos').textContent = d.adultosConfirmados + ' / ' + d.limiteAdultos;
+    document.getElementById('p-criancas').textContent = d.criancasConfirmadas;
+    document.getElementById('p-grupos').textContent = d.gruposConfirmados + ' / ' + d.gruposTotal;
+
+    const tbody = document.getElementById('p-tbody');
+    tbody.innerHTML = '';
+    d.convidados.forEach((c) => {
+      const tr = document.createElement('tr');
+      const tdChk = document.createElement('td');
+      const chk = document.createElement('input');
+      chk.type = 'checkbox'; chk.checked = c.confirmado;
+      chk.addEventListener('change', async () => {
+        chk.disabled = true;
+        await fetch('/api/admin/confirmar', { method: 'POST', body: JSON.stringify({ id: c.id, confirmado: chk.checked }) });
+        chk.disabled = false;
+        carregarPainel();
+      });
+      tdChk.appendChild(chk);
+      const tdNome = document.createElement('td'); tdNome.textContent = c.nome;
+      const tdTipo = document.createElement('td');
+      const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = c.tipo === 'crianca' ? 'criança' : 'adulto';
+      tdTipo.appendChild(tag);
+      const tdTel = document.createElement('td'); tdTel.textContent = c.telefone || '—';
+      const tdGrupo = document.createElement('td'); tdGrupo.textContent = c.grupo;
+      tr.append(tdChk, tdNome, tdTipo, tdTel, tdGrupo);
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- NOVO GRUPO ----------
+  document.getElementById('ng-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ng-btn');
+    btn.disabled = true;
+    const payload = {
+      nomeGrupo: document.getElementById('ng-nome').value,
+      adultosTexto: document.getElementById('ng-adultos').value,
+      criancasTexto: document.getElementById('ng-criancas').value,
+    };
+    const r = await fetch('/api/admin/grupos', { method: 'POST', body: JSON.stringify(payload) });
+    const d = await r.json();
+    btn.disabled = false;
+    if (d.erro) { msg('ng-msg', d.erro, false); return; }
+    msg('ng-msg', d.total + ' convidado(s) cadastrado(s). Link: ' + location.origin + '/?c=' + d.codigo, true);
+    document.getElementById('ng-nome').value = '';
+    document.getElementById('ng-adultos').value = '';
+    document.getElementById('ng-criancas').value = '';
+  });
+
+  // ---------- MESCLAR ----------
+  async function carregarMesclar() {
+    const r = await fetch('/api/admin/grupos');
+    const grupos = await r.json();
+    const div = document.getElementById('mg-lista');
+    if (grupos.length < 2) { div.textContent = 'Você precisa de pelo menos dois grupos cadastrados.'; return; }
+    div.innerHTML = '';
+    grupos.forEach((g) => {
+      const linha = document.createElement('div');
+      linha.className = 'grupo-linha';
+      const chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'mg-chk'; chk.value = g.codigo;
+      const info = document.createElement('div'); info.className = 'info';
+      const nome = document.createElement('div'); nome.textContent = g.nome;
+      const status = document.createElement('div'); status.className = 'status'; status.textContent = g.codigo + ' — ' + g.status;
+      info.append(nome, status);
+      const rad = document.createElement('input'); rad.type = 'radio'; rad.name = 'mg-manter'; rad.className = 'mg-rad'; rad.value = g.codigo;
+      linha.append(chk, info, rad);
+      div.appendChild(linha);
+    });
+    div.querySelectorAll('.mg-chk, .mg-rad').forEach((el) => el.addEventListener('change', () => {
+      const marcados = div.querySelectorAll('.mg-chk:checked').length;
+      const manter = div.querySelector('.mg-rad:checked');
+      document.getElementById('mg-btn').disabled = !(marcados >= 2 && manter);
+    }));
+  }
+  document.getElementById('mg-btn').addEventListener('click', async () => {
+    const div = document.getElementById('mg-lista');
+    const codigos = Array.from(div.querySelectorAll('.mg-chk:checked')).map((c) => c.value);
+    const manter = div.querySelector('.mg-rad:checked').value;
+    const r = await fetch('/api/admin/grupos/mesclar', { method: 'POST', body: JSON.stringify({ codigos, manter }) });
+    const d = await r.json();
+    if (d.erro) { msg('mg-msg', d.erro, false); return; }
+    msg('mg-msg', 'Grupos mesclados! Link mantido: ' + d.mantido, true);
+    carregarMesclar();
+  });
+
+  // ---------- MOVER ----------
+  async function carregarMover() {
+    const [convidados, grupos] = await Promise.all([
+      fetch('/api/admin/convidados').then((r) => r.json()),
+      fetch('/api/admin/grupos').then((r) => r.json()),
+    ]);
+    const selC = document.getElementById('mv-convidado');
+    selC.innerHTML = '';
+    convidados.forEach((c) => {
+      const op = document.createElement('option');
+      op.value = c.id; op.textContent = c.nome + ' (grupo atual: ' + c.grupoAtualNome + ')';
+      selC.appendChild(op);
+    });
+    const selG = document.getElementById('mv-grupo');
+    selG.innerHTML = '';
+    grupos.forEach((g) => {
+      const op = document.createElement('option');
+      op.value = g.codigo; op.textContent = g.nome + ' (' + g.codigo + ')';
+      selG.appendChild(op);
+    });
+  }
+  document.getElementById('mv-btn').addEventListener('click', async () => {
+    const id = Number(document.getElementById('mv-convidado').value);
+    const novoCodigoGrupo = document.getElementById('mv-grupo').value;
+    const r = await fetch('/api/admin/convidados/mover', { method: 'POST', body: JSON.stringify({ id, novoCodigoGrupo }) });
+    const d = await r.json();
+    if (d.erro) { msg('mv-msg', d.erro, false); return; }
+    msg('mv-msg', 'Convidado movido!', true);
+    carregarMover();
+  });
+
+  // ---------- IMPORTAR ----------
+  document.getElementById('im-btn').addEventListener('click', async () => {
+    const texto = document.getElementById('im-texto').value;
+    const r = await fetch('/api/admin/import', { method: 'POST', body: JSON.stringify({ texto }) });
+    const d = await r.json();
+    if (d.erro) { msg('im-msg', d.erro, false); return; }
+    msg('im-msg', d.convidados + ' convidado(s) importado(s), ' + d.gruposCriados + ' grupo(s) novo(s) criado(s).', true);
+    document.getElementById('im-texto').value = '';
+  });
+
+  carregarPainel();
+</script>
+</body>
+</html>

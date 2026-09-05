@@ -476,9 +476,7 @@
     prazoConfirmacaoISO: '2027-05-01T23:59:59-03:00',
     prazoConfirmacaoDisplay: '01 de maio',
     localNome: 'Copacabana Palace',
-    localEndereco: 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro',
-    // Cole aqui a URL da implantação do Apps Script (termina em /exec). Sem isso, a confirmação não funciona.
-    webAppUrl: 'COLE_AQUI_A_URL_DO_APPS_SCRIPT'
+    localEndereco: 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro'
   };
   document.title = CONFIG.noiva + ' & ' + CONFIG.noivo + ' • Casamento';
   document.getElementById('nomeNoiva').textContent = CONFIG.noiva;
@@ -521,7 +519,7 @@
     semCodigo.style.display = 'none';
     carregando.style.display = 'block';
 
-    fetch(CONFIG.webAppUrl + '?c=' + encodeURIComponent(codigo))
+    fetch('/api/rsvp?c=' + encodeURIComponent(codigo))
       .then(function (r) { return r.json(); })
       .then(function (data) {
         carregando.style.display = 'none';
@@ -562,7 +560,7 @@
       };
       const btn = form.querySelector('button');
       btn.disabled = true;
-      fetch(CONFIG.webAppUrl, { method: 'POST', body: JSON.stringify(payload) })
+      fetch('/api/rsvp', { method: 'POST', body: JSON.stringify(payload) })
         .then(function () {
           form.style.display = 'none';
           sucesso.style.display = 'block';
