@@ -110,4 +110,19 @@ INSERT INTO conteudo (chave, valor) VALUES
 ('recados.titulo', 'Deixe seu recado'),
 ('recados.texto', 'Escreva uma mensagem carinhosa pra gente guardar para sempre.'),
 
+('config.mostrar_menu', '0'),
+
+('secao.padrinhos.ativa', '0'),
+('padrinhos.eyebrow', 'Com carinho'),
+('padrinhos.titulo', 'Padrinhos e Madrinhas'),
+('padrinhos.pessoas', '[]'),
+
+('secao.madrinhas_pais.ativa', '0'),
+('madrinhas_pais.eyebrow', 'Com carinho'),
+('madrinhas_pais.titulo', 'Pais e Daminhas'),
+('madrinhas_pais.pessoas', '[]'),
+
+('presentes.chave_pix', ''),
+('presentes.itens', '[]'),
+
 ('layout.ordem', '[]');

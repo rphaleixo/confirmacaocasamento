@@ -148,6 +148,13 @@
   .scroll-hint{text-align:center;font-size:10.5px;color:var(--ink-soft);letter-spacing:.03em;}
   .scroll-hint span{color:var(--wine-soft);}
 
+  /* ---------- PADRINHOS / PAIS (grid de pessoas) ---------- */
+  .pessoas-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px 16px;margin-top:8px;}
+  .pessoa-card{text-align:center;}
+  .pessoa-foto{width:84px;height:84px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:block;background:var(--blush-deep);}
+  .pessoa-nome{font-family:var(--font-display);font-style:italic;font-size:14px;color:var(--ink);}
+  .pessoa-papel{font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px;}
+
   /* ---------- MAP (between timeline and gallery) ---------- */
   .map-section{background:var(--wine);color:var(--cream);padding:46px 24px;text-align:center;}
   .map-section .eyebrow{color:var(--wine-pale);}
@@ -191,12 +198,47 @@
   .gift-section .eyebrow{color:var(--wine-pale);}
   .gift-section h2{font-size:24px;margin:8px 0 12px;color:var(--cream);}
   .gift-section p{font-size:13px;color:var(--wine-pale);margin:0 0 24px;}
+  .gift-itens{display:flex;flex-direction:column;gap:12px;margin:0 0 22px;text-align:left;}
+  .gift-item{background:color-mix(in srgb, var(--cream) 92%, transparent);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;}
+  .gift-item img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+  .gift-item-info{flex:1;min-width:0;}
+  .gift-item-nome{font-family:var(--font-display);font-style:italic;font-size:14.5px;color:var(--wine);}
+  .gift-item-desc{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .gift-item-valor{font-size:10.5px;color:var(--ink-soft);margin-top:2px;font-weight:600;}
+  .gift-item button{font-size:10.5px;padding:6px 10px;border-radius:999px;border:1px solid var(--wine-soft);background:transparent;color:var(--wine);white-space:nowrap;flex-shrink:0;}
+  .gift-item.reservado button{background:var(--wine-soft);color:#fff;border-color:var(--wine-soft);}
+  .gift-pix{font-size:12px;color:var(--wine-pale);margin-bottom:18px;}
+  .gift-pix b{color:var(--cream);}
+  .gift-pix button{margin-left:8px;font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid color-mix(in srgb, var(--wine-pale) 55%, transparent);background:transparent;color:var(--cream);}
 
   /* ---------- FOOTER ---------- */
   footer{background:var(--ink);color:color-mix(in srgb, var(--ink) 20%, white 80%);padding:38px 24px 110px;text-align:center;font-size:12px;}
   footer .display{font-size:20px;color:var(--cream);display:block;margin-bottom:6px;}
   footer .flinks{display:flex;justify-content:center;gap:20px;margin:16px 0;font-size:11.5px;}
   footer .flinks a{border-bottom:1px solid color-mix(in srgb, white 35%, transparent);padding-bottom:2px;}
+
+  /* ---------- MENU DE NAVEGAÇÃO ---------- */
+  .menu-toggle{
+    position:fixed;top:18px;right:calc(50% - 230px + 18px);z-index:60;
+    width:44px;height:44px;border-radius:50%;border:none;
+    background:color-mix(in srgb, var(--ink) 55%, transparent);color:var(--cream);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    box-shadow:0 6px 20px rgba(0,0,0,.2);
+  }
+  .menu-toggle[hidden]{display:none;}
+  @media (max-width:520px){ .menu-toggle{ right:18px; } }
+  .menu-overlay{
+    position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 88%, black 12%);
+    z-index:59;display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .3s ease;
+  }
+  .menu-overlay.show{opacity:1;pointer-events:auto;}
+  .menu-links{display:flex;flex-direction:column;gap:6px;text-align:center;}
+  .menu-links a{
+    font-family:var(--font-display);font-style:italic;font-size:22px;color:var(--cream);
+    padding:10px 24px;
+  }
+  .menu-links a:hover{color:var(--gold);}
 
   /* ---------- STICKY BAR ---------- */
   .sticky-bar{
@@ -358,6 +400,24 @@
   </section>
 
 
+  <!-- PADRINHOS -->
+  <section class="section on-cream2" id="secPadrinhos" data-modulo="padrinhos" data-bg-top="var(--cream-2)" data-bg-bottom="var(--cream-2)">
+    <div class="section-head">
+      <div class="eyebrow" id="padrinhosEyebrow">Com carinho</div>
+      <h2 class="display" id="padrinhosTitulo">Padrinhos e Madrinhas</h2>
+    </div>
+    <div class="pessoas-grid" id="padrinhosGrid"></div>
+  </section>
+
+  <!-- PAIS E DAMINHAS -->
+  <section class="section on-cream" id="secMadrinhasPais" data-modulo="madrinhas_pais" data-bg-top="var(--cream)" data-bg-bottom="var(--cream)">
+    <div class="section-head">
+      <div class="eyebrow" id="madrinhasPaisEyebrow">Com carinho</div>
+      <h2 class="display" id="madrinhasPaisTitulo">Pais e Daminhas</h2>
+    </div>
+    <div class="pessoas-grid" id="madrinhasPaisGrid"></div>
+  </section>
+
   <!-- MAP -->
   <section class="map-section" id="map" data-modulo="mapa" data-bg-top="var(--wine)" data-bg-bottom="var(--wine)">
     <div class="eyebrow" id="mapaEyebrow">Localização</div>
@@ -435,6 +495,8 @@
     <div class="eyebrow" id="presentesEyebrow">Lista de presentes</div>
     <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
+    <div class="gift-itens" id="presentesLista" hidden></div>
+    <div class="gift-pix" id="presentesPix" hidden>Chave PIX: <b id="presentesPixChave"></b><button type="button" id="presentesPixCopiar">Copiar</button></div>
     <a href="#" class="pill on-dark" id="presentesCta">Escolher Presente →</a>
   </section>
 
@@ -467,6 +529,12 @@
     <span id="footerTexto">Feito com amor</span>
   </footer>
 
+  <!-- MENU DE NAVEGAÇÃO -->
+  <button class="menu-toggle" id="menuToggle" type="button" hidden>☰</button>
+  <div class="menu-overlay" id="menuOverlay">
+    <nav class="menu-links" id="menuLinks"></nav>
+  </div>
+
   <!-- STICKY CTA -->
   <div class="sticky-bar" id="sticky">
     <div class="sticky-info"><b id="stickyTitulo">Confirme sua presença</b><span id="stickyPrazo">até 01 de maio</span></div>
@@ -484,6 +552,22 @@
   function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
   function aplicar(id, chave) { const el = document.getElementById(id); if (el) el.textContent = t(chave, el.textContent); }
   function secaoAtiva(nome) { return conteudo['secao.' + nome + '.ativa'] !== '0'; }
+  function renderPessoas(gridId, chave) {
+    let pessoas = [];
+    try { pessoas = JSON.parse(t(chave, '[]')); } catch (e) { pessoas = []; }
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    pessoas.forEach(function (p) {
+      const card = document.createElement('div'); card.className = 'pessoa-card';
+      const foto = document.createElement(p.foto ? 'img' : 'div');
+      foto.className = 'pessoa-foto';
+      if (p.foto) foto.src = p.foto;
+      const nome = document.createElement('div'); nome.className = 'pessoa-nome'; nome.textContent = p.nome || '';
+      const papel = document.createElement('div'); papel.className = 'pessoa-papel'; papel.textContent = p.texto || '';
+      card.append(foto, nome, papel);
+      grid.appendChild(card);
+    });
+  }
   function escondeSeInativa(nome, elId) {
     if (!secaoAtiva(nome)) { const el = document.getElementById(elId); if (el) el.style.display = 'none'; }
   }
@@ -553,6 +637,16 @@
     }
     escondeSeInativa('timeline', 'secTimeline');
 
+    aplicar('padrinhosEyebrow', 'padrinhos.eyebrow');
+    aplicar('padrinhosTitulo', 'padrinhos.titulo');
+    renderPessoas('padrinhosGrid', 'padrinhos.pessoas');
+    escondeSeInativa('padrinhos', 'secPadrinhos');
+
+    aplicar('madrinhasPaisEyebrow', 'madrinhas_pais.eyebrow');
+    aplicar('madrinhasPaisTitulo', 'madrinhas_pais.titulo');
+    renderPessoas('madrinhasPaisGrid', 'madrinhas_pais.pessoas');
+    escondeSeInativa('madrinhas_pais', 'secMadrinhasPais');
+
     aplicar('mapaEyebrow', 'mapa.eyebrow');
     aplicar('mapaTitulo', 'mapa.titulo');
     aplicar('mapaCta', 'mapa.cta_label');
@@ -588,6 +682,7 @@
     aplicar('presentesTexto', 'presentes.texto');
     aplicar('presentesCta', 'presentes.cta_label');
     document.getElementById('presentesCta').href = t('presentes.cta_url', '#');
+    renderPresentes();
     escondeSeInativa('presentes', 'presentes');
 
     aplicar('recadosEyebrow', 'recados.eyebrow');
@@ -617,7 +712,7 @@
     // ---- Modo Save the Date: some tudo, menos o hero (roda antes das divisórias,
     // pra nenhuma ser gerada entre módulos escondidos) ----
     if (t('config.modo_save_the_date', '0') === '1') {
-      ['secCountdown', 'secPresenteTeaser', 'secTimeline', 'map', 'secGaleria', 'rsvp', 'presentes', 'secRecados'].forEach(function (id) {
+      ['secCountdown', 'secPresenteTeaser', 'secTimeline', 'secPadrinhos', 'secMadrinhasPais', 'map', 'secGaleria', 'rsvp', 'presentes', 'secRecados'].forEach(function (id) {
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
       document.getElementById('sticky').style.display = 'none';
@@ -628,8 +723,8 @@
     }
 
     // ---- Ordem dos módulos (definida na aba "Ordem dos módulos" do admin) ----
-    const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
-    const MAPA_MODULO_ID = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
+    const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'padrinhos', 'madrinhas_pais', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
+    const MAPA_MODULO_ID = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', padrinhos: 'secPadrinhos', madrinhas_pais: 'secMadrinhasPais', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
     let ordem = [];
     try { ordem = JSON.parse(t('layout.ordem', '[]')); } catch (e) { ordem = []; }
     ordem = ordem.filter(function (k) { return ORDEM_PADRAO.indexOf(k) !== -1; });
@@ -676,7 +771,95 @@
     if (modulosVisiveis.length) {
       footerEl.parentNode.insertBefore(criarDivisor('var(--ink)', indiceForma++), footerEl);
     }
+
+    // ---- Menu de navegação por âncoras (opcional, liga/desliga em Rodapé e barra fixa) ----
+    if (t('config.mostrar_menu', '0') === '1' && modulosVisiveis.length) {
+      const ROTULOS_MODULO = {
+        countdown: 'Contagem', presente_teaser: 'Presentes', timeline: t('timeline.titulo', 'Nossa História'),
+        mapa: 'Local', galeria: 'Galeria', rsvp: 'Confirmar', presentes: 'Presentes',
+        padrinhos: 'Padrinhos', madrinhas_pais: 'Pais e Daminhas', recados: 'Recados',
+      };
+      const menuToggle = document.getElementById('menuToggle');
+      const menuOverlay = document.getElementById('menuOverlay');
+      const menuLinks = document.getElementById('menuLinks');
+      menuLinks.innerHTML = '';
+      const home = document.createElement('a'); home.href = '#hero'; home.textContent = 'Início';
+      menuLinks.appendChild(home);
+      ordem.forEach(function (k) {
+        const el = document.getElementById(MAPA_MODULO_ID[k]);
+        if (!el || el.style.display === 'none') return;
+        const a = document.createElement('a');
+        a.href = '#' + el.id;
+        a.textContent = ROTULOS_MODULO[k] || k;
+        menuLinks.appendChild(a);
+      });
+      menuToggle.hidden = false;
+      function fecharMenu() { menuOverlay.classList.remove('show'); }
+      menuToggle.addEventListener('click', function () { menuOverlay.classList.toggle('show'); });
+      menuOverlay.addEventListener('click', function (ev) { if (ev.target === menuOverlay) fecharMenu(); });
+      menuLinks.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', fecharMenu);
+      });
+    }
   });
+
+  // ---- Lista de presentes: itens nomeados (com foto/valor) + chave PIX. Se não houver
+  // itens cadastrados, mantém o link único (presentes.cta_url) como estava antes. ----
+  function renderPresentes() {
+    let itens = [];
+    try { itens = JSON.parse(t('presentes.itens', '[]')); } catch (e) { itens = []; }
+    const wrap = document.getElementById('presentesLista');
+    const ctaFallback = document.getElementById('presentesCta');
+    const pixBox = document.getElementById('presentesPix');
+
+    if (!itens.length) {
+      wrap.hidden = true;
+      ctaFallback.hidden = false;
+    } else {
+      ctaFallback.hidden = true;
+      wrap.hidden = false;
+      wrap.innerHTML = '';
+      itens.forEach(function (item) {
+        const card = document.createElement('div');
+        card.className = 'gift-item' + (item.reservado ? ' reservado' : '');
+        if (item.foto) { const img = document.createElement('img'); img.src = item.foto; card.appendChild(img); }
+        const info = document.createElement('div'); info.className = 'gift-item-info';
+        const nome = document.createElement('div'); nome.className = 'gift-item-nome'; nome.textContent = item.nome || '';
+        info.appendChild(nome);
+        if (item.descricao) { const d = document.createElement('div'); d.className = 'gift-item-desc'; d.textContent = item.descricao; info.appendChild(d); }
+        if (item.valor) { const v = document.createElement('div'); v.className = 'gift-item-valor'; v.textContent = item.valor; info.appendChild(v); }
+        card.appendChild(info);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = item.reservado ? 'Escolhido ✓' : 'Escolher';
+        btn.addEventListener('click', function () {
+          const novoReservado = !item.reservado;
+          btn.disabled = true;
+          fetch('/api/presentes/reservar', { method: 'POST', body: JSON.stringify({ id: item.id, reservado: novoReservado }) })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              btn.disabled = false;
+              if (d.erro) return;
+              item.reservado = novoReservado;
+              card.classList.toggle('reservado', novoReservado);
+              btn.textContent = novoReservado ? 'Escolhido ✓' : 'Escolher';
+            })
+            .catch(function () { btn.disabled = false; });
+        });
+        card.appendChild(btn);
+        wrap.appendChild(card);
+      });
+    }
+
+    const pix = t('presentes.chave_pix', '');
+    if (pix) {
+      pixBox.hidden = false;
+      document.getElementById('presentesPixChave').textContent = pix;
+      document.getElementById('presentesPixCopiar').addEventListener('click', function () { navigator.clipboard.writeText(pix); });
+    } else {
+      pixBox.hidden = true;
+    }
+  }
 
   // ---- RSVP: busca o grupo pelo código na URL (?c=CODIGO) e envia a confirmação ----
   (function () {

@@ -97,7 +97,10 @@
 </style>
 </head>
 <body>
-<header><h1>🎊 Confirmação de presença — Admin</h1></header>
+<header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+  <h1>🎊 Confirmação de presença — Admin</h1>
+  <a href="/" target="_blank" style="color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
+</header>
 <nav>
   <button data-tab="painel" class="active">Painel</button>
   <button data-tab="mesclar">Mesclar grupos</button>
@@ -130,6 +133,7 @@
     <div class="row" style="margin-bottom:8px;">
       <button class="action" id="btn-abrir-novo-grupo">+ Novo grupo</button>
       <button class="action" id="btn-abrir-adicionar" style="background:var(--wine-soft);">+ Adicionar convidado</button>
+      <button class="action" id="btn-baixar-csv" style="background:var(--ink-soft);">Baixar CSV</button>
     </div>
 
     <dialog id="modal-novo-grupo">
@@ -279,10 +283,20 @@
   }
 
   // ---------- PAINEL ----------
+  let ultimoPainelDados = null;
+
+  function normalizarTelefoneWhatsapp(telefone) {
+    let digitos = String(telefone || '').replace(/\D/g, '');
+    if (!digitos) return '';
+    if (digitos.length <= 11) digitos = '55' + digitos; // assume DDI Brasil quando não informado
+    return digitos;
+  }
+
   async function carregarPainel() {
     const r = await fetch('/api/admin/painel');
     if (!r.ok) return;
     const d = await r.json();
+    ultimoPainelDados = d;
 
     document.getElementById('p-cadastrados').textContent = d.totalCadastrados;
     document.getElementById('p-confirmados').textContent = d.totalConfirmados;
@@ -331,7 +345,15 @@
       const tdMsg = document.createElement('td');
       const msgBtn = document.createElement('button'); msgBtn.textContent = 'copiar mensagem'; msgBtn.type = 'button';
       msgBtn.addEventListener('click', () => navigator.clipboard.writeText(mensagem));
-      tdMsg.appendChild(msgBtn);
+      const waTelefone = normalizarTelefoneWhatsapp(c.telefone || c.contatoResponsavel);
+      const waBtn = document.createElement('button'); waBtn.textContent = 'WhatsApp'; waBtn.type = 'button';
+      waBtn.style.marginLeft = '4px';
+      if (waTelefone) {
+        waBtn.addEventListener('click', () => window.open('https://wa.me/' + waTelefone + '?text=' + encodeURIComponent(mensagem), '_blank'));
+      } else {
+        waBtn.disabled = true; waBtn.title = 'Sem telefone cadastrado';
+      }
+      tdMsg.append(msgBtn, waBtn);
       tr.append(tdChk, tdNome, tdTipo, tdGrupo, tdResp, tdContatoResp, tdTel, tdLink, tdMsg, tdAbertura, tdDataAbertura, tdStatusConf, tdDataConf);
       tbody.appendChild(tr);
     });
@@ -352,6 +374,27 @@
     if (d.erro) { msg('cfg-msg', d.erro, false); return; }
     msg('cfg-msg', 'Configurações salvas.', true);
     carregarPainel();
+  });
+
+  document.getElementById('btn-baixar-csv').addEventListener('click', () => {
+    if (!ultimoPainelDados) return;
+    const cabecalho = ['Nome', 'Grupo', 'Responsável', 'Telefone', 'Link', 'Mensagem', 'Link Aberto', 'Data abertura', 'Status confirmação', 'Data Confirmação'];
+    const escapar = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const linhas = [cabecalho.map(escapar).join(',')];
+    ultimoPainelDados.convidados.forEach((c) => {
+      const link = location.origin + '/?c=' + c.codigoGrupo;
+      const mensagem = ultimoPainelDados.mensagemTemplate.replace('{nome}', c.nome).replace('{link}', link);
+      linhas.push([
+        c.nome, c.grupo, c.responsavel || '', c.telefone || '', link, mensagem,
+        c.statusAbertura, c.dataAbertura || '', c.statusConfirmacao, c.dataConfirmacao || '',
+      ].map(escapar).join(','));
+    });
+    const blob = new Blob(['﻿' + linhas.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'convidados.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
   });
 
   // ---------- MODAIS: abrir/fechar ----------
@@ -573,8 +616,20 @@
     { valor: 'minimal', label: 'Cormorant Garamond + Montserrat' },
   ];
 
+  const PALETAS_PRONTAS = [
+    { nome: 'Azul clássico (atual)', cores: ['#0B2545', '#2F5D9A', '#C9A227', '#EAF1FB', '#14213D'] },
+    { nome: 'Vinho romântico', cores: ['#5C1A33', '#8C3A54', '#C9A227', '#FBEFF1', '#2E1119'] },
+    { nome: 'Verde oliva', cores: ['#3F4B2B', '#6B7A45', '#C9A227', '#F3F2E9', '#26301A'] },
+    { nome: 'Terracota', cores: ['#8A3B24', '#B5643F', '#D6A759', '#FBF1E7', '#3B1D10'] },
+    { nome: 'Rosa suave', cores: ['#8A4B63', '#C08497', '#D6A759', '#FFF1F5', '#3B1F28'] },
+    { nome: 'Preto e dourado', cores: ['#1A1A1A', '#3D3D3D', '#C9A227', '#F5F1E6', '#0D0D0D'] },
+    { nome: 'Lavanda', cores: ['#4B3A6E', '#7B5EA7', '#C9A227', '#F3EFFA', '#241A38'] },
+    { nome: 'Verde água', cores: ['#1F5E56', '#3F8F82', '#C9A227', '#EAF7F4', '#0F2E29'] },
+  ];
+
   const GRUPOS_CONTEUDO = [
     { titulo: 'Aparência (cores e fonte)', campos: [
+      { chave: '__paletas__', label: 'Paletas prontas', tipo: 'paletas' },
       { chave: '__cores__', label: 'Paleta de cores', tipo: 'cores', itens: [
         { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais, barra fixa — a cor "de marca" do site.' },
         { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos (eyebrow), bordas, contorno de botões — usada em detalhes menores.' },
@@ -624,6 +679,16 @@
         { chave: `timeline.node${n}.texto`, label: 'Texto', tipo: 'textarea' },
       ]),
     ]},
+    { titulo: 'Padrinhos e Madrinhas', toggle: 'padrinhos', campos: [
+      { chave: 'padrinhos.eyebrow', label: 'Texto pequeno' },
+      { chave: 'padrinhos.titulo', label: 'Título' },
+      { chave: 'padrinhos.pessoas', label: 'Padrinhos e madrinhas', tipo: 'lista_pessoas' },
+    ]},
+    { titulo: 'Pais e Daminhas', toggle: 'madrinhas_pais', campos: [
+      { chave: 'madrinhas_pais.eyebrow', label: 'Texto pequeno' },
+      { chave: 'madrinhas_pais.titulo', label: 'Título' },
+      { chave: 'madrinhas_pais.pessoas', label: 'Pais e daminhas/pajens', tipo: 'lista_pessoas' },
+    ]},
     { titulo: 'Localização', toggle: 'mapa', campos: [
       { chave: 'mapa.eyebrow', label: 'Texto pequeno' },
       { chave: 'mapa.titulo', label: 'Título' },
@@ -649,6 +714,10 @@
       { chave: 'presentes.eyebrow', label: 'Texto pequeno' },
       { chave: 'presentes.titulo', label: 'Título' },
       { chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
+      { chave: '__sep_presentes_itens__', tipo: 'separador', label: 'Itens da lista' },
+      { chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
+      { chave: 'presentes.chave_pix', label: 'Chave PIX (opcional)', dica: 'Aparece no site com um botão "copiar". Não processamos pagamento — é só pra facilitar o PIX manual.' },
+      { chave: '__sep_presentes_fallback__', tipo: 'separador', label: 'Alternativa: link único (usado só se a lista de itens acima estiver vazia)' },
       { chave: 'presentes.cta_label', label: 'Texto do botão' },
       { chave: 'presentes.cta_url', label: 'Link da lista de presentes' },
     ]},
@@ -658,6 +727,7 @@
       { chave: 'recados.texto', label: 'Texto de apoio', tipo: 'textarea' },
     ]},
     { titulo: 'Rodapé e barra fixa', campos: [
+      { chave: 'config.mostrar_menu', label: 'Mostrar menu de navegação (☰) no site', tipo: 'checkbox' },
       { chave: 'footer.texto', label: 'Texto do rodapé' },
       { chave: 'sticky.titulo', label: 'Título da barra fixa' },
       { chave: 'sticky.subtexto_template', label: 'Texto pequeno da barra fixa (use {prazo})' },
@@ -738,12 +808,184 @@
     preview.replaceWith(novoPreview);
   }
 
+  async function enviarFotoPessoa(blob, onDone) {
+    const r = await fetch('/api/admin/upload?nome=foto.jpg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body: blob,
+    });
+    const d = await r.json();
+    if (d.erro) { msg('ct-msg', d.erro, false); return; }
+    onDone(d.url);
+  }
+
   function renderCampoConteudo(fs, campo) {
     if (campo.tipo === 'separador') {
       const h = document.createElement('div');
       h.className = 'separador-campo';
       h.textContent = campo.label;
       fs.appendChild(h);
+      return;
+    }
+
+    if (campo.tipo === 'paletas') {
+      const label = document.createElement('label');
+      label.textContent = campo.label;
+      fs.appendChild(label);
+      const wrap = document.createElement('div');
+      wrap.style.display = 'flex'; wrap.style.gap = '10px'; wrap.style.flexWrap = 'wrap';
+      PALETAS_PRONTAS.forEach((paleta) => {
+        const box = document.createElement('button');
+        box.type = 'button';
+        box.title = paleta.nome;
+        box.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:6px;cursor:pointer;background:#fff;display:flex;flex-direction:column;align-items:center;gap:4px;width:78px;';
+        const swatch = document.createElement('div');
+        swatch.style.cssText = 'display:flex;width:100%;height:24px;border-radius:4px;overflow:hidden;';
+        paleta.cores.forEach((cor) => {
+          const fatia = document.createElement('div');
+          fatia.style.cssText = 'flex:1;background:' + cor + ';';
+          swatch.appendChild(fatia);
+        });
+        const nomeEl = document.createElement('span');
+        nomeEl.style.cssText = 'font-size:10px;color:var(--ink-soft);line-height:1.2;text-align:center;';
+        nomeEl.textContent = paleta.nome;
+        box.append(swatch, nomeEl);
+        box.addEventListener('click', () => {
+          const chavesCores = ['aparencia.cor_primaria', 'aparencia.cor_secundaria', 'aparencia.cor_destaque', 'aparencia.cor_fundo', 'aparencia.cor_texto'];
+          chavesCores.forEach((chave, i) => {
+            const input = fs.querySelector('input[type=color][data-chave="' + chave + '"]');
+            if (input) input.value = paleta.cores[i];
+          });
+        });
+        wrap.appendChild(box);
+      });
+      fs.appendChild(wrap);
+      const dica = document.createElement('div'); dica.className = 'dica-campo'; dica.textContent = 'Escolher uma paleta só preenche os campos de cor abaixo — clique em "Salvar este módulo" pra aplicar.';
+      fs.appendChild(dica);
+      return;
+    }
+
+    if (campo.tipo === 'lista_pessoas') {
+      const label = document.createElement('label');
+      label.textContent = campo.label;
+      fs.appendChild(label);
+      let pessoas = [];
+      try { pessoas = JSON.parse(ctDados[campo.chave] || '[]'); } catch (e) { pessoas = []; }
+      const wrap = document.createElement('div');
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden'; hidden.dataset.chave = campo.chave;
+      function sync() { hidden.value = JSON.stringify(pessoas); }
+      sync();
+      function renderLista() {
+        wrap.innerHTML = '';
+        pessoas.forEach((pessoa, i) => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;';
+          const fotoWrap = document.createElement('div');
+          fotoWrap.className = 'campo-foto'; fotoWrap.style.marginTop = '0';
+          const preview = document.createElement(pessoa.foto ? 'img' : 'div');
+          if (pessoa.foto) { preview.src = pessoa.foto; } else { preview.className = 'sem-foto'; preview.textContent = 'sem foto'; }
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.style.width = '120px';
+          fileInput.addEventListener('change', () => {
+            const arquivo = fileInput.files[0];
+            if (!arquivo) return;
+            abrirCrop(arquivo, 1, (blob) => {
+              enviarFotoPessoa(blob, (url) => { pessoa.foto = url; sync(); renderLista(); });
+            });
+            fileInput.value = '';
+          });
+          fotoWrap.append(preview, fileInput);
+          const camposTexto = document.createElement('div');
+          camposTexto.style.flex = '1';
+          const inputNome = document.createElement('input');
+          inputNome.type = 'text'; inputNome.placeholder = 'Nome'; inputNome.value = pessoa.nome || '';
+          inputNome.addEventListener('input', () => { pessoa.nome = inputNome.value; sync(); });
+          const inputTexto = document.createElement('input');
+          inputTexto.type = 'text'; inputTexto.placeholder = 'Papel (ex: Madrinha, Pai do noivo)'; inputTexto.style.marginTop = '6px'; inputTexto.value = pessoa.texto || '';
+          inputTexto.addEventListener('input', () => { pessoa.texto = inputTexto.value; sync(); });
+          camposTexto.append(inputNome, inputTexto);
+          const btnRemover = document.createElement('button');
+          btnRemover.type = 'button'; btnRemover.textContent = 'Remover'; btnRemover.style.alignSelf = 'flex-start';
+          btnRemover.addEventListener('click', () => { pessoas.splice(i, 1); sync(); renderLista(); });
+          item.append(fotoWrap, camposTexto, btnRemover);
+          wrap.appendChild(item);
+        });
+      }
+      renderLista();
+      const btnAdd = document.createElement('button');
+      btnAdd.type = 'button'; btnAdd.className = 'action'; btnAdd.textContent = '+ Adicionar pessoa'; btnAdd.style.marginTop = '4px';
+      btnAdd.addEventListener('click', () => { pessoas.push({ nome: '', texto: '', foto: '' }); sync(); renderLista(); });
+      fs.append(wrap, btnAdd, hidden);
+      return;
+    }
+
+    if (campo.tipo === 'lista_presentes') {
+      const label = document.createElement('label');
+      label.textContent = campo.label;
+      fs.appendChild(label);
+      let itens = [];
+      try { itens = JSON.parse(ctDados[campo.chave] || '[]'); } catch (e) { itens = []; }
+      const wrap = document.createElement('div');
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden'; hidden.dataset.chave = campo.chave;
+      function sync() { hidden.value = JSON.stringify(itens); }
+      sync();
+      function renderLista() {
+        wrap.innerHTML = '';
+        itens.forEach((item, i) => {
+          if (!item.id) item.id = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+          const box = document.createElement('div');
+          box.style.cssText = 'display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;';
+          const fotoWrap = document.createElement('div');
+          fotoWrap.className = 'campo-foto'; fotoWrap.style.marginTop = '0';
+          const preview = document.createElement(item.foto ? 'img' : 'div');
+          if (item.foto) { preview.src = item.foto; } else { preview.className = 'sem-foto'; preview.textContent = 'sem foto'; }
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.style.width = '120px';
+          fileInput.addEventListener('change', () => {
+            const arquivo = fileInput.files[0];
+            if (!arquivo) return;
+            abrirCrop(arquivo, 1, (blob) => { enviarFotoPessoa(blob, (url) => { item.foto = url; sync(); renderLista(); }); });
+            fileInput.value = '';
+          });
+          fotoWrap.append(preview, fileInput);
+
+          const campos = document.createElement('div');
+          campos.style.flex = '1';
+          const inputNome = document.createElement('input');
+          inputNome.type = 'text'; inputNome.placeholder = 'Nome do presente'; inputNome.value = item.nome || '';
+          inputNome.addEventListener('input', () => { item.nome = inputNome.value; sync(); });
+          const inputDesc = document.createElement('input');
+          inputDesc.type = 'text'; inputDesc.placeholder = 'Descrição (opcional)'; inputDesc.style.marginTop = '6px'; inputDesc.value = item.descricao || '';
+          inputDesc.addEventListener('input', () => { item.descricao = inputDesc.value; sync(); });
+          const inputValor = document.createElement('input');
+          inputValor.type = 'text'; inputValor.placeholder = 'Valor sugerido (ex: R$ 150)'; inputValor.style.marginTop = '6px'; inputValor.value = item.valor || '';
+          inputValor.addEventListener('input', () => { item.valor = inputValor.value; sync(); });
+          const reservadoLbl = document.createElement('label');
+          reservadoLbl.style.cssText = 'display:flex;align-items:center;gap:6px;font-weight:400;margin-top:6px;font-size:12px;';
+          const reservadoChk = document.createElement('input');
+          reservadoChk.type = 'checkbox'; reservadoChk.style.width = 'auto'; reservadoChk.checked = !!item.reservado;
+          reservadoChk.addEventListener('change', () => { item.reservado = reservadoChk.checked; sync(); });
+          reservadoLbl.append(reservadoChk, ' já foi escolhido');
+          campos.append(inputNome, inputDesc, inputValor, reservadoLbl);
+
+          const btnRemover = document.createElement('button');
+          btnRemover.type = 'button'; btnRemover.textContent = 'Remover'; btnRemover.style.alignSelf = 'flex-start';
+          btnRemover.addEventListener('click', () => { itens.splice(i, 1); sync(); renderLista(); });
+
+          box.append(fotoWrap, campos, btnRemover);
+          wrap.appendChild(box);
+        });
+      }
+      renderLista();
+      const btnAdd = document.createElement('button');
+      btnAdd.type = 'button'; btnAdd.className = 'action'; btnAdd.textContent = '+ Adicionar presente'; btnAdd.style.marginTop = '4px';
+      btnAdd.addEventListener('click', () => {
+        itens.push({ id: 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nome: '', descricao: '', valor: '', foto: '', reservado: false });
+        sync(); renderLista();
+      });
+      fs.append(wrap, btnAdd, hidden);
       return;
     }
 
@@ -904,6 +1146,8 @@
     { chave: 'countdown', nome: 'Contagem regressiva' },
     { chave: 'presente_teaser', nome: 'Presentes (pequeno)' },
     { chave: 'timeline', nome: 'Linha do Tempo' },
+    { chave: 'padrinhos', nome: 'Padrinhos e Madrinhas' },
+    { chave: 'madrinhas_pais', nome: 'Pais e Daminhas' },
     { chave: 'mapa', nome: 'Localização' },
     { chave: 'galeria', nome: 'Galeria' },
     { chave: 'rsvp', nome: 'Confirmação de presença' },
