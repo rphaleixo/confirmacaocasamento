@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin • Confirmação de presença</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <style>
   :root{
     --wine:#75003D; --wine-soft:#AC0070; --blush:#FFE8F2; --blush-deep:#F3DEE7;
@@ -15,7 +17,7 @@
   header{background:var(--wine);color:var(--cream);padding:18px 24px;}
   header h1{margin:0;font-size:20px;font-weight:600;}
   nav{display:flex;gap:4px;background:var(--cream);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;}
-  nav button{background:none;border:none;padding:14px 16px;font-size:13.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+  nav button{background:none;border:none;padding:14px 16px;font-size:13.5px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;}
   nav button.active{color:var(--wine);border-bottom-color:var(--gold);font-weight:600;}
   main{max-width:960px;margin:0 auto;padding:24px 16px 60px;}
   .tab{display:none;}
@@ -30,7 +32,8 @@
   .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--blush-deep);color:var(--wine-soft);}
   td button{font-size:11.5px;padding:4px 8px;border:1px solid var(--border);background:#fff;color:var(--wine);border-radius:6px;cursor:pointer;white-space:nowrap;}
   label{display:block;font-weight:600;font-size:12px;margin:14px 0 4px;color:var(--ink);}
-  input[type=text],input[type=tel],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff;}
+  input[type=text],input[type=tel],input[type=date],input[type=time],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:#fff;}
+  input[type=color]{width:56px;height:36px;padding:2px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;}
   textarea{min-height:110px;resize:vertical;}
   button.action{margin-top:16px;background:var(--wine);color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:13.5px;cursor:pointer;}
   button.action:disabled{opacity:.5;cursor:default;}
@@ -43,24 +46,52 @@
   .grupo-linha .info{flex:1;}
   .grupo-linha .status{font-size:11px;color:var(--ink-soft);}
   .hint{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .dica-campo{font-size:11px;color:var(--ink-soft);font-style:italic;margin:2px 0 0;}
 
   fieldset{border:1px solid var(--border);border-radius:10px;margin:0 0 18px;padding:6px 16px 16px;}
   legend{display:flex;align-items:center;gap:10px;padding:0 6px;font-weight:600;font-size:13.5px;}
   .toggle-ativa{display:flex;align-items:center;gap:6px;font-weight:400;font-size:12px;color:var(--ink-soft);margin-left:auto;}
   .toggle-ativa input{width:auto;}
+  .campo-checkbox{display:flex;align-items:center;gap:8px;}
+  .campo-checkbox input{width:auto;}
   .campo-foto{display:flex;align-items:center;gap:12px;margin-top:6px;}
   .campo-foto img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--blush-deep);}
   .campo-foto .sem-foto{width:64px;height:64px;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--ink-soft);text-align:center;}
+  .separador-campo{margin:18px 0 6px;padding-top:12px;border-top:1px dashed var(--border);font-weight:700;font-size:12.5px;color:var(--wine);}
+  .campo-cores{display:flex;gap:16px;flex-wrap:wrap;}
+  .campo-cor-item{display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
 
-  .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
-  .subnav button{background:var(--cream);border:1px solid var(--border);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;}
+  .subnav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .subnav button{background:var(--cream);border:1px solid var(--border);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
   .subnav button.active{background:var(--wine);border-color:var(--wine);color:#fff;font-weight:600;}
+  @media (max-width: 480px){
+    .subnav{gap:4px;}
+    .subnav button{padding:7px 11px;font-size:11.5px;}
+  }
 
   dialog{border:none;border-radius:12px;padding:22px 24px;max-width:420px;width:90vw;box-shadow:0 20px 50px rgba(0,0,0,.25);}
   dialog::backdrop{background:rgba(20,4,12,.45);}
   dialog h3{margin:0 0 4px;font-size:16px;}
   dialog hr{border:none;border-top:1px solid var(--blush-deep);margin:18px 0;}
-  dialog #ng-fechar, dialog #ad-fechar{background:none;border:none;color:var(--ink-soft);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;}
+  dialog #ng-fechar, dialog #ad-fechar, dialog #crop-cancelar{background:none;border:none;color:var(--ink-soft);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;}
+  #modal-crop{max-width:480px;}
+  #crop-container{max-height:60vh;overflow:hidden;background:#000;}
+  #crop-container img{display:block;max-width:100%;}
+
+  .ordem-lista{background:var(--cream);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .ordem-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--blush-deep);}
+  .ordem-item:last-child{border-bottom:none;}
+  .ordem-item .nome{flex:1;font-size:13.5px;}
+  .ordem-item button{border:1px solid var(--border);background:#fff;border-radius:6px;padding:5px 9px;cursor:pointer;}
+  .ordem-item button:disabled{opacity:.3;cursor:default;}
+  .ordem-fixo{opacity:.6;font-size:11.5px;padding:10px 14px;}
+
+  .recado-linha{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--cream);}
+  .recado-linha .nome{font-weight:600;font-size:13px;}
+  .recado-linha .texto{font-size:13px;margin:6px 0;}
+  .recado-linha .acoes{display:flex;gap:8px;}
+  .recado-linha .acoes button{font-size:11.5px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;}
+  .recado-pendente{border-color:var(--gold);}
 </style>
 </head>
 <body>
@@ -71,6 +102,8 @@
   <button data-tab="mover">Mover convidado</button>
   <button data-tab="importar">Importar lista</button>
   <button data-tab="conteudo">Conteúdo</button>
+  <button data-tab="ordem">Ordem dos blocos</button>
+  <button data-tab="recados">Recados</button>
 </nav>
 <main>
 
@@ -176,6 +209,15 @@
 
   <section id="tab-importar" class="tab">
     <p class="hint">Cole linhas com: Nome [tab] Grupo [tab] Telefone (opcional) [tab] "crianca" (opcional, senão vira adulto) [tab] Responsável pelo grupo (opcional). Grupos novos são criados automaticamente.</p>
+    <div class="row" style="margin-bottom:10px;">
+      <div>
+        <label>Ou envie um arquivo CSV (mesmas colunas, separadas por vírgula)</label>
+        <input type="file" id="im-csv" accept=".csv,text/csv">
+      </div>
+      <div style="flex:0;align-self:flex-end;">
+        <button class="action" id="im-modelo" style="background:var(--wine-soft);white-space:nowrap;">Baixar modelo CSV</button>
+      </div>
+    </div>
     <textarea id="im-texto" style="min-height:200px;font-family:monospace;" placeholder="Maria Silva&#9;Família Silva&#9;(21) 90000-0000&#9;adulto&#9;Maria Silva&#10;Pedrinho Silva&#9;Família Silva&#9;&#9;crianca"></textarea>
     <button class="action" id="im-btn">Importar</button>
     <div class="msg" id="im-msg"></div>
@@ -187,7 +229,31 @@
     <div id="ct-form">Carregando...</div>
   </section>
 
+  <section id="tab-ordem" class="tab">
+    <p class="hint">A ordem em que os blocos aparecem no site. O Hero (capa) sempre vem primeiro e o rodapé sempre por último — o resto você organiza como quiser.</p>
+    <div class="ordem-fixo">🏠 Hero (capa) — sempre em 1º</div>
+    <div class="ordem-lista" id="ordem-lista"></div>
+    <div class="ordem-fixo">⬇️ Rodapé — sempre por último</div>
+    <button class="action" id="ordem-btn">Salvar ordem</button>
+    <div class="msg" id="ordem-msg"></div>
+  </section>
+
+  <section id="tab-recados" class="tab">
+    <p class="hint">Recados que os convidados deixaram pelo site. Aprove pra aparecer publicamente, ou exclua se for spam/indevido.</p>
+    <div id="recados-lista">Carregando...</div>
+  </section>
+
 </main>
+
+<dialog id="modal-crop">
+  <h3>Ajustar foto</h3>
+  <div id="crop-container"><img id="crop-img"></div>
+  <div class="row" style="margin-top:16px;">
+    <button class="action" id="crop-confirmar">Cortar e enviar</button>
+    <button id="crop-cancelar">Cancelar</button>
+  </div>
+  <div class="msg" id="crop-msg"></div>
+</dialog>
 
 <script>
   const tabs = document.querySelectorAll('nav button');
@@ -200,6 +266,8 @@
     if (b.dataset.tab === 'mesclar') carregarMesclar();
     if (b.dataset.tab === 'mover') carregarMover();
     if (b.dataset.tab === 'conteudo') carregarConteudo();
+    if (b.dataset.tab === 'ordem') carregarOrdem();
+    if (b.dataset.tab === 'recados') carregarRecados();
   }));
 
   function msg(id, texto, ok) {
@@ -289,6 +357,7 @@
     dialog.showModal();
   }
   document.querySelectorAll('dialog').forEach((dialog) => {
+    if (dialog.id === 'modal-crop') return;
     dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
     dialog.addEventListener('close', () => carregarPainel());
   });
@@ -468,50 +537,103 @@
     msg('im-msg', d.convidados + ' convidado(s) importado(s), ' + d.gruposCriados + ' grupo(s) novo(s) criado(s).', true);
     document.getElementById('im-texto').value = '';
   });
+  document.getElementById('im-csv').addEventListener('change', () => {
+    const arquivo = document.getElementById('im-csv').files[0];
+    if (!arquivo) return;
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      const linhasTsv = String(leitor.result)
+        .split(/\r?\n/)
+        .filter((l) => l.trim())
+        .map((linha) => linha.split(',').map((c) => c.trim()).join('\t'))
+        .join('\n');
+      document.getElementById('im-texto').value = linhasTsv;
+      msg('im-msg', 'CSV carregado na caixa de texto — confira e clique em Importar.', true);
+    };
+    leitor.readAsText(arquivo);
+  });
+  document.getElementById('im-modelo').addEventListener('click', () => {
+    const conteudoCsv =
+      'Nome,Grupo,Telefone,Tipo,Responsavel\nMaria Silva,Família Silva,(21) 90000-0000,adulto,Maria Silva\nPedrinho Silva,Família Silva,,crianca,\n';
+    const blob = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'modelo-convidados.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
 
   // ---------- CONTEÚDO ----------
+  const FONTES_OPCOES = [
+    { valor: 'classico', label: 'Cormorant Garamond + Inter (atual)' },
+    { valor: 'moderno', label: 'Playfair Display + Work Sans' },
+    { valor: 'elegante', label: 'Fraunces + Jost' },
+    { valor: 'minimal', label: 'Cormorant Garamond + Montserrat' },
+  ];
+
   const GRUPOS_CONTEUDO = [
+    { titulo: 'Aparência (cores e fonte)', campos: [
+      { chave: '__cores__', label: 'Paleta de cores', tipo: 'cores', itens: [
+        { chave: 'aparencia.cor_primaria', label: 'Primária' },
+        { chave: 'aparencia.cor_secundaria', label: 'Secundária' },
+        { chave: 'aparencia.cor_destaque', label: 'Destaque' },
+        { chave: 'aparencia.cor_fundo', label: 'Fundo' },
+        { chave: 'aparencia.cor_texto', label: 'Texto' },
+      ]},
+      { chave: 'aparencia.fontes', label: 'Combinação de fontes', tipo: 'select', opcoes: FONTES_OPCOES },
+    ]},
     { titulo: 'Hero (capa)', campos: [
       { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome' },
       { chave: 'hero.noiva', label: 'Nome da noiva' },
       { chave: 'hero.noivo', label: 'Nome do noivo' },
       { chave: 'hero.data_display', label: 'Data (texto)' },
-      { chave: 'hero.data_iso', label: 'Data (técnico ISO — usado na contagem regressiva)' },
+      { chave: 'hero.data_iso', label: 'Data e horário do casamento', tipo: 'data_hora' },
       { chave: 'hero.horario_display', label: 'Horário (texto)' },
       { chave: 'hero.prazo_display', label: 'Prazo de confirmação (texto)' },
-      { chave: 'hero.prazo_iso', label: 'Prazo de confirmação (técnico ISO)' },
+      { chave: 'hero.prazo_iso', label: 'Data e horário limite pra confirmar', tipo: 'data_hora' },
       { chave: 'hero.cta_label', label: 'Texto do botão principal' },
-      { chave: 'hero.foto_url', label: 'Foto de capa', tipo: 'foto' },
+      { chave: 'hero.foto_url', label: 'Foto de capa', tipo: 'foto', aspecto: 3/4, dica: 'Tamanho ideal: 1200×1600px (retrato). O site é consumido no celular pelos convidados — priorize fotos verticais e leves.' },
+      { chave: '__sep_std__', tipo: 'separador', label: 'Modo "Save the Date"' },
+      { chave: 'config.modo_save_the_date', label: 'Ativar modo Save the Date (mostra só a capa, sem o resto do site)', tipo: 'checkbox' },
+      { chave: 'savethedate.titulo', label: 'Título do Save the Date' },
+      { chave: 'savethedate.texto', label: 'Texto do Save the Date', tipo: 'textarea' },
     ]},
     { titulo: 'Contagem regressiva', toggle: 'countdown', campos: [
       { chave: 'countdown.eyebrow', label: 'Texto pequeno' },
       { chave: 'countdown.titulo', label: 'Título' },
+      { chave: 'countdown.layout', label: 'Layout', tipo: 'select', opcoes: [
+        { valor: '1', label: 'Caixas (padrão)' },
+        { valor: '2', label: 'Círculos' },
+        { valor: '3', label: 'Frase única' },
+      ]},
     ]},
-    { titulo: 'Aviso de presente (antes da contagem)', toggle: 'presente_teaser', campos: [
+    { titulo: 'Presentes (pequeno)', toggle: 'presente_teaser', campos: [
       { chave: 'presente_teaser.titulo', label: 'Título' },
       { chave: 'presente_teaser.texto', label: 'Texto', tipo: 'textarea' },
       { chave: 'presente_teaser.cta_label', label: 'Texto do botão' },
     ]},
-    { titulo: 'Nossa história (linha do tempo)', toggle: 'timeline', campos: [
+    { titulo: 'Linha do Tempo', toggle: 'timeline', campos: [
       { chave: 'timeline.eyebrow', label: 'Texto pequeno' },
       { chave: 'timeline.titulo', label: 'Título' },
       ...[1,2,3,4,5,6,7,8,9].flatMap((n) => [
-        { chave: `timeline.node${n}.ano`, label: `Marco ${n} — ano/legenda` },
-        { chave: `timeline.node${n}.titulo`, label: `Marco ${n} — título` },
-        { chave: `timeline.node${n}.texto`, label: `Marco ${n} — texto`, tipo: 'textarea' },
+        { chave: `__sep_tl${n}__`, tipo: 'separador', label: `Marco ${n}` },
+        { chave: `timeline.node${n}.ano`, label: 'Ano ou legenda (ex: "2022 💕")' },
+        { chave: `timeline.node${n}.titulo`, label: 'Título curto' },
+        { chave: `timeline.node${n}.texto`, label: 'Texto', tipo: 'textarea' },
       ]),
     ]},
     { titulo: 'Localização', toggle: 'mapa', campos: [
       { chave: 'mapa.eyebrow', label: 'Texto pequeno' },
       { chave: 'mapa.titulo', label: 'Título' },
-      { chave: 'mapa.local_nome', label: 'Nome do local' },
+      { chave: 'mapa.local_nome', label: 'Nome do local', dica: 'Nome + Endereço juntos formam a busca usada no Google Maps e no botão "Como chegar".' },
       { chave: 'mapa.local_endereco', label: 'Endereço' },
       { chave: 'mapa.cta_label', label: 'Texto do botão "como chegar"' },
+      { chave: 'mapa.mostrar_botao_copiar', label: 'Mostrar botão "Copiar endereço" no site', tipo: 'checkbox' },
     ]},
     { titulo: 'Galeria', toggle: 'galeria', campos: [
       { chave: 'galeria.eyebrow', label: 'Texto pequeno' },
       { chave: 'galeria.titulo', label: 'Título' },
-      ...[1,2,3,4,5,6].map((n) => ({ chave: `galeria.foto${n}_url`, label: `Foto ${n}`, tipo: 'foto' })),
+      ...[1,2,3,4,5,6].map((n) => ({ chave: `galeria.foto${n}_url`, label: `Foto ${n}`, tipo: 'foto', aspecto: 1, dica: 'Tamanho ideal: 1200×1200px (quadrada).' })),
     ]},
     { titulo: 'Confirmação de presença', campos: [
       { chave: 'rsvp.eyebrow', label: 'Texto pequeno' },
@@ -521,16 +643,22 @@
       { chave: 'rsvp.sucesso_texto', label: 'Texto de sucesso ao confirmar' },
       { chave: 'rsvp.cta_label', label: 'Texto do botão de confirmar' },
     ]},
-    { titulo: 'Lista de presentes', toggle: 'presentes', campos: [
+    { titulo: 'Presentes (grande)', toggle: 'presentes', campos: [
       { chave: 'presentes.eyebrow', label: 'Texto pequeno' },
       { chave: 'presentes.titulo', label: 'Título' },
       { chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
       { chave: 'presentes.cta_label', label: 'Texto do botão' },
       { chave: 'presentes.cta_url', label: 'Link da lista de presentes' },
     ]},
+    { titulo: 'Recados', toggle: 'recados', campos: [
+      { chave: 'recados.eyebrow', label: 'Texto pequeno' },
+      { chave: 'recados.titulo', label: 'Título' },
+      { chave: 'recados.texto', label: 'Texto de apoio', tipo: 'textarea' },
+    ]},
     { titulo: 'Rodapé e barra fixa', campos: [
       { chave: 'footer.texto', label: 'Texto do rodapé' },
       { chave: 'sticky.titulo', label: 'Título da barra fixa' },
+      { chave: 'sticky.subtexto_template', label: 'Texto pequeno da barra fixa (use {prazo})' },
       { chave: 'sticky.cta_label', label: 'Texto do botão da barra fixa' },
     ]},
   ];
@@ -559,7 +687,85 @@
     renderConteudoGrupo();
   }
 
+  function isoParaDataHora(iso) {
+    if (!iso) return { data: '', hora: '' };
+    const m = String(iso).match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+    return m ? { data: m[1], hora: m[2] } : { data: '', hora: '' };
+  }
+
+  function abrirCrop(arquivo, aspecto, onConfirmar) {
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      const img = document.getElementById('crop-img');
+      img.src = leitor.result;
+      const dialog = document.getElementById('modal-crop');
+      document.getElementById('crop-msg').textContent = '';
+      dialog.showModal();
+      if (window._cropper) window._cropper.destroy();
+      window._cropper = new Cropper(img, { aspectRatio: aspecto, viewMode: 1, autoCropArea: 1 });
+      const btnConfirmar = document.getElementById('crop-confirmar');
+      const btnCancelar = document.getElementById('crop-cancelar');
+      const limpar = () => {
+        if (window._cropper) { window._cropper.destroy(); window._cropper = null; }
+        btnConfirmar.onclick = null;
+        btnCancelar.onclick = null;
+      };
+      btnCancelar.onclick = () => { limpar(); dialog.close(); };
+      btnConfirmar.onclick = () => {
+        window._cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600 }).toBlob((blob) => {
+          limpar();
+          dialog.close();
+          onConfirmar(blob);
+        }, 'image/jpeg', 0.9);
+      };
+    };
+    leitor.readAsDataURL(arquivo);
+  }
+
+  async function enviarFoto(blob, hidden, preview) {
+    const r = await fetch('/api/admin/upload?nome=foto.jpg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body: blob,
+    });
+    const d = await r.json();
+    if (d.erro) { msg('ct-msg', d.erro, false); return; }
+    hidden.value = d.url;
+    const novoPreview = document.createElement('img');
+    novoPreview.src = d.url;
+    preview.replaceWith(novoPreview);
+  }
+
   function renderCampoConteudo(fs, campo) {
+    if (campo.tipo === 'separador') {
+      const h = document.createElement('div');
+      h.className = 'separador-campo';
+      h.textContent = campo.label;
+      fs.appendChild(h);
+      return;
+    }
+
+    if (campo.tipo === 'cores') {
+      const label = document.createElement('label');
+      label.textContent = campo.label;
+      fs.appendChild(label);
+      const wrap = document.createElement('div');
+      wrap.className = 'campo-cores';
+      campo.itens.forEach((item) => {
+        const box = document.createElement('div');
+        box.className = 'campo-cor-item';
+        const lbl = document.createElement('span'); lbl.className = 'dica-campo'; lbl.textContent = item.label;
+        const input = document.createElement('input');
+        input.type = 'color';
+        input.dataset.chave = item.chave;
+        input.value = ctDados[item.chave] || '#75003D';
+        box.append(input, lbl);
+        wrap.appendChild(box);
+      });
+      fs.appendChild(wrap);
+      return;
+    }
+
     const label = document.createElement('label');
     label.textContent = campo.label;
     fs.appendChild(label);
@@ -577,36 +783,64 @@
       hidden.type = 'hidden';
       hidden.dataset.chave = campo.chave;
       hidden.value = ctDados[campo.chave] || '';
-      fileInput.addEventListener('change', async () => {
+      fileInput.addEventListener('change', () => {
         const arquivo = fileInput.files[0];
         if (!arquivo) return;
-        fileInput.disabled = true;
-        const r = await fetch('/api/admin/upload?nome=' + encodeURIComponent(arquivo.name), {
-          method: 'POST',
-          headers: { 'Content-Type': arquivo.type || 'application/octet-stream' },
-          body: arquivo,
-        });
-        const d = await r.json();
-        fileInput.disabled = false;
-        if (d.erro) { msg('ct-msg', d.erro, false); return; }
-        hidden.value = d.url;
-        const novoPreview = document.createElement('img');
-        novoPreview.src = d.url;
-        preview.replaceWith(novoPreview);
+        abrirCrop(arquivo, campo.aspecto || 1, (blob) => enviarFoto(blob, hidden, preview));
+        fileInput.value = '';
       });
       wrap.append(preview, fileInput, hidden);
       fs.appendChild(wrap);
+      if (campo.dica) { const d = document.createElement('div'); d.className = 'dica-campo'; d.textContent = campo.dica; fs.appendChild(d); }
     } else if (campo.tipo === 'textarea') {
       const textarea = document.createElement('textarea');
       textarea.dataset.chave = campo.chave;
       textarea.value = ctDados[campo.chave] || '';
       fs.appendChild(textarea);
+    } else if (campo.tipo === 'checkbox') {
+      const wrap = document.createElement('div');
+      wrap.className = 'campo-checkbox';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.dataset.chave = campo.chave;
+      chk.checked = ctDados[campo.chave] === '1';
+      wrap.appendChild(chk);
+      fs.appendChild(wrap);
+      label.remove();
+      wrap.appendChild(label);
+      label.style.margin = '0';
+    } else if (campo.tipo === 'select') {
+      const select = document.createElement('select');
+      select.dataset.chave = campo.chave;
+      campo.opcoes.forEach((op) => {
+        const optionEl = document.createElement('option');
+        optionEl.value = op.valor; optionEl.textContent = op.label;
+        if (ctDados[campo.chave] === op.valor) optionEl.selected = true;
+        select.appendChild(optionEl);
+      });
+      fs.appendChild(select);
+    } else if (campo.tipo === 'data_hora') {
+      const { data, hora } = isoParaDataHora(ctDados[campo.chave]);
+      const wrap = document.createElement('div');
+      wrap.className = 'row';
+      const inputData = document.createElement('input'); inputData.type = 'date'; inputData.value = data;
+      const inputHora = document.createElement('input'); inputHora.type = 'time'; inputHora.value = hora || '15:00';
+      const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.dataset.chave = campo.chave;
+      function atualizar() {
+        hidden.value = inputData.value && inputHora.value ? `${inputData.value}T${inputHora.value}:00-03:00` : '';
+      }
+      inputData.addEventListener('change', atualizar);
+      inputHora.addEventListener('change', atualizar);
+      atualizar();
+      wrap.append(inputData, inputHora);
+      fs.append(wrap, hidden);
     } else {
       const input = document.createElement('input');
       input.type = 'text';
       input.dataset.chave = campo.chave;
       input.value = ctDados[campo.chave] || '';
       fs.appendChild(input);
+      if (campo.dica) { const d = document.createElement('div'); d.className = 'dica-campo'; d.textContent = campo.dica; fs.appendChild(d); }
     }
   }
 
@@ -658,6 +892,93 @@
     });
     form.appendChild(btnSalvar);
     form.appendChild(msgDiv);
+  }
+
+  // ---------- ORDEM DOS BLOCOS ----------
+  const BLOCOS_ORDENAVEIS = [
+    { chave: 'countdown', nome: 'Contagem regressiva' },
+    { chave: 'presente_teaser', nome: 'Presentes (pequeno)' },
+    { chave: 'timeline', nome: 'Linha do Tempo' },
+    { chave: 'mapa', nome: 'Localização' },
+    { chave: 'galeria', nome: 'Galeria' },
+    { chave: 'rsvp', nome: 'Confirmação de presença' },
+    { chave: 'presentes', nome: 'Presentes (grande)' },
+    { chave: 'recados', nome: 'Recados' },
+  ];
+  let ordemAtual = [];
+
+  async function carregarOrdem() {
+    let dados;
+    try {
+      dados = await fetch('/api/conteudo').then((r) => r.json());
+    } catch (e) {
+      document.getElementById('ordem-lista').textContent = 'Não consegui carregar agora. Recarregue a página.';
+      return;
+    }
+    let salva = [];
+    try { salva = JSON.parse(dados['layout.ordem'] || '[]'); } catch (e) { salva = []; }
+    const chavesValidas = BLOCOS_ORDENAVEIS.map((b) => b.chave);
+    ordemAtual = salva.filter((c) => chavesValidas.includes(c));
+    chavesValidas.forEach((c) => { if (!ordemAtual.includes(c)) ordemAtual.push(c); });
+    renderOrdem();
+  }
+  function renderOrdem() {
+    const lista = document.getElementById('ordem-lista');
+    lista.innerHTML = '';
+    ordemAtual.forEach((chave, i) => {
+      const bloco = BLOCOS_ORDENAVEIS.find((b) => b.chave === chave);
+      const item = document.createElement('div');
+      item.className = 'ordem-item';
+      const nome = document.createElement('div'); nome.className = 'nome'; nome.textContent = bloco ? bloco.nome : chave;
+      const up = document.createElement('button'); up.textContent = '↑'; up.disabled = i === 0;
+      up.addEventListener('click', () => { [ordemAtual[i-1], ordemAtual[i]] = [ordemAtual[i], ordemAtual[i-1]]; renderOrdem(); });
+      const down = document.createElement('button'); down.textContent = '↓'; down.disabled = i === ordemAtual.length - 1;
+      down.addEventListener('click', () => { [ordemAtual[i+1], ordemAtual[i]] = [ordemAtual[i], ordemAtual[i+1]]; renderOrdem(); });
+      item.append(nome, up, down);
+      lista.appendChild(item);
+    });
+  }
+  document.getElementById('ordem-btn').addEventListener('click', async () => {
+    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify({ 'layout.ordem': JSON.stringify(ordemAtual) }) });
+    const d = await r.json();
+    if (d.erro) { msg('ordem-msg', d.erro, false); return; }
+    msg('ordem-msg', 'Ordem salva — o site já reflete essa mudança.', true);
+  });
+
+  // ---------- RECADOS ----------
+  async function carregarRecados() {
+    const div = document.getElementById('recados-lista');
+    let dados;
+    try {
+      dados = await fetch('/api/admin/recados').then((r) => r.json());
+    } catch (e) {
+      div.textContent = 'Não consegui carregar os recados agora.';
+      return;
+    }
+    if (!dados.length) { div.textContent = 'Nenhum recado ainda.'; return; }
+    div.innerHTML = '';
+    dados.forEach((rec) => {
+      const linha = document.createElement('div');
+      linha.className = 'recado-linha' + (rec.aprovado ? '' : ' recado-pendente');
+      const nome = document.createElement('div'); nome.className = 'nome'; nome.textContent = rec.nome + (rec.aprovado ? '' : ' (pendente)');
+      const texto = document.createElement('div'); texto.className = 'texto'; texto.textContent = rec.mensagem;
+      const acoes = document.createElement('div'); acoes.className = 'acoes';
+      const btnAprovar = document.createElement('button');
+      btnAprovar.textContent = rec.aprovado ? 'Ocultar' : 'Aprovar';
+      btnAprovar.addEventListener('click', async () => {
+        await fetch('/api/admin/recados/moderar', { method: 'POST', body: JSON.stringify({ id: rec.id, aprovado: !rec.aprovado }) });
+        carregarRecados();
+      });
+      const btnExcluir = document.createElement('button');
+      btnExcluir.textContent = 'Excluir';
+      btnExcluir.addEventListener('click', async () => {
+        await fetch('/api/admin/recados/excluir', { method: 'POST', body: JSON.stringify({ id: rec.id }) });
+        carregarRecados();
+      });
+      acoes.append(btnAprovar, btnExcluir);
+      linha.append(nome, texto, acoes);
+      div.appendChild(linha);
+    });
   }
 
   carregarPainel();

@@ -26,3 +26,12 @@ CREATE TABLE conteudo (
   chave TEXT PRIMARY KEY,
   valor TEXT
 );
+
+-- Mural de recados dos convidados — moderado antes de aparecer publicamente.
+CREATE TABLE recados (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
+  mensagem TEXT NOT NULL,
+  aprovado INTEGER NOT NULL DEFAULT 0,
+  criado_em TEXT
+);

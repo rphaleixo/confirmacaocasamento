@@ -88,4 +88,26 @@ INSERT INTO conteudo (chave, valor) VALUES
 ('sticky.cta_label', 'Confirmar →'),
 
 ('config.meta_convidados', '150'),
-('config.mensagem_template', 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛');
+('config.mensagem_template', 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛'),
+
+('aparencia.cor_primaria', '#0B2545'),
+('aparencia.cor_secundaria', '#2F5D9A'),
+('aparencia.cor_destaque', '#C9A227'),
+('aparencia.cor_fundo', '#EAF1FB'),
+('aparencia.cor_texto', '#14213D'),
+('aparencia.fontes', 'classico'),
+
+('countdown.layout', '1'),
+('sticky.subtexto_template', 'até {prazo}'),
+('mapa.mostrar_botao_copiar', '0'),
+
+('config.modo_save_the_date', '0'),
+('savethedate.titulo', 'Guarde a data!'),
+('savethedate.texto', 'Em breve mais detalhes do nosso grande dia.'),
+
+('secao.recados.ativa', '1'),
+('recados.eyebrow', 'Recados'),
+('recados.titulo', 'Deixe seu recado'),
+('recados.texto', 'Escreva uma mensagem carinhosa pra gente guardar para sempre.'),
+
+('layout.ordem', '[]');

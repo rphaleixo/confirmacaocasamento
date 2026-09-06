@@ -22,12 +22,14 @@
     --shadow-soft:0 12px 40px -12px #2F5D9A40;
     --shadow-romance:0 25px 60px -25px #0B254559;
     --gradient-romance:linear-gradient(135deg,#0B2545,#2F5D9A 50%,#C9A227);
+    --font-display:'Cormorant Garamond',serif;
+    --font-body:'Inter',sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{margin:0;background:linear-gradient(180deg,var(--cream-2),var(--blush));color:var(--ink);font-family:'Inter',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;}
+  body{margin:0;background:linear-gradient(180deg,var(--cream-2),var(--blush));color:var(--ink);font-family:var(--font-body);font-weight:400;-webkit-font-smoothing:antialiased;}
   .frame{max-width:460px;margin:0 auto;background:var(--cream);position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.08);}
-  .display{font-family:'Cormorant Garamond',serif;font-style:italic;}
+  .display{font-family:var(--font-display);font-style:italic;}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;}
   p{line-height:1.7;}
@@ -42,7 +44,7 @@
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     background:#F3F7FC;color:var(--wine);
     border:none;border-radius:999px;
-    padding:16px 26px;font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:.01em;
+    padding:16px 26px;font-family:var(--font-display);font-size:17px;letter-spacing:.01em;
     box-shadow:var(--shadow-romance);
     transition:transform .3s ease, box-shadow .3s ease, background .3s ease, color .3s ease;
     width:100%;
@@ -73,7 +75,7 @@
   .hero h1{font-size:58px;font-weight:400;margin:8px 0 12px;line-height:.98;opacity:0;transform:translateY(14px);animation:riseIn 1s .5s ease forwards;}
   .hero .amp{display:block;font-size:30px;color:var(--gold);margin:2px 0;}
   .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:#DCE7F5;margin-bottom:6px;opacity:0;transform:translateY(14px);animation:riseIn 1s .7s ease forwards;}
-  .hero-time{font-size:12px;color:#CFE0F0;font-family:'Cormorant Garamond',serif;font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
+  .hero-time{font-size:12px;color:#CFE0F0;font-family:var(--font-display);font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
   .hero-cta-wrap{opacity:0;transform:translateY(14px);animation:riseIn 1s .95s ease forwards;}
   @keyframes riseIn{to{opacity:1;transform:translateY(0);}}
   .deadline-chip{text-align:center;font-size:11px;color:#E4EDF8;margin-top:10px;letter-spacing:.03em;}
@@ -91,7 +93,7 @@
     padding:28px 24px;box-shadow:var(--shadow-soft);
   }
   .gift-box-icon{display:block;font-size:26px;margin-bottom:8px;}
-  .gift-box-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:19px;color:var(--ink);margin:0 0 8px;}
+  .gift-box-title{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:19px;color:var(--ink);margin:0 0 8px;}
   .gift-box-text{font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 18px;}
 
   /* ---------- COUNTDOWN ---------- */
@@ -99,8 +101,13 @@
   .countdown h2{font-size:26px;font-weight:500;margin:8px 0 26px;color:var(--wine);}
   .cd-row{display:flex;gap:8px;}
   .cd-cell{flex:1;padding:16px 0;background:rgba(230,238,248,.6);border:1px solid rgba(47,93,154,.18);border-radius:10px;}
-  .cd-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;color:var(--wine);}
+  .cd-num{font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--wine);}
   .cd-label{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px;}
+  .cd-sentence{display:none;font-family:var(--font-display);font-style:italic;font-size:20px;color:var(--wine);padding:10px 0;}
+  .countdown.layout-2 .cd-row{gap:14px;}
+  .countdown.layout-2 .cd-cell{background:none;border:none;border-radius:50%;width:64px;height:64px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 0 2px var(--wine-soft) inset;}
+  .countdown.layout-3 .cd-row{display:none;}
+  .countdown.layout-3 .cd-sentence{display:block;}
 
   /* ---------- SECTION shell ---------- */
   .section{padding:46px 24px;position:relative;}
@@ -132,7 +139,7 @@
     padding:18px 20px;box-shadow:var(--shadow-soft);
   }
   .node-year{font-size:9.5px;letter-spacing:.14em;color:var(--wine-soft);text-transform:uppercase;text-align:center;}
-  .node-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:16px;color:var(--ink);line-height:1.28;text-align:center;margin:6px 0 10px;}
+  .node-title{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:16px;color:var(--ink);line-height:1.28;text-align:center;margin:6px 0 10px;}
   .node-text{font-size:11.5px;line-height:1.65;color:var(--ink-soft);text-align:left;}
   .scroll-hint{text-align:center;font-size:10.5px;color:var(--ink-soft);letter-spacing:.03em;}
   .scroll-hint span{color:var(--wine-soft);}
@@ -140,7 +147,7 @@
   /* ---------- MAP (between timeline and gallery) ---------- */
   .map-section{background:var(--wine);color:var(--cream);padding:46px 24px;text-align:center;}
   .map-section .eyebrow{color:var(--wine-pale);}
-  .map-section h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:28px;margin:8px 0 10px;color:var(--cream);}
+  .map-section h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:28px;margin:8px 0 10px;color:var(--cream);}
   .map-address{font-size:12.5px;color:#CFE0F0;margin-bottom:22px;}
   .map-frame-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(230,238,248,.25);margin-bottom:18px;}
   .map-frame{width:100%;height:250px;border:0;display:block;filter:saturate(.9);}
@@ -153,7 +160,7 @@
   .slide.active{opacity:1;animation:kenburns 7s ease-out forwards;}
   @keyframes kenburns{from{transform:scale(1.12);}to{transform:scale(1) translateY(-1.5%);}}
   .gallery-veil{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(5,12,24,.6) 100%);}
-  .gallery-caption{position:absolute;left:24px;bottom:18px;color:#fff;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;}
+  .gallery-caption{position:absolute;left:24px;bottom:18px;color:#fff;font-family:var(--font-display);font-style:italic;font-size:13px;}
   .gallery-dots{position:absolute;bottom:20px;right:24px;display:flex;gap:6px;}
   .g-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);border:none;padding:0;transition:background .3s, transform .3s;}
   .g-dot.active{background:#fff;transform:scale(1.3);}
@@ -164,11 +171,16 @@
   /* ---------- RSVP ---------- */
   .rsvp-card{background:var(--cream);border:1px solid var(--blush-deep);border-radius:16px;padding:34px 26px;text-align:center;}
   .rsvp-card p{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
-  .rsvp-mini-countdown{font-size:11.5px;color:var(--wine-soft);letter-spacing:.03em;margin-bottom:18px;font-family:'Cormorant Garamond',serif;font-style:italic;text-align:center;}
+  .rsvp-mini-countdown{font-size:11.5px;color:var(--wine-soft);letter-spacing:.03em;margin-bottom:18px;font-family:var(--font-display);font-style:italic;text-align:center;}
   .rsvp-guest-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--blush-deep);font-size:13.5px;}
   .rsvp-guest-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--wine);flex-shrink:0;}
   .rsvp-label{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 4px;}
-  .rsvp-input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--blush-deep);border-radius:8px;font-size:13.5px;font-family:'Inter',sans-serif;background:#fff;}
+  .rsvp-input{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid var(--blush-deep);border-radius:8px;font-size:13.5px;font-family:var(--font-body);background:#fff;}
+
+  /* ---------- RECADOS ---------- */
+  .recado-card{background:var(--cream);border:1px solid var(--blush-deep);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .recado-card .nome{font-family:var(--font-display);font-style:italic;font-size:14px;color:var(--wine);}
+  .recado-card .texto{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
 
   /* ---------- GIFTS full ---------- */
   .gift-section{background:linear-gradient(165deg, var(--wine) 0%, #061529 100%);color:var(--cream);padding:46px 24px;text-align:center;}
@@ -192,7 +204,7 @@
   }
   .sticky-bar.show{transform:translateY(0);}
   .sticky-info{font-size:11px;line-height:1.3;color:#CFE0F0;}
-  .sticky-info b{display:block;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;font-weight:500;color:var(--cream);}
+  .sticky-info b{display:block;font-family:var(--font-display);font-style:italic;font-size:14px;font-weight:500;color:var(--cream);}
   .sticky-cta{background:var(--cream);color:var(--wine);border:none;padding:11px 18px;font-size:12px;white-space:nowrap;border-radius:999px;}
 </style>
 </head>
@@ -225,6 +237,7 @@
       <div class="cd-cell"><div class="cd-num" id="cd-m">00</div><div class="cd-label">min</div></div>
       <div class="cd-cell"><div class="cd-num" id="cd-s">00</div><div class="cd-label">seg</div></div>
     </div>
+    <div class="cd-sentence" id="cd-sentence"></div>
   </section>
 
   <!-- GIFT BOX -->
@@ -363,6 +376,7 @@
     </div>
     <div class="map-cta-bar">
       <a class="pill ghost-dark" id="mapaCta" href="https://www.google.com/maps/dir/?api=1&destination=Copacabana%20Palace%2C%20Rio%20de%20Janeiro" target="_blank">Como chegar ↗</a>
+      <button class="pill ghost-dark" id="mapaCopiar" type="button" hidden>Copiar endereço</button>
     </div>
   </section>
 
@@ -426,7 +440,7 @@
       </form>
 
       <div id="rsvpSucesso" style="display:none;">
-        <p style="font-size:14px;color:var(--wine);font-family:'Cormorant Garamond',serif;font-style:italic;" id="rsvpSucessoTexto">Presença confirmada! Obrigado 💛</p>
+        <p style="font-size:14px;color:var(--wine);font-family:var(--font-display);font-style:italic;" id="rsvpSucessoTexto">Presença confirmada! Obrigado 💛</p>
       </div>
     </div>
   </section>
@@ -442,6 +456,29 @@
     <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
     <a href="#" class="pill on-dark" id="presentesCta">Escolher Presente →</a>
+  </section>
+
+  <!-- divider gifts -> recados -->
+  <div class="divider">
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,30 C 100,54 200,10 300,32 C 370,48 420,20 460,30 L460,64 L0,64 Z" fill="#F9FBFF"/></svg>
+  </div>
+
+  <!-- RECADOS -->
+  <section class="section on-cream" id="secRecados">
+    <div class="section-head">
+      <div class="eyebrow" id="recadosEyebrow">Recados</div>
+      <h2 class="display" id="recadosTitulo">Deixe seu recado</h2>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--ink-soft);margin:0 0 20px;" id="recadosTexto">Escreva uma mensagem carinhosa pra gente guardar para sempre.</p>
+    <div id="recadosLista" style="margin-bottom:22px;"></div>
+    <form id="recadosForm">
+      <label class="rsvp-label">Seu nome</label>
+      <input class="rsvp-input" id="recadoNome" type="text" required>
+      <label class="rsvp-label">Sua mensagem</label>
+      <textarea class="rsvp-input" id="recadoMensagem" style="min-height:80px;" required></textarea>
+      <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Enviar recado →</button>
+    </form>
+    <div id="recadosMsg" style="text-align:center;font-size:12.5px;margin-top:10px;color:var(--wine-soft);"></div>
   </section>
 
   <footer>
@@ -475,8 +512,30 @@
     if (!secaoAtiva(nome)) { const el = document.getElementById(elId); if (el) el.style.display = 'none'; }
   }
 
+  const FONTES = {
+    classico: { link: null, display: "'Cormorant Garamond',serif", body: "'Inter',sans-serif" },
+    moderno: { link: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=Work+Sans:wght@300;400;500;600&display=swap', display: "'Playfair Display',serif", body: "'Work Sans',sans-serif" },
+    elegante: { link: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;1,500&family=Jost:wght@300;400;500;600&display=swap', display: "'Fraunces',serif", body: "'Jost',sans-serif" },
+    minimal: { link: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@300;400;500;600&display=swap', display: "'Cormorant Garamond',serif", body: "'Montserrat',sans-serif" },
+  };
+
   fetch('/api/conteudo').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (dados) {
     conteudo = dados || {};
+
+    const root = document.documentElement.style;
+    if (t('aparencia.cor_primaria', '')) root.setProperty('--wine', t('aparencia.cor_primaria', ''));
+    if (t('aparencia.cor_secundaria', '')) root.setProperty('--wine-soft', t('aparencia.cor_secundaria', ''));
+    if (t('aparencia.cor_destaque', '')) root.setProperty('--gold', t('aparencia.cor_destaque', ''));
+    if (t('aparencia.cor_fundo', '')) root.setProperty('--blush', t('aparencia.cor_fundo', ''));
+    if (t('aparencia.cor_texto', '')) root.setProperty('--ink', t('aparencia.cor_texto', ''));
+    const preset = FONTES[t('aparencia.fontes', 'classico')] || FONTES.classico;
+    if (preset.link) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet'; link.href = preset.link;
+      document.head.appendChild(link);
+    }
+    root.setProperty('--font-display', preset.display);
+    root.setProperty('--font-body', preset.body);
 
     aplicar('heroEyebrow', 'hero.eyebrow');
     aplicar('nomeNoiva', 'hero.noiva');
@@ -486,7 +545,7 @@
     aplicar('heroCta', 'hero.cta_label');
     document.title = t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo') + ' • Casamento';
     document.getElementById('deadlineChip').textContent = 'confirme até ' + t('hero.prazo_display', '01 de maio');
-    document.getElementById('stickyPrazo').textContent = 'até ' + t('hero.prazo_display', '01 de maio');
+    document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', t('hero.prazo_display', '01 de maio'));
     if (t('hero.foto_url', '')) document.querySelector('.hero-img').style.background = 'center/cover url(' + t('hero.foto_url', '') + ')';
 
     aplicar('stickyTitulo', 'sticky.titulo');
@@ -497,6 +556,7 @@
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
     aplicar('countdownTitulo', 'countdown.titulo');
+    document.getElementById('secCountdown').classList.add('layout-' + t('countdown.layout', '1'));
     escondeSeInativa('countdown', 'secCountdown');
 
     aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');
@@ -525,6 +585,11 @@
     document.getElementById('mapEndereco').textContent = localNome + ' — ' + localEndereco;
     document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(localNome + ', ' + localEndereco) + '&output=embed';
     document.getElementById('mapaCta').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localNome + ', ' + localEndereco);
+    const btnCopiarEndereco = document.getElementById('mapaCopiar');
+    if (t('mapa.mostrar_botao_copiar', '0') === '1') {
+      btnCopiarEndereco.hidden = false;
+      btnCopiarEndereco.addEventListener('click', function () { navigator.clipboard.writeText(localNome + ' — ' + localEndereco); });
+    }
     escondeSeInativa('mapa', 'map');
 
     aplicar('galeriaEyebrow', 'galeria.eyebrow');
@@ -549,20 +614,58 @@
     document.getElementById('presentesCta').href = t('presentes.cta_url', '#');
     escondeSeInativa('presentes', 'presentes');
 
+    aplicar('recadosEyebrow', 'recados.eyebrow');
+    aplicar('recadosTitulo', 'recados.titulo');
+    aplicar('recadosTexto', 'recados.texto');
+    escondeSeInativa('recados', 'secRecados');
+    carregarRecados();
+
     const target = new Date(t('hero.data_iso', '2027-06-12T15:00:00-03:00')).getTime();
     const rsvpDeadline = new Date(t('hero.prazo_iso', '2027-05-01T23:59:59-03:00')).getTime();
     function tick() {
       const now = Date.now();
       const diff = Math.max(0, target - now);
-      document.getElementById('cd-d').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
-      document.getElementById('cd-h').textContent = String(Math.floor(diff % 86400000 / 3600000)).padStart(2, '0');
-      document.getElementById('cd-m').textContent = String(Math.floor(diff % 3600000 / 60000)).padStart(2, '0');
-      document.getElementById('cd-s').textContent = String(Math.floor(diff % 60000 / 1000)).padStart(2, '0');
+      const dias = Math.floor(diff / 86400000), horas = Math.floor(diff % 86400000 / 3600000);
+      const min = Math.floor(diff % 3600000 / 60000), seg = Math.floor(diff % 60000 / 1000);
+      document.getElementById('cd-d').textContent = String(dias).padStart(2, '0');
+      document.getElementById('cd-h').textContent = String(horas).padStart(2, '0');
+      document.getElementById('cd-m').textContent = String(min).padStart(2, '0');
+      document.getElementById('cd-s').textContent = String(seg).padStart(2, '0');
+      document.getElementById('cd-sentence').textContent = 'Faltam ' + dias + ' dias, ' + horas + ' horas e ' + min + ' minutos';
       document.getElementById('rsvp-days').textContent = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
     }
     tick(); setInterval(tick, 1000);
 
     initGallery();
+
+    // ---- Reordenação de blocos (Ordem dos blocos no admin) ----
+    const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
+    const MAPA_SECAO_ID = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
+    let ordem = [];
+    try { ordem = JSON.parse(t('layout.ordem', '[]')); } catch (e) { ordem = []; }
+    ordem = ordem.filter(function (k) { return ORDEM_PADRAO.indexOf(k) !== -1; });
+    ORDEM_PADRAO.forEach(function (k) { if (ordem.indexOf(k) === -1) ordem.push(k); });
+    if (JSON.stringify(ordem) !== JSON.stringify(ORDEM_PADRAO)) {
+      document.querySelectorAll('.divider').forEach(function (d) { d.style.display = 'none'; });
+      const footerEl = document.querySelector('footer');
+      ordem.forEach(function (k) {
+        const el = document.getElementById(MAPA_SECAO_ID[k]);
+        if (el) footerEl.parentNode.insertBefore(el, footerEl);
+      });
+    }
+
+    // ---- Modo Save the Date: some tudo, menos o hero ----
+    if (t('config.modo_save_the_date', '0') === '1') {
+      ['secCountdown', 'secPresenteTeaser', 'secTimeline', 'map', 'secGaleria', 'rsvp', 'presentes', 'secRecados'].forEach(function (id) {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+      document.querySelectorAll('.divider').forEach(function (d) { d.style.display = 'none'; });
+      document.getElementById('sticky').style.display = 'none';
+      document.querySelector('footer .flinks').style.display = 'none';
+      document.getElementById('heroEyebrow').textContent = t('savethedate.titulo', 'Guarde a data!');
+      document.getElementById('heroCta').style.display = 'none';
+      document.getElementById('deadlineChip').textContent = t('savethedate.texto', '');
+    }
   });
 
   // ---- RSVP: busca o grupo pelo código na URL (?c=CODIGO) e envia a confirmação ----
@@ -633,6 +736,45 @@
         });
     });
   })();
+
+  // ---- RECADOS: lista os aprovados e envia um novo ----
+  function carregarRecados() {
+    const lista = document.getElementById('recadosLista');
+    fetch('/api/recados').then(function (r) { return r.json(); }).then(function (recados) {
+      lista.innerHTML = '';
+      recados.forEach(function (rec) {
+        const card = document.createElement('div');
+        card.className = 'recado-card';
+        const nome = document.createElement('div'); nome.className = 'nome'; nome.textContent = rec.nome;
+        const texto = document.createElement('div'); texto.className = 'texto'; texto.textContent = rec.mensagem;
+        card.append(nome, texto);
+        lista.appendChild(card);
+      });
+    }).catch(function () {});
+  }
+  document.getElementById('recadosForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    const msgBox = document.getElementById('recadosMsg');
+    const payload = {
+      nome: document.getElementById('recadoNome').value,
+      mensagem: document.getElementById('recadoMensagem').value,
+    };
+    const btn = ev.target.querySelector('button');
+    btn.disabled = true;
+    fetch('/api/recados', { method: 'POST', body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        btn.disabled = false;
+        if (d.erro) { msgBox.textContent = d.erro; return; }
+        msgBox.textContent = 'Obrigado! Seu recado será exibido após aprovação.';
+        document.getElementById('recadoNome').value = '';
+        document.getElementById('recadoMensagem').value = '';
+      })
+      .catch(function () {
+        btn.disabled = false;
+        msgBox.textContent = 'Não conseguimos enviar agora. Tente novamente.';
+      });
+  });
 
   // ---- GALERIA: montada (de novo) depois que as fotos do conteúdo são aplicadas ----
   function initGallery() {
