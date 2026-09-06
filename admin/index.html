@@ -6,6 +6,7 @@
 <title>Admin • Confirmação de presença</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
   :root{
     --wine:#75003D; --wine-soft:#AC0070; --blush:#FFE8F2; --blush-deep:#F3DEE7;
@@ -79,11 +80,12 @@
   #crop-container img{display:block;max-width:100%;}
 
   .ordem-lista{background:var(--cream);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-  .ordem-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--blush-deep);}
+  .ordem-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--blush-deep);cursor:grab;background:var(--cream);}
   .ordem-item:last-child{border-bottom:none;}
+  .ordem-item .arrasta{color:var(--ink-soft);font-size:15px;line-height:1;}
   .ordem-item .nome{flex:1;font-size:13.5px;}
-  .ordem-item button{border:1px solid var(--border);background:#fff;border-radius:6px;padding:5px 9px;cursor:pointer;}
-  .ordem-item button:disabled{opacity:.3;cursor:default;}
+  .ordem-item.sortable-ghost{opacity:.35;}
+  .ordem-item.sortable-drag{box-shadow:0 6px 16px rgba(0,0,0,.15);}
   .ordem-fixo{opacity:.6;font-size:11.5px;padding:10px 14px;}
 
   .recado-linha{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--cream);}
@@ -102,7 +104,7 @@
   <button data-tab="mover">Mover convidado</button>
   <button data-tab="importar">Importar lista</button>
   <button data-tab="conteudo">Conteúdo</button>
-  <button data-tab="ordem">Ordem dos blocos</button>
+  <button data-tab="ordem">Ordem dos módulos</button>
   <button data-tab="recados">Recados</button>
 </nav>
 <main>
@@ -224,13 +226,13 @@
   </section>
 
   <section id="tab-conteudo" class="tab">
-    <p class="hint">Textos e fotos do site público, por seção. A posição de cada bloco não muda por aqui — só o conteúdo. Salvar uma seção já atualiza o site na hora.</p>
+    <p class="hint">Textos e fotos do site público, por módulo. A posição de cada módulo não muda por aqui — só o conteúdo (isso é na aba "Ordem dos módulos"). Salvar um módulo já atualiza o site na hora.</p>
     <div class="subnav" id="ct-subnav"></div>
     <div id="ct-form">Carregando...</div>
   </section>
 
   <section id="tab-ordem" class="tab">
-    <p class="hint">A ordem em que os blocos aparecem no site. O Hero (capa) sempre vem primeiro e o rodapé sempre por último — o resto você organiza como quiser.</p>
+    <p class="hint">Arraste pra reordenar os módulos do site. O Hero (capa) sempre vem primeiro e o rodapé sempre por último — o resto você organiza como quiser. Qualquer combinação de módulos, em qualquer ordem, se ajusta sozinha no site (transições e cores se recalculam automaticamente).</p>
     <div class="ordem-fixo">🏠 Hero (capa) — sempre em 1º</div>
     <div class="ordem-lista" id="ordem-lista"></div>
     <div class="ordem-fixo">⬇️ Rodapé — sempre por último</div>
@@ -867,7 +869,7 @@
       chk.type = 'checkbox';
       chk.dataset.chave = chaveAtiva;
       chk.checked = ctDados[chaveAtiva] !== '0';
-      wrap.append(chk, ' Seção ativa');
+      wrap.append(chk, ' Módulo ativo');
       legend.appendChild(wrap);
     }
     fs.appendChild(legend);
@@ -876,7 +878,7 @@
 
     const btnSalvar = document.createElement('button');
     btnSalvar.className = 'action';
-    btnSalvar.textContent = 'Salvar esta seção';
+    btnSalvar.textContent = 'Salvar este módulo';
     const msgDiv = document.createElement('div');
     msgDiv.className = 'msg';
     msgDiv.id = 'ct-msg';
@@ -925,24 +927,26 @@
     chavesValidas.forEach((c) => { if (!ordemAtual.includes(c)) ordemAtual.push(c); });
     renderOrdem();
   }
+  let ordemSortable = null;
   function renderOrdem() {
     const lista = document.getElementById('ordem-lista');
     lista.innerHTML = '';
-    ordemAtual.forEach((chave, i) => {
+    ordemAtual.forEach((chave) => {
       const bloco = BLOCOS_ORDENAVEIS.find((b) => b.chave === chave);
       const item = document.createElement('div');
       item.className = 'ordem-item';
+      item.dataset.chave = chave;
+      const arrasta = document.createElement('span'); arrasta.className = 'arrasta'; arrasta.textContent = '⠿';
       const nome = document.createElement('div'); nome.className = 'nome'; nome.textContent = bloco ? bloco.nome : chave;
-      const up = document.createElement('button'); up.textContent = '↑'; up.disabled = i === 0;
-      up.addEventListener('click', () => { [ordemAtual[i-1], ordemAtual[i]] = [ordemAtual[i], ordemAtual[i-1]]; renderOrdem(); });
-      const down = document.createElement('button'); down.textContent = '↓'; down.disabled = i === ordemAtual.length - 1;
-      down.addEventListener('click', () => { [ordemAtual[i+1], ordemAtual[i]] = [ordemAtual[i], ordemAtual[i+1]]; renderOrdem(); });
-      item.append(nome, up, down);
+      item.append(arrasta, nome);
       lista.appendChild(item);
     });
+    if (ordemSortable) ordemSortable.destroy();
+    ordemSortable = Sortable.create(lista, { animation: 150, handle: '.arrasta', ghostClass: 'sortable-ghost', dragClass: 'sortable-drag' });
   }
   document.getElementById('ordem-btn').addEventListener('click', async () => {
-    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify({ 'layout.ordem': JSON.stringify(ordemAtual) }) });
+    const ordemFinal = Array.from(document.querySelectorAll('#ordem-lista .ordem-item')).map((el) => el.dataset.chave);
+    const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify({ 'layout.ordem': JSON.stringify(ordemFinal) }) });
     const d = await r.json();
     if (d.erro) { msg('ordem-msg', d.erro, false); return; }
     msg('ordem-msg', 'Ordem salva — o site já reflete essa mudança.', true);

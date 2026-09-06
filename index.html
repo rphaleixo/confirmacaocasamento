@@ -71,7 +71,7 @@
   .hero.loaded .hero-img{transform:scale(1);}
   .hero-veil{position:absolute;inset:0;background:
     linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 90%, black) 18%, transparent 30%, color-mix(in srgb, var(--wine-deep) 90%, black) 92%),
-    linear-gradient(0deg, var(--blush) 0%, transparent 14%);
+    linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 14%);
     opacity:.85;
   }
   .hero-content{position:relative;padding:0 30px 34px;text-align:center;}
@@ -232,7 +232,7 @@
   </section>
 
   <!-- COUNTDOWN -->
-  <section class="countdown" id="secCountdown">
+  <section class="countdown" id="secCountdown" data-modulo="countdown" data-bg-top="var(--blush)" data-bg-bottom="var(--blush)">
     <div class="eyebrow" id="countdownEyebrow">Para o grande dia</div>
     <h2 class="display" id="countdownTitulo">Faltam apenas</h2>
     <div class="cd-row">
@@ -245,7 +245,7 @@
   </section>
 
   <!-- GIFT BOX -->
-  <section style="background:var(--blush);padding:6px 24px 46px;text-align:center;" id="secPresenteTeaser">
+  <section style="background:var(--blush);padding:6px 24px 46px;text-align:center;" id="secPresenteTeaser" data-modulo="presente_teaser" data-bg-top="var(--blush)" data-bg-bottom="var(--blush)">
     <div class="gift-box">
       <span class="gift-box-icon">🎁</span>
       <h3 class="gift-box-title" id="presenteTeaserTitulo">Um mimo pra gente?</h3>
@@ -254,14 +254,8 @@
     </div>
   </section>
 
-  <!-- divider countdown -> timeline -->
-  <div class="divider">
-    <div class="glow" style="width:200px;height:110px;right:10%;bottom:-15px;background:var(--gold);opacity:.25;"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
-  </div>
-
   <!-- TIMELINE -->
-  <section class="section on-cream" style="padding-bottom:14px;" id="secTimeline">
+  <section class="section on-cream" style="padding-bottom:14px;" id="secTimeline" data-modulo="timeline" data-bg-top="var(--cream)" data-bg-bottom="var(--cream)">
     <div class="section-head">
       <div class="eyebrow" id="timelineEyebrow">Nossa história ❤️</div>
       <h2 class="display" id="timelineTitulo">Duas vidas, um caminho</h2>
@@ -363,13 +357,9 @@
     <div class="scroll-hint">arraste para o lado <span>→</span></div>
   </section>
 
-  <!-- divider timeline -> map (deep wine) -->
-  <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z" style="fill:var(--wine)"/></svg>
-  </div>
 
   <!-- MAP -->
-  <section class="map-section" id="map">
+  <section class="map-section" id="map" data-modulo="mapa" data-bg-top="var(--wine)" data-bg-bottom="var(--wine)">
     <div class="eyebrow" id="mapaEyebrow">Localização</div>
     <h2 class="display" id="mapaTitulo">Local da realização de nossos sonhos</h2>
     <div class="map-address" id="mapEndereco">Copacabana Palace — Av. Atlântica, 1702, Copacabana, Rio de Janeiro</div>
@@ -384,13 +374,9 @@
     </div>
   </section>
 
-  <!-- divider map -> gallery -->
-  <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z" style="fill:var(--cream-2)"/></svg>
-  </div>
 
   <!-- GALLERY -->
-  <section class="on-cream2" style="padding:46px 24px;" id="secGaleria">
+  <section class="on-cream2" style="padding:46px 24px;" id="secGaleria" data-modulo="galeria" data-bg-top="var(--cream-2)" data-bg-bottom="var(--cream-2)">
     <div class="section-head">
       <div class="eyebrow" id="galeriaEyebrow">Galeria</div>
       <h2 class="display" id="galeriaTitulo">Momentos para sempre</h2>
@@ -411,14 +397,8 @@
     </div>
   </section>
 
-  <!-- divider gallery -> rsvp -->
-  <div class="divider">
-    <div class="glow" style="width:220px;height:120px;left:30%;bottom:-20px;background:var(--blush-deep);"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
-  </div>
-
   <!-- RSVP -->
-  <section class="section on-cream" id="rsvp" style="padding-top:8px;">
+  <section class="section on-cream" id="rsvp" data-modulo="rsvp" data-bg-top="var(--cream)" data-bg-bottom="var(--cream)" style="padding-top:8px;">
     <div class="section-head">
       <div class="eyebrow" id="rsvpEyebrow">Confirme sua presença</div>
       <h2 class="display" id="rsvpTitulo">Estamos preparando cada detalhe</h2>
@@ -449,26 +429,18 @@
     </div>
   </section>
 
-  <!-- divider rsvp -> gifts (deep wine) -->
-  <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,44 C 100,16 200,52 300,26 C 370,8 420,32 460,18 L460,64 L0,64 Z" style="fill:var(--wine)"/></svg>
-  </div>
 
   <!-- GIFTS full -->
-  <section class="gift-section" id="presentes">
+  <section class="gift-section" id="presentes" data-modulo="presentes" data-bg-top="var(--wine)" data-bg-bottom="var(--wine-deep)">
     <div class="eyebrow" id="presentesEyebrow">Lista de presentes</div>
     <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
     <a href="#" class="pill on-dark" id="presentesCta">Escolher Presente →</a>
   </section>
 
-  <!-- divider gifts -> recados -->
-  <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,30 C 100,54 200,10 300,32 C 370,48 420,20 460,30 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
-  </div>
 
   <!-- RECADOS -->
-  <section class="section on-cream" id="secRecados">
+  <section class="section on-cream" id="secRecados" data-modulo="recados" data-bg-top="var(--cream)" data-bg-bottom="var(--cream)">
     <div class="section-head">
       <div class="eyebrow" id="recadosEyebrow">Recados</div>
       <h2 class="display" id="recadosTitulo">Deixe seu recado</h2>
@@ -642,33 +614,67 @@
 
     initGallery();
 
-    // ---- Reordenação de blocos (Ordem dos blocos no admin) ----
-    const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
-    const MAPA_SECAO_ID = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
-    let ordem = [];
-    try { ordem = JSON.parse(t('layout.ordem', '[]')); } catch (e) { ordem = []; }
-    ordem = ordem.filter(function (k) { return ORDEM_PADRAO.indexOf(k) !== -1; });
-    ORDEM_PADRAO.forEach(function (k) { if (ordem.indexOf(k) === -1) ordem.push(k); });
-    if (JSON.stringify(ordem) !== JSON.stringify(ORDEM_PADRAO)) {
-      document.querySelectorAll('.divider').forEach(function (d) { d.style.display = 'none'; });
-      const footerEl = document.querySelector('footer');
-      ordem.forEach(function (k) {
-        const el = document.getElementById(MAPA_SECAO_ID[k]);
-        if (el) footerEl.parentNode.insertBefore(el, footerEl);
-      });
-    }
-
-    // ---- Modo Save the Date: some tudo, menos o hero ----
+    // ---- Modo Save the Date: some tudo, menos o hero (roda antes das divisórias,
+    // pra nenhuma ser gerada entre módulos escondidos) ----
     if (t('config.modo_save_the_date', '0') === '1') {
       ['secCountdown', 'secPresenteTeaser', 'secTimeline', 'map', 'secGaleria', 'rsvp', 'presentes', 'secRecados'].forEach(function (id) {
         const el = document.getElementById(id); if (el) el.style.display = 'none';
       });
-      document.querySelectorAll('.divider').forEach(function (d) { d.style.display = 'none'; });
       document.getElementById('sticky').style.display = 'none';
       document.querySelector('footer .flinks').style.display = 'none';
       document.getElementById('heroEyebrow').textContent = t('savethedate.titulo', 'Guarde a data!');
       document.getElementById('heroCta').style.display = 'none';
       document.getElementById('deadlineChip').textContent = t('savethedate.texto', '');
+    }
+
+    // ---- Ordem dos módulos (definida na aba "Ordem dos módulos" do admin) ----
+    const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
+    const MAPA_MODULO_ID = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
+    let ordem = [];
+    try { ordem = JSON.parse(t('layout.ordem', '[]')); } catch (e) { ordem = []; }
+    ordem = ordem.filter(function (k) { return ORDEM_PADRAO.indexOf(k) !== -1; });
+    ORDEM_PADRAO.forEach(function (k) { if (ordem.indexOf(k) === -1) ordem.push(k); });
+
+    const footerEl = document.querySelector('footer');
+    ordem.forEach(function (k) {
+      const el = document.getElementById(MAPA_MODULO_ID[k]);
+      if (el) footerEl.parentNode.insertBefore(el, footerEl);
+    });
+
+    // ---- Divisórias orgânicas geradas dinamicamente: cada módulo carrega sua própria
+    // cor de topo/base (data-bg-top/data-bg-bottom), então a transição fica certa
+    // não importa em que ordem ou combinação os módulos estejam. ----
+    const FORMAS_ONDA = [
+      'M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z',
+      'M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z',
+      'M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z',
+      'M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z',
+    ];
+    function criarDivisor(corDestino, indice) {
+      const div = document.createElement('div');
+      div.className = 'divider';
+      div.innerHTML = '<svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="' + FORMAS_ONDA[indice % FORMAS_ONDA.length] + '" style="fill:' + corDestino + '"/></svg>';
+      return div;
+    }
+
+    const modulosVisiveis = ordem
+      .map(function (k) { return document.getElementById(MAPA_MODULO_ID[k]); })
+      .filter(function (el) { return el && el.style.display !== 'none'; });
+
+    let indiceForma = 0;
+    modulosVisiveis.forEach(function (el, i) {
+      const corAntes = i === 0 ? null : modulosVisiveis[i - 1].dataset.bgBottom;
+      const corDepois = el.dataset.bgTop;
+      if (corAntes && corAntes !== corDepois) {
+        el.parentNode.insertBefore(criarDivisor(corDepois, indiceForma++), el);
+      }
+    });
+
+    const primeiroVisivel = modulosVisiveis[0];
+    document.querySelector('.hero-veil').style.setProperty('--hero-fade', primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)');
+
+    if (modulosVisiveis.length) {
+      footerEl.parentNode.insertBefore(criarDivisor('var(--ink)', indiceForma++), footerEl);
     }
   });
 
