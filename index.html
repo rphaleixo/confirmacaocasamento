@@ -8,20 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --wine:#0B2545;         /* --primary */
-    --wine-soft:#2F5D9A;    /* --secondary */
-    --wine-pale:#AFC7E8;    /* light tint of --accent, for text on dark */
-    --blush:#EAF1FB;        /* --background */
-    --blush-deep:#DCE6F3;   /* --muted */
-    --cream:#F9FBFF;        /* --card */
-    --cream-2:#F0F5FC;      /* top of --gradient-soft */
-    --gold:#C9A227;         /* --accent */
-    --ink:#14213D;          /* --foreground */
-    --ink-soft:#4A5A72;     /* --muted-foreground */
-    --border:#C9D6E8;
-    --shadow-soft:0 12px 40px -12px #2F5D9A40;
-    --shadow-romance:0 25px 60px -25px #0B254559;
-    --gradient-romance:linear-gradient(135deg,#0B2545,#2F5D9A 50%,#C9A227);
+    /* ===== paleta editável pela aba Aparência do /admin — os 5 tokens abaixo ===== */
+    --wine:#0B2545;         /* Primária */
+    --wine-soft:#2F5D9A;    /* Secundária */
+    --gold:#C9A227;         /* Destaque */
+    --blush:#EAF1FB;        /* Fundo */
+    --ink:#14213D;          /* Texto */
+    /* ===== tudo abaixo é DERIVADO dos 5 tokens acima — nenhuma cor solta no site ===== */
+    --wine-pale: color-mix(in srgb, var(--wine) 25%, white 75%);
+    --wine-deep: color-mix(in srgb, var(--wine) 75%, black 25%);
+    --blush-deep: color-mix(in srgb, var(--blush) 78%, var(--wine) 12%);
+    --cream: color-mix(in srgb, white 97%, var(--blush) 3%);
+    --cream-2: color-mix(in srgb, white 94%, var(--blush) 6%);
+    --ink-soft: color-mix(in srgb, var(--ink) 58%, white 42%);
+    --border: color-mix(in srgb, var(--blush) 50%, var(--wine-soft) 30%);
+    --shadow-soft:0 12px 40px -12px color-mix(in srgb, var(--wine-soft) 25%, transparent);
+    --shadow-romance:0 25px 60px -25px color-mix(in srgb, var(--wine) 35%, transparent);
+    --gradient-romance:linear-gradient(135deg,var(--wine),var(--wine-soft) 50%,var(--gold));
     --font-display:'Cormorant Garamond',serif;
     --font-body:'Inter',sans-serif;
   }
@@ -42,44 +45,45 @@
 
   .pill{
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:#F3F7FC;color:var(--wine);
+    background:var(--cream);color:var(--wine);
     border:none;border-radius:999px;
     padding:16px 26px;font-family:var(--font-display);font-size:17px;letter-spacing:.01em;
     box-shadow:var(--shadow-romance);
     transition:transform .3s ease, box-shadow .3s ease, background .3s ease, color .3s ease;
     width:100%;
   }
-  .pill:hover{transform:scale(1.05);background:var(--gold);color:#FBFDFF;}
+  .pill:hover{transform:scale(1.05);background:var(--gold);color:color-mix(in srgb, var(--gold) 15%, white);}
   .pill.outline{background:transparent;color:var(--wine);border:1px solid var(--wine-soft);box-shadow:none;}
   .pill.outline:hover{background:var(--wine);color:var(--cream);}
   .pill.on-dark{background:var(--cream);color:var(--wine);}
-  .pill.ghost-dark{background:transparent;color:var(--cream);border:1px solid rgba(230,238,248,.55);box-shadow:none;}
-  .pill.ghost-dark:hover{background:rgba(230,238,248,.12);}
+  .pill.ghost-dark{background:transparent;color:var(--cream);border:1px solid color-mix(in srgb, var(--wine-pale) 55%, transparent);box-shadow:none;}
+  .pill.ghost-dark:hover{background:color-mix(in srgb, var(--wine-pale) 12%, transparent);}
 
   /* ---------- HERO ---------- */
   .hero{position:relative;height:100svh;min-height:580px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;overflow:hidden;}
   .hero-img{
     position:absolute;inset:0;
-    background:linear-gradient(160deg, #1B3A63 0%, #0B2545 60%, #061529 100%);
+    background:linear-gradient(160deg, var(--wine-soft) 0%, var(--wine) 60%, var(--wine-deep) 100%);
     display:flex;align-items:center;justify-content:center;
     color:rgba(255,255,255,.55);font-size:13px;letter-spacing:.05em;text-align:center;
     transform:scale(1.08);transition:transform 6s ease-out;
   }
   .hero.loaded .hero-img{transform:scale(1);}
   .hero-veil{position:absolute;inset:0;background:
-    linear-gradient(180deg, rgba(6,15,30,.18) 0%, rgba(6,15,30,.05) 30%, rgba(4,10,20,.72) 92%),
+    linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 90%, black) 18%, transparent 30%, color-mix(in srgb, var(--wine-deep) 90%, black) 92%),
     linear-gradient(0deg, var(--blush) 0%, transparent 14%);
+    opacity:.85;
   }
   .hero-content{position:relative;padding:0 30px 34px;text-align:center;}
-  .hero .eyebrow{color:#DCE7F5;opacity:0;transform:translateY(10px);animation:riseIn .9s .3s ease forwards;}
+  .hero .eyebrow{color:var(--wine-pale);opacity:0;transform:translateY(10px);animation:riseIn .9s .3s ease forwards;}
   .hero h1{font-size:58px;font-weight:400;margin:8px 0 12px;line-height:.98;opacity:0;transform:translateY(14px);animation:riseIn 1s .5s ease forwards;}
   .hero .amp{display:block;font-size:30px;color:var(--gold);margin:2px 0;}
-  .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:#DCE7F5;margin-bottom:6px;opacity:0;transform:translateY(14px);animation:riseIn 1s .7s ease forwards;}
-  .hero-time{font-size:12px;color:#CFE0F0;font-family:var(--font-display);font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
+  .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--wine-pale);margin-bottom:6px;opacity:0;transform:translateY(14px);animation:riseIn 1s .7s ease forwards;}
+  .hero-time{font-size:12px;color:var(--wine-pale);font-family:var(--font-display);font-style:italic;margin-bottom:24px;opacity:0;transform:translateY(14px);animation:riseIn 1s .8s ease forwards;}
   .hero-cta-wrap{opacity:0;transform:translateY(14px);animation:riseIn 1s .95s ease forwards;}
   @keyframes riseIn{to{opacity:1;transform:translateY(0);}}
-  .deadline-chip{text-align:center;font-size:11px;color:#E4EDF8;margin-top:10px;letter-spacing:.03em;}
-  .scroll-cue{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#E4EDF8;animation:bob 2.2s ease-in-out infinite;}
+  .deadline-chip{text-align:center;font-size:11px;color:var(--wine-pale);margin-top:10px;letter-spacing:.03em;}
+  .scroll-cue{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--wine-pale);animation:bob 2.2s ease-in-out infinite;}
   @keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,6px);}}
 
   /* ---------- ORGANIC DIVIDERS ---------- */
@@ -100,7 +104,7 @@
   .countdown{background:var(--blush);padding:40px 24px 40px;text-align:center;position:relative;}
   .countdown h2{font-size:26px;font-weight:500;margin:8px 0 26px;color:var(--wine);}
   .cd-row{display:flex;gap:8px;}
-  .cd-cell{flex:1;padding:16px 0;background:rgba(230,238,248,.6);border:1px solid rgba(47,93,154,.18);border-radius:10px;}
+  .cd-cell{flex:1;padding:16px 0;background:color-mix(in srgb, var(--blush) 60%, transparent);border:1px solid color-mix(in srgb, var(--wine-soft) 18%, transparent);border-radius:10px;}
   .cd-num{font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--wine);}
   .cd-label{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px;}
   .cd-sentence{display:none;font-family:var(--font-display);font-style:italic;font-size:20px;color:var(--wine);padding:10px 0;}
@@ -148,8 +152,8 @@
   .map-section{background:var(--wine);color:var(--cream);padding:46px 24px;text-align:center;}
   .map-section .eyebrow{color:var(--wine-pale);}
   .map-section h2{font-family:var(--font-display);font-style:italic;font-weight:500;font-size:28px;margin:8px 0 10px;color:var(--cream);}
-  .map-address{font-size:12.5px;color:#CFE0F0;margin-bottom:22px;}
-  .map-frame-wrap{border-radius:14px;overflow:hidden;border:1px solid rgba(230,238,248,.25);margin-bottom:18px;}
+  .map-address{font-size:12.5px;color:var(--wine-pale);margin-bottom:22px;}
+  .map-frame-wrap{border-radius:14px;overflow:hidden;border:1px solid color-mix(in srgb, var(--wine-pale) 25%, transparent);margin-bottom:18px;}
   .map-frame{width:100%;height:250px;border:0;display:block;filter:saturate(.9);}
   .map-cta-bar{display:flex;gap:10px;}
 
@@ -183,16 +187,16 @@
   .recado-card .texto{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6;}
 
   /* ---------- GIFTS full ---------- */
-  .gift-section{background:linear-gradient(165deg, var(--wine) 0%, #061529 100%);color:var(--cream);padding:46px 24px;text-align:center;}
+  .gift-section{background:linear-gradient(165deg, var(--wine) 0%, var(--wine-deep) 100%);color:var(--cream);padding:46px 24px;text-align:center;}
   .gift-section .eyebrow{color:var(--wine-pale);}
   .gift-section h2{font-size:24px;margin:8px 0 12px;color:var(--cream);}
-  .gift-section p{font-size:13px;color:#CFE0F0;margin:0 0 24px;}
+  .gift-section p{font-size:13px;color:var(--wine-pale);margin:0 0 24px;}
 
   /* ---------- FOOTER ---------- */
-  footer{background:var(--ink);color:#C7D2E0;padding:38px 24px 110px;text-align:center;font-size:12px;}
+  footer{background:var(--ink);color:color-mix(in srgb, var(--ink) 20%, white 80%);padding:38px 24px 110px;text-align:center;font-size:12px;}
   footer .display{font-size:20px;color:var(--cream);display:block;margin-bottom:6px;}
   footer .flinks{display:flex;justify-content:center;gap:20px;margin:16px 0;font-size:11.5px;}
-  footer .flinks a{border-bottom:1px solid rgba(199,210,224,.35);padding-bottom:2px;}
+  footer .flinks a{border-bottom:1px solid color-mix(in srgb, white 35%, transparent);padding-bottom:2px;}
 
   /* ---------- STICKY BAR ---------- */
   .sticky-bar{
@@ -203,7 +207,7 @@
     box-shadow:0 -10px 30px rgba(0,0,0,.15);
   }
   .sticky-bar.show{transform:translateY(0);}
-  .sticky-info{font-size:11px;line-height:1.3;color:#CFE0F0;}
+  .sticky-info{font-size:11px;line-height:1.3;color:var(--wine-pale);}
   .sticky-info b{display:block;font-family:var(--font-display);font-style:italic;font-size:14px;font-weight:500;color:var(--cream);}
   .sticky-cta{background:var(--cream);color:var(--wine);border:none;padding:11px 18px;font-size:12px;white-space:nowrap;border-radius:999px;}
 </style>
@@ -246,14 +250,14 @@
       <span class="gift-box-icon">🎁</span>
       <h3 class="gift-box-title" id="presenteTeaserTitulo">Um mimo pra gente?</h3>
       <p class="gift-box-text" id="presenteTeaserTexto">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
-      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);" id="presenteTeaserCta">Ver lista de presentes →</a>
+      <a href="#presentes" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px color-mix(in srgb, var(--wine) 28%, transparent);" id="presenteTeaserCta">Ver lista de presentes →</a>
     </div>
   </section>
 
   <!-- divider countdown -> timeline -->
   <div class="divider">
     <div class="glow" style="width:200px;height:110px;right:10%;bottom:-15px;background:var(--gold);opacity:.25;"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z" fill="#F5F8FC"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
   </div>
 
   <!-- TIMELINE -->
@@ -266,12 +270,12 @@
       <div class="track" id="track">
         <svg class="paths" viewBox="0 0 2260 210">
           <defs>
-            <linearGradient id="gradTop" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#6F97C9"/><stop offset="1" stop-color="#C9A227"/></linearGradient>
-            <linearGradient id="gradBottom" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" stop-color="#163A63"/><stop offset="1" stop-color="#C9A227"/></linearGradient>
+            <linearGradient id="gradTop" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" style="stop-color:var(--wine-soft)"/><stop offset="1" style="stop-color:var(--gold)"/></linearGradient>
+            <linearGradient id="gradBottom" gradientUnits="userSpaceOnUse" x1="140" y1="0" x2="520" y2="0"><stop offset="0" style="stop-color:var(--wine-deep)"/><stop offset="1" style="stop-color:var(--gold)"/></linearGradient>
           </defs>
           <path class="path-line" stroke="url(#gradTop)" d="M140,45 C 320,45 360,45 520,105"/>
           <path class="path-line" stroke="url(#gradBottom)" d="M140,165 C 320,165 360,165 520,105"/>
-          <path class="path-line" stroke="#C9A227" d="M520,105 L 2080,105"/>
+          <path class="path-line" style="stroke:var(--gold)" d="M520,105 L 2080,105"/>
         </svg>
         <div class="node top" style="left:140px; top:45px;">
           <div class="node-dot"></div>
@@ -361,7 +365,7 @@
 
   <!-- divider timeline -> map (deep wine) -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z" fill="#0B2545"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z" style="fill:var(--wine)"/></svg>
   </div>
 
   <!-- MAP -->
@@ -382,7 +386,7 @@
 
   <!-- divider map -> gallery -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z" fill="#F0F5FC"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z" style="fill:var(--cream-2)"/></svg>
   </div>
 
   <!-- GALLERY -->
@@ -393,12 +397,12 @@
     </div>
     <div class="gallery-shell">
       <div class="gallery-viewport" id="gallery">
-        <div class="slide active" data-i="0" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 1</div>
-        <div class="slide" data-i="1" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 2</div>
-        <div class="slide" data-i="2" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 3</div>
-        <div class="slide" data-i="3" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 4</div>
-        <div class="slide" data-i="4" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 5</div>
-        <div class="slide" data-i="5" style="background:linear-gradient(155deg,#5C82AF,#1B3A63);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 6</div>
+        <div class="slide active" data-i="0" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 1</div>
+        <div class="slide" data-i="1" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 2</div>
+        <div class="slide" data-i="2" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 3</div>
+        <div class="slide" data-i="3" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 4</div>
+        <div class="slide" data-i="4" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 5</div>
+        <div class="slide" data-i="5" style="background:linear-gradient(155deg, var(--wine-soft), var(--wine));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">📷 Foto 6</div>
         <div class="gallery-veil"></div>
         <div class="gallery-caption">01 / 06</div>
         <div class="gallery-dots" id="g-dots"></div>
@@ -410,7 +414,7 @@
   <!-- divider gallery -> rsvp -->
   <div class="divider">
     <div class="glow" style="width:220px;height:120px;left:30%;bottom:-20px;background:var(--blush-deep);"></div>
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z" fill="#F5F8FC"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
   </div>
 
   <!-- RSVP -->
@@ -436,7 +440,7 @@
         <input class="rsvp-input" id="rsvpResponsavel" type="text" placeholder="Quem está confirmando" required>
         <label class="rsvp-label">Seu telefone (com DDD)</label>
         <input class="rsvp-input" id="rsvpContato" type="tel" placeholder="(21) 90000-0000" required>
-        <button type="submit" class="pill" id="rsvpSubmitBtn" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Confirmar Presença →</button>
+        <button type="submit" class="pill" id="rsvpSubmitBtn" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px color-mix(in srgb, var(--wine) 28%, transparent);margin-top:16px;">Confirmar Presença →</button>
       </form>
 
       <div id="rsvpSucesso" style="display:none;">
@@ -447,7 +451,7 @@
 
   <!-- divider rsvp -> gifts (deep wine) -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,44 C 100,16 200,52 300,26 C 370,8 420,32 460,18 L460,64 L0,64 Z" fill="#0B2545"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,44 C 100,16 200,52 300,26 C 370,8 420,32 460,18 L460,64 L0,64 Z" style="fill:var(--wine)"/></svg>
   </div>
 
   <!-- GIFTS full -->
@@ -460,7 +464,7 @@
 
   <!-- divider gifts -> recados -->
   <div class="divider">
-    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,30 C 100,54 200,10 300,32 C 370,48 420,20 460,30 L460,64 L0,64 Z" fill="#F9FBFF"/></svg>
+    <svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="M0,30 C 100,54 200,10 300,32 C 370,48 420,20 460,30 L460,64 L0,64 Z" style="fill:var(--cream)"/></svg>
   </div>
 
   <!-- RECADOS -->
@@ -476,7 +480,7 @@
       <input class="rsvp-input" id="recadoNome" type="text" required>
       <label class="rsvp-label">Sua mensagem</label>
       <textarea class="rsvp-input" id="recadoMensagem" style="min-height:80px;" required></textarea>
-      <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px rgba(11,37,69,.28);margin-top:16px;">Enviar recado →</button>
+      <button type="submit" class="pill" style="background:var(--wine);color:var(--cream);box-shadow:0 8px 24px color-mix(in srgb, var(--wine) 28%, transparent);margin-top:16px;">Enviar recado →</button>
     </form>
     <div id="recadosMsg" style="text-align:center;font-size:12.5px;margin-top:10px;color:var(--wine-soft);"></div>
   </section>

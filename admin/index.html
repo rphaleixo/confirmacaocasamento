@@ -574,11 +574,11 @@
   const GRUPOS_CONTEUDO = [
     { titulo: 'Aparência (cores e fonte)', campos: [
       { chave: '__cores__', label: 'Paleta de cores', tipo: 'cores', itens: [
-        { chave: 'aparencia.cor_primaria', label: 'Primária' },
-        { chave: 'aparencia.cor_secundaria', label: 'Secundária' },
-        { chave: 'aparencia.cor_destaque', label: 'Destaque' },
-        { chave: 'aparencia.cor_fundo', label: 'Fundo' },
-        { chave: 'aparencia.cor_texto', label: 'Texto' },
+        { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais, barra fixa — a cor "de marca" do site.' },
+        { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos (eyebrow), bordas, contorno de botões — usada em detalhes menores.' },
+        { chave: 'aparencia.cor_destaque', label: 'Destaque', dica: 'Hover dos botões, pontinhos da timeline e da galeria — o "brilho" do site.' },
+        { chave: 'aparencia.cor_fundo', label: 'Fundo', dica: 'Fundo das seções claras e ponto de partida de todos os tons claros (cartões, divisórias).' },
+        { chave: 'aparencia.cor_texto', label: 'Texto', dica: 'Cor do texto principal em fundo claro (títulos, parágrafos).' },
       ]},
       { chave: 'aparencia.fontes', label: 'Combinação de fontes', tipo: 'select', opcoes: FONTES_OPCOES },
     ]},
@@ -754,12 +754,15 @@
       campo.itens.forEach((item) => {
         const box = document.createElement('div');
         box.className = 'campo-cor-item';
-        const lbl = document.createElement('span'); lbl.className = 'dica-campo'; lbl.textContent = item.label;
+        box.style.maxWidth = '150px';
+        const lbl = document.createElement('span'); lbl.style.fontWeight = '600'; lbl.style.fontSize = '11.5px'; lbl.textContent = item.label;
         const input = document.createElement('input');
         input.type = 'color';
+        input.title = item.dica || '';
         input.dataset.chave = item.chave;
         input.value = ctDados[item.chave] || '#75003D';
         box.append(input, lbl);
+        if (item.dica) { const d = document.createElement('span'); d.className = 'dica-campo'; d.textContent = item.dica; box.appendChild(d); }
         wrap.appendChild(box);
       });
       fs.appendChild(wrap);
