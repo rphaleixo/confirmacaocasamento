@@ -579,7 +579,15 @@
     minimal: { link: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@300;400;500;600&display=swap', display: "'Cormorant Garamond',serif", body: "'Montserrat',sans-serif" },
   };
 
-  fetch('/api/conteudo').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (dados) {
+  // Evento vem da URL /e/<slug>; sem slug (link antigo /?c=CODIGO) a API usa o primeiro evento.
+  const eventoMatch = window.location.pathname.match(/^\/e\/([^\/]+)/);
+  const EVENTO_QS = eventoMatch ? 'e=' + encodeURIComponent(eventoMatch[1]) : '';
+  function api(caminho, extra) {
+    const qs = [EVENTO_QS, extra].filter(Boolean).join('&');
+    return '/api/' + caminho + (qs ? '?' + qs : '');
+  }
+
+  fetch(api('conteudo')).then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (dados) {
     conteudo = dados || {};
 
     const root = document.documentElement.style;
@@ -835,7 +843,7 @@
         btn.addEventListener('click', function () {
           const novoReservado = !item.reservado;
           btn.disabled = true;
-          fetch('/api/presentes/reservar', { method: 'POST', body: JSON.stringify({ id: item.id, reservado: novoReservado }) })
+          fetch(api('presentes/reservar'), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: novoReservado }) })
             .then(function (r) { return r.json(); })
             .then(function (d) {
               btn.disabled = false;
@@ -876,7 +884,7 @@
     semCodigo.style.display = 'none';
     carregando.style.display = 'block';
 
-    fetch('/api/rsvp?c=' + encodeURIComponent(codigo))
+    fetch(api('rsvp', 'c=' + encodeURIComponent(codigo)))
       .then(function (r) { return r.json(); })
       .then(function (data) {
         carregando.style.display = 'none';
@@ -917,7 +925,7 @@
       };
       const btn = form.querySelector('button');
       btn.disabled = true;
-      fetch('/api/rsvp', { method: 'POST', body: JSON.stringify(payload) })
+      fetch(api('rsvp'), { method: 'POST', body: JSON.stringify(payload) })
         .then(function () {
           form.style.display = 'none';
           sucesso.style.display = 'block';
@@ -933,7 +941,7 @@
   // ---- RECADOS: lista os aprovados e envia um novo ----
   function carregarRecados() {
     const lista = document.getElementById('recadosLista');
-    fetch('/api/recados').then(function (r) { return r.json(); }).then(function (recados) {
+    fetch(api('recados')).then(function (r) { return r.json(); }).then(function (recados) {
       lista.innerHTML = '';
       recados.forEach(function (rec) {
         const card = document.createElement('div');
@@ -954,7 +962,7 @@
     };
     const btn = ev.target.querySelector('button');
     btn.disabled = true;
-    fetch('/api/recados', { method: 'POST', body: JSON.stringify(payload) })
+    fetch(api('recados'), { method: 'POST', body: JSON.stringify(payload) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         btn.disabled = false;

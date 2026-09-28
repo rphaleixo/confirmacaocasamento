@@ -1,13 +1,15 @@
-import { jsonResponse, gerarCodigoUnico } from '../../_lib.js';
+import { jsonResponse, gerarCodigoUnico, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
 // body: { texto } — linhas de: Nome [tab] Grupo [tab] Telefone(opcional) [tab] adulto|crianca(opcional) [tab] Responsável pelo grupo(opcional)
 export async function onRequestPost({ request, env }) {
+  const evento = await resolverEvento(env.DB, request);
+  if (!evento) return eventoNaoEncontrado();
   const payload = await request.json().catch(() => ({}));
   const linhas = (payload.texto || '').split('\n').map((l) => l.trim()).filter(Boolean);
   if (linhas.length === 0) return jsonResponse({ erro: 'Cole ao menos uma linha.' }, 400);
 
   const db = env.DB;
-  const { results: gruposExistentes } = await db.prepare('SELECT codigo, nome_grupo FROM grupos').all();
+  const { results: gruposExistentes } = await db.prepare('SELECT codigo, nome_grupo FROM grupos WHERE evento_id = ?').bind(evento.id).all();
   const mapaGrupos = {};
   gruposExistentes.forEach((g) => { mapaGrupos[g.nome_grupo.trim().toLowerCase()] = g.codigo; });
 
@@ -39,8 +41,8 @@ export async function onRequestPost({ request, env }) {
   for (const g of novosGrupos) {
     writes.push(
       db
-        .prepare("INSERT INTO grupos (codigo, nome_grupo, status_abertura, status_confirmacao, responsavel) VALUES (?, ?, 'Não aberto', 'Pendente', ?)")
-        .bind(g.codigo, g.nomeGrupo, responsavelPorCodigo[g.codigo] || null)
+        .prepare("INSERT INTO grupos (codigo, evento_id, nome_grupo, status_abertura, status_confirmacao, responsavel) VALUES (?, ?, ?, 'Não aberto', 'Pendente', ?)")
+        .bind(g.codigo, evento.id, g.nomeGrupo, responsavelPorCodigo[g.codigo] || null)
     );
   }
   for (const c of novosConvidados) {

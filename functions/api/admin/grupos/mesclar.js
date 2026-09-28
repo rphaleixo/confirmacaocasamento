@@ -14,6 +14,10 @@ export async function onRequestPost({ request, env }) {
   const db = env.DB;
   const remover = codigos.filter((c) => c !== manter);
 
+  const marcadores = codigos.map(() => '?').join(',');
+  const { results: eventos } = await db.prepare(`SELECT DISTINCT evento_id FROM grupos WHERE codigo IN (${marcadores})`).bind(...codigos).all();
+  if (eventos.length > 1) return jsonResponse({ erro: 'Não dá pra mesclar grupos de eventos diferentes.' }, 400);
+
   for (const codigo of remover) {
     await db.prepare('UPDATE convidados SET codigo_grupo = ? WHERE codigo_grupo = ?').bind(manter, codigo).run();
     await db.prepare('DELETE FROM grupos WHERE codigo = ?').bind(codigo).run();

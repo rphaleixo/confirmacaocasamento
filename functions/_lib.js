@@ -56,3 +56,15 @@ export async function recalcularStatusGrupo(db, codigo) {
   await db.prepare('UPDATE grupos SET status_confirmacao = ? WHERE codigo = ?').bind(status, codigo).run();
   return status;
 }
+
+// Descobre o evento da requisição pelo parâmetro ?e=<slug>. Sem parâmetro, usa o primeiro
+// evento cadastrado — mantém funcionando os links antigos (/?c=CODIGO) do casamento original.
+export async function resolverEvento(db, request) {
+  const slug = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
+  if (slug) return db.prepare('SELECT * FROM eventos WHERE slug = ?').bind(slug).first();
+  return db.prepare('SELECT * FROM eventos ORDER BY id LIMIT 1').first();
+}
+
+export function eventoNaoEncontrado() {
+  return jsonResponse({ erro: 'Evento não encontrado.' }, 404);
+}

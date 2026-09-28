@@ -1,11 +1,13 @@
-import { jsonResponse } from '../../_lib.js';
+import { jsonResponse, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
 const META_PADRAO = '150';
 const MENSAGEM_PADRAO =
   'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛';
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   const db = env.DB;
+  const evento = await resolverEvento(db, request);
+  if (!evento) return eventoNaoEncontrado();
 
   const { results: convidados } = await db
     .prepare(
@@ -14,12 +16,15 @@ export async function onRequestGet({ env }) {
               g.status_confirmacao AS statusConfirmacao, g.data_confirmacao AS dataConfirmacao,
               g.responsavel AS responsavel, g.contato_responsavel AS contatoResponsavel
        FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo
+       WHERE g.evento_id = ?
        ORDER BY g.nome_grupo, c.id`
     )
+    .bind(evento.id)
     .all();
 
   const config = await db
-    .prepare("SELECT chave, valor FROM conteudo WHERE chave IN ('config.meta_convidados', 'config.mensagem_template')")
+    .prepare("SELECT chave, valor FROM conteudo WHERE evento_id = ? AND chave IN ('config.meta_convidados', 'config.mensagem_template')")
+    .bind(evento.id)
     .all();
   const configMap = {};
   config.results.forEach((r) => { configMap[r.chave] = r.valor; });

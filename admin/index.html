@@ -99,7 +99,12 @@
 <body>
 <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
   <h1>🎊 Confirmação de presença — Admin</h1>
-  <a href="/" target="_blank" style="color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <label for="eventoSel" style="font-size:13px;">Evento:</label>
+    <select id="eventoSel" style="padding:6px 10px;border-radius:8px;"></select>
+    <button id="btnNovoEvento" type="button" style="border-radius:999px;padding:7px 12px;cursor:pointer;">+ Novo evento</button>
+  </div>
+  <a id="verSite" href="/" target="_blank" style="color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
 </header>
 <nav>
   <button data-tab="painel" class="active">Painel</button>
@@ -262,6 +267,50 @@
 </dialog>
 
 <script>
+  // ---------- EVENTOS ----------
+  // Todas as chamadas /api/ do admin levam ?e=<slug do evento selecionado>.
+  let eventoAtual = null;
+  let listaEventos = [];
+  const fetchOriginal = window.fetch.bind(window);
+  window.fetch = function (url, opts) {
+    if (typeof url === 'string' && url.indexOf('/api/') === 0 && eventoAtual) {
+      url += (url.indexOf('?') === -1 ? '?' : '&') + 'e=' + encodeURIComponent(eventoAtual);
+    }
+    return fetchOriginal(url, opts);
+  };
+  function urlSite() { return location.origin + '/e/' + eventoAtual + '/'; }
+
+  async function iniciarEventos() {
+    listaEventos = await fetchOriginal('/api/admin/eventos').then((r) => r.json());
+    const sel = document.getElementById('eventoSel');
+    sel.innerHTML = '';
+    listaEventos.forEach((ev) => {
+      const o = document.createElement('option');
+      o.value = ev.slug; o.textContent = ev.nome + ' (/e/' + ev.slug + ')';
+      sel.appendChild(o);
+    });
+    const salvo = new URLSearchParams(location.search).get('e') || localStorage.getItem('eventoAdmin');
+    eventoAtual = listaEventos.some((ev) => ev.slug === salvo) ? salvo : (listaEventos[0] && listaEventos[0].slug);
+    sel.value = eventoAtual;
+    document.getElementById('verSite').href = urlSite();
+  }
+  document.getElementById('eventoSel').addEventListener('change', (e) => {
+    localStorage.setItem('eventoAdmin', e.target.value);
+    location.href = location.pathname + '?e=' + encodeURIComponent(e.target.value);
+  });
+  document.getElementById('btnNovoEvento').addEventListener('click', async () => {
+    const nome = prompt('Nome do evento (ex.: Aniversário da Helena):');
+    if (!nome) return;
+    const slug = prompt('Endereço do evento (só letras, números e hífen). Ficará em /e/<endereço>:', nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
+    if (!slug) return;
+    const copiar = confirm('Copiar textos, cores e configurações do evento "' + eventoAtual + '" como ponto de partida?\n(OK = copiar, Cancelar = evento em branco). Convidados e recados nunca são copiados.');
+    const r = await fetchOriginal('/api/admin/eventos', { method: 'POST', body: JSON.stringify({ nome, slug, copiarDe: copiar ? eventoAtual : '' }) });
+    const d = await r.json();
+    if (d.erro) { alert(d.erro); return; }
+    localStorage.setItem('eventoAdmin', d.slug);
+    location.href = location.pathname + '?e=' + encodeURIComponent(d.slug);
+  });
+
   const tabs = document.querySelectorAll('nav button');
   tabs.forEach((b) => b.addEventListener('click', () => {
     tabs.forEach((x) => x.classList.remove('active'));
@@ -311,7 +360,7 @@
     const tbody = document.getElementById('p-tbody');
     tbody.innerHTML = '';
     d.convidados.forEach((c) => {
-      const link = location.origin + '/?c=' + c.codigoGrupo;
+      const link = urlSite() + '?c=' + c.codigoGrupo;
       const mensagem = d.mensagemTemplate.replace('{nome}', c.nome).replace('{link}', link);
 
       const tr = document.createElement('tr');
@@ -382,7 +431,7 @@
     const escapar = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
     const linhas = [cabecalho.map(escapar).join(',')];
     ultimoPainelDados.convidados.forEach((c) => {
-      const link = location.origin + '/?c=' + c.codigoGrupo;
+      const link = urlSite() + '?c=' + c.codigoGrupo;
       const mensagem = ultimoPainelDados.mensagemTemplate.replace('{nome}', c.nome).replace('{link}', link);
       linhas.push([
         c.nome, c.grupo, c.responsavel || '', c.telefone || '', link, mensagem,
@@ -435,7 +484,7 @@
     btn.disabled = false;
     if (d.erro) { msg('ng-msg', d.erro, false); return; }
     ngCodigoAtual = d.codigo;
-    msg('ng-msg', 'Grupo criado! Link: ' + location.origin + '/?c=' + d.codigo, true);
+    msg('ng-msg', 'Grupo criado! Link: ' + urlSite() + '?c=' + d.codigo, true);
     document.getElementById('ng-pos-criacao').hidden = false;
     document.getElementById('ng2-nome').focus();
   });
@@ -1232,7 +1281,7 @@
     });
   }
 
-  carregarPainel();
+  iniciarEventos().then(() => carregarPainel());
 </script>
 </body>
 </html>
