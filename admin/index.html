@@ -30,6 +30,38 @@
   table{width:100%;border-collapse:collapse;background:var(--cream);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
   th,td{padding:9px 10px;text-align:left;font-size:13px;border-bottom:1px solid var(--blush-deep);}
   th{background:var(--blush-deep);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+  dialog.me{max-width:560px;width:94vw;padding:0;overflow:hidden;}
+  .me-head{padding:20px 24px 12px;border-bottom:1px solid var(--blush-deep);}
+  .me-head h3{font-size:18px;color:var(--wine);}
+  .me-passos{display:flex;gap:6px;margin-top:12px;}
+  .me-passo{flex:1;height:5px;border-radius:99px;background:var(--blush-deep);}
+  .me-passo.ok{background:var(--wine-soft);} .me-passo.atual{background:var(--wine);}
+  .me-passo-rot{font-size:11.5px;color:var(--ink-soft);margin-top:6px;text-transform:uppercase;letter-spacing:.04em;}
+  .me-corpo{padding:18px 24px;max-height:62vh;overflow-y:auto;}
+  .me-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 24px;border-top:1px solid var(--blush-deep);background:var(--cream);}
+  .me-foot button{padding:10px 18px;border-radius:8px;font-size:13.5px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--ink);}
+  .me-foot button.prim{background:var(--wine);color:#fff;border-color:var(--wine);}
+  .me-foot button:disabled{opacity:.5;cursor:default;}
+  .me-tipos{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:520px){.me-tipos{grid-template-columns:1fr;}}
+  .me-tipo{text-align:left;border:2px solid var(--border);background:#fff;border-radius:12px;padding:14px;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .me-tipo:hover{border-color:var(--wine-soft);}
+  .me-tipo.sel{border-color:var(--wine);background:var(--blush);}
+  .me-tipo b{display:block;font-size:15px;margin-bottom:4px;color:var(--wine);}
+  .me-tipo span{font-size:12.5px;color:var(--ink-soft);}
+  .me-url{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden;}
+  .me-url .pre{padding:9px 0 9px 10px;color:var(--ink-soft);font-size:13px;white-space:nowrap;}
+  .me-url input{border:none !important;outline:none;flex:1;min-width:0;padding-left:0 !important;}
+  .me-ok{color:var(--ok);font-size:12px;margin-top:4px;} .me-erro{color:var(--err);font-size:12px;margin-top:4px;}
+  .me-dica{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .me-opcao{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;background:#fff;}
+  .me-opcao.sel{border-color:var(--wine);background:var(--blush);}
+  .me-opcao input{margin-top:3px;} .me-opcao b{font-size:13.5px;} .me-opcao span{display:block;font-size:12px;color:var(--ink-soft);}
+  .me-senha{display:flex;gap:8px;} .me-senha input{flex:1;}
+  .me-senha button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:0 12px;cursor:pointer;font-size:12.5px;white-space:nowrap;}
+  .me-resumo{width:100%;} .me-resumo td{border:none;padding:6px 0;font-size:13.5px;vertical-align:top;} .me-resumo td:first-child{color:var(--ink-soft);width:36%;}
+  .me-link{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12.5px;}
+  .me-link code{flex:1;word-break:break-all;} .me-link button{border:1px solid var(--border);background:var(--cream);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;}
   .grafico-visitas{display:flex;align-items:flex-end;gap:6px;height:120px;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:12px;}
   .grafico-visitas .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--ink-soft);}
   .grafico-visitas .barra{width:100%;background:var(--wine);border-radius:4px 4px 0 0;min-height:2px;}
@@ -299,6 +331,16 @@
 
 </main>
 
+<dialog id="modal-evento" class="me">
+  <div class="me-head">
+    <h3 id="me-titulo"></h3>
+    <div class="me-passos" id="me-passos"></div>
+    <div class="me-passo-rot" id="me-passo-rot"></div>
+  </div>
+  <div class="me-corpo" id="me-corpo"></div>
+  <div class="me-foot" id="me-foot"></div>
+</dialog>
+
 <dialog id="modal-crop">
   <h3>Ajustar foto</h3>
   <div id="crop-container"><img id="crop-img"></div>
@@ -439,17 +481,7 @@
       cel(fmtData(ev.ultimaConfirmacao));
       const acoes = el('td');
       botao(acoes, 'Gerir evento', () => irParaEvento(ev.slug));
-      botao(acoes, 'Editar', async () => {
-        const novoNome = prompt('Nome do evento:', ev.nome);
-        if (novoNome === null) return;
-        const novoSlug = prompt('Endereço do evento (/e/<endereço>). Mudar o endereço faz os links já enviados deixarem de funcionar:', ev.slug);
-        if (novoSlug === null) return;
-        const novoTipo = prompt('Tipo do evento (' + Object.keys(tiposPorId()).join(' ou ') + '). Mudar o tipo altera quais módulos o site oferece:', ev.tipo);
-        if (novoTipo === null) return;
-        const d = await apiEventos('PATCH', { slug: ev.slug, novoNome, novoSlug, novoTipo });
-        if (d.erro) { alert(d.erro); return; }
-        carregarEventos();
-      });
+      botao(acoes, 'Editar', () => abrirEditarEvento(ev));
       botao(acoes, 'Abrir site', () => window.open(urlSiteDe(ev.slug), '_blank'));
       tr.appendChild(acoes);
       tbody.appendChild(tr);
@@ -470,21 +502,20 @@
       tr.appendChild(el('td', urlAnfitriao(ev.slug)));
       tr.appendChild(el('td', ev.anfitriaoUsuario || '— sem login —'));
       const acoes = el('td');
-      botao(acoes, ev.anfitriaoUsuario ? 'Trocar usuário/senha' : 'Criar login', async () => {
-        const anfitriaoUsuario = prompt('Usuário do anfitrião de "' + ev.nome + '":', ev.anfitriaoUsuario || ev.slug);
-        if (!anfitriaoUsuario) return;
-        const anfitriaoSenha = prompt('Senha do anfitrião (mínimo 6 caracteres):');
-        if (!anfitriaoSenha) return;
-        const d = await apiEventos('PUT', { slug: ev.slug, anfitriaoUsuario, anfitriaoSenha });
-        alert(d.erro || 'Login do anfitrião salvo.');
-        carregarAnfitrioes();
-      });
+      botao(acoes, ev.anfitriaoUsuario ? 'Trocar usuário/senha' : 'Criar login', () => abrirLoginAnfitriao(ev));
       if (ev.anfitriaoUsuario) {
-        botao(acoes, 'Revogar acesso', async () => {
-          if (!confirm('Revogar o acesso do anfitrião de "' + ev.nome + '"? Ele deixa de conseguir entrar.')) return;
-          const d = await apiEventos('DELETE', { slug: ev.slug });
-          alert(d.erro || 'Acesso revogado.');
-          carregarAnfitrioes();
+        botao(acoes, 'Revogar acesso', () => {
+          document.getElementById('me-titulo').textContent = 'Revogar acesso do anfitrião';
+          montarPassos(0, []);
+          const corpo = document.getElementById('me-corpo'); corpo.innerHTML = '';
+          const erroBox = el('div'); erroBox.className = 'me-erro';
+          corpo.append(el('p', 'O anfitrião de “' + ev.nome + '” (usuário ' + ev.anfitriaoUsuario + ') deixa de conseguir entrar. O evento e os dados continuam intactos, e você pode criar um novo acesso depois.', 'margin:0;'), erroBox);
+          montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Revogar acesso', prim: true, fn: async () => {
+            const d = await apiEventos('DELETE', { slug: ev.slug });
+            if (d.erro) { erroBox.textContent = d.erro; return; }
+            fecharDialogo(); carregarAnfitrioes();
+          } }]);
+          abrirDialogo();
         });
         botao(acoes, 'Copiar link', () => { navigator.clipboard.writeText(urlAnfitriao(ev.slug)); });
       }
@@ -510,29 +541,264 @@
     });
   }
 
-  document.getElementById('btnNovoEvento').addEventListener('click', async () => {
+  // ---------- JANELA DE EVENTO (assistente de criação, editar, login do anfitrião) ----------
+  const dlgEvento = document.getElementById('modal-evento');
+  function campoTexto(rotulo, input) {
+    const wrap = el('div');
+    const l = el('label', rotulo); l.style.marginTop = '14px';
+    wrap.append(l, input);
+    return wrap;
+  }
+  function inputTexto(valor, placeholder) {
+    const i = document.createElement('input'); i.type = 'text'; i.value = valor || ''; if (placeholder) i.placeholder = placeholder;
+    i.autocomplete = 'off';
+    return i;
+  }
+  function gerarSenha() {
+    const c = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const v = crypto.getRandomValues(new Uint32Array(10));
+    return Array.from(v).map((n) => c[n % c.length]).join('');
+  }
+  function campoSenha(valorInicial) {
+    const wrap = el('div', null, 'margin-top:0;');
+    const l = el('label', 'Senha (mínimo 6 caracteres)'); l.style.marginTop = '14px';
+    const linha = el('div'); linha.className = 'me-senha';
+    const inp = inputTexto(valorInicial); inp.type = 'text';
+    const gerar = el('button', 'Gerar senha'); gerar.type = 'button';
+    gerar.addEventListener('click', () => { inp.value = gerarSenha(); inp.dispatchEvent(new Event('input')); });
+    linha.append(inp, gerar);
+    wrap.append(l, linha, el('div', 'Anote ou copie a senha: depois de salva ela não pode ser consultada, só trocada.', null));
+    wrap.lastChild.className = 'me-dica';
+    return { wrap, inp };
+  }
+  function linhaCopiar(rotulo, valor) {
+    const w = el('div'); w.className = 'me-link';
+    const c = el('code', rotulo ? rotulo + ': ' + valor : valor);
+    const b = el('button', 'Copiar'); b.type = 'button';
+    b.addEventListener('click', () => { navigator.clipboard.writeText(valor); b.textContent = 'Copiado ✓'; setTimeout(() => { b.textContent = 'Copiar'; }, 1500); });
+    w.append(c, b);
+    return w;
+  }
+  function slugDisponivel(slug, ignorar) {
+    return !listaEventos.some((e) => e.slug === slug && e.slug !== ignorar);
+  }
+  function montarRodape(botoes) {
+    const foot = document.getElementById('me-foot');
+    foot.innerHTML = '';
+    botoes.forEach((b) => { const x = el('button', b.rotulo); x.type = 'button'; if (b.prim) x.className = 'prim'; if (b.desativado) x.disabled = true; x.addEventListener('click', b.fn); foot.appendChild(x); });
+    return foot;
+  }
+  function montarPassos(atual, rotulos) {
+    const box = document.getElementById('me-passos');
+    box.innerHTML = '';
+    rotulos.forEach((r, i) => { const p = el('div'); p.className = 'me-passo ' + (i < atual ? 'ok' : i === atual ? 'atual' : ''); box.appendChild(p); });
+    document.getElementById('me-passo-rot').textContent = rotulos.length ? 'Passo ' + (atual + 1) + ' de ' + rotulos.length + ' · ' + rotulos[atual] : '';
+  }
+  function abrirDialogo() { if (!dlgEvento.open) dlgEvento.showModal(); }
+  function fecharDialogo() { dlgEvento.close(); }
+
+  // ----- Novo evento -----
+  const PASSOS_NOVO = ['Tipo', 'Evento', 'Anfitrião', 'Revisão'];
+  async function abrirNovoEvento() {
     if (!tiposCatalogo.length) await carregarTemplates();
-    const ids = tiposCatalogo.map((t) => t.id);
-    const tipo = prompt('Tipo do evento (' + tiposCatalogo.map((t) => t.id + ' = ' + t.nome).join('; ') + '):', ids[0]);
-    if (!tipo || !ids.includes(tipo.trim())) { if (tipo) alert('Tipo inválido.'); return; }
-    const nome = prompt('Nome do evento (ex.: Aniversário da Helena):');
-    if (!nome) return;
-    const slug = prompt('Endereço do evento (só letras, números e hífen). Ficará em /e/<endereço>:', slugifyLocal(nome));
-    if (!slug) return;
-    const mesmoTipo = listaEventos.filter((e) => e.tipo === tipo.trim());
-    let copiarDe = '';
-    if (mesmoTipo.length) {
-      const origem = prompt('Copiar textos, cores e configurações de outro evento do mesmo tipo? Digite o endereço (' + mesmoTipo.map((e) => e.slug).join(', ') + ') ou deixe em branco para começar do padrão do tipo:', '');
-      if (origem === null) return;
-      copiarDe = origem.trim();
+    if (!listaEventos.length) { const r = await fetchOriginal('/api/admin/eventos'); if (r.ok) listaEventos = await r.json(); }
+    const est = { passo: 0, tipo: '', nome: '', slug: '', slugManual: false, copiarDe: '', criarLogin: true, usuario: '', usuarioManual: false, senha: gerarSenha(), erro: '', enviando: false };
+    document.getElementById('me-titulo').textContent = 'Novo evento';
+    renderNovo(est);
+    abrirDialogo();
+  }
+
+  function renderNovo(est) {
+    const corpo = document.getElementById('me-corpo');
+    corpo.innerHTML = '';
+    montarPassos(est.passo, PASSOS_NOVO);
+    const erroBox = el('div', est.erro); erroBox.className = 'me-erro';
+
+    if (est.passo === 0) {
+      corpo.appendChild(el('p', 'Qual é o tipo de evento? O tipo define os módulos do site e os textos iniciais.', 'margin:0 0 12px;color:var(--ink-soft);'));
+      const grade = el('div'); grade.className = 'me-tipos';
+      tiposCatalogo.forEach((tp) => {
+        const b = el('button'); b.type = 'button'; b.className = 'me-tipo' + (est.tipo === tp.id ? ' sel' : '');
+        b.append(el('b', tp.nome), el('span', tp.descricao), el('span', tp.modulos.length + (tp.modulos.length === 1 ? ' módulo' : ' módulos'), 'display:block;margin-top:8px;font-size:11.5px;'));
+        b.addEventListener('click', () => { est.tipo = tp.id; est.copiarDe = ''; renderNovo(est); });
+        grade.appendChild(b);
+      });
+      corpo.appendChild(grade);
+      montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Continuar →', prim: true, desativado: !est.tipo, fn: () => { est.passo = 1; renderNovo(est); } }]);
     }
-    const anfitriaoUsuario = prompt('Usuário do anfitrião deste evento (deixe em branco para definir depois):', '');
-    let anfitriaoSenha = '';
-    if (anfitriaoUsuario) anfitriaoSenha = prompt('Senha do anfitrião (mínimo 6 caracteres):') || '';
-    const d = await apiEventos('POST', { nome, slug, tipo: tipo.trim(), copiarDe, anfitriaoUsuario: anfitriaoSenha ? anfitriaoUsuario : '', anfitriaoSenha });
-    if (d.erro) { alert(d.erro); return; }
-    irParaEvento(d.slug);
-  });
+
+    if (est.passo === 1) {
+      const nome = inputTexto(est.nome, 'Ex.: Aniversário da Helena');
+      const slug = inputTexto(est.slug, 'aniversario-da-helena');
+      const status = el('div');
+      const validar = () => {
+        const s = slugifyLocal(slug.value);
+        if (!s) { status.className = 'me-erro'; status.textContent = 'Informe um endereço com letras e números.'; return false; }
+        if (!slugDisponivel(s)) { status.className = 'me-erro'; status.textContent = 'Esse endereço já está em uso por outro evento.'; return false; }
+        status.className = 'me-ok'; status.textContent = '✓ Endereço disponível: ' + location.origin + '/e/' + s;
+        return true;
+      };
+      const atualizarRodape = () => { est.nome = nome.value; est.slug = slugifyLocal(slug.value); rod.querySelector('.prim').disabled = !(est.nome.trim() && validar()); };
+      nome.addEventListener('input', () => { if (!est.slugManual) slug.value = slugifyLocal(nome.value); atualizarRodape(); });
+      slug.addEventListener('input', () => { est.slugManual = true; atualizarRodape(); });
+      corpo.appendChild(campoTexto('Nome do evento', nome));
+      const wSlug = el('div'); const lSlug = el('label', 'Endereço do site'); lSlug.style.marginTop = '14px';
+      const url = el('div'); url.className = 'me-url'; const pre = el('span', location.host + '/e/'); pre.className = 'pre'; url.append(pre, slug);
+      wSlug.append(lSlug, url, status, el('div', 'É o link que os convidados vão receber. Dá para trocar depois, mas os links já enviados deixam de funcionar.')); wSlug.lastChild.className = 'me-dica';
+      corpo.appendChild(wSlug);
+      const mesmoTipo = listaEventos.filter((e) => e.tipo === est.tipo);
+      const sel = document.createElement('select');
+      sel.appendChild(new Option('Começar do padrão do tipo', ''));
+      mesmoTipo.forEach((e) => sel.appendChild(new Option('Copiar de: ' + e.nome + ' (/e/' + e.slug + ')', e.slug)));
+      sel.value = est.copiarDe;
+      sel.addEventListener('change', () => { est.copiarDe = sel.value; });
+      if (mesmoTipo.length) {
+        const w = campoTexto('Ponto de partida', sel);
+        w.appendChild(el('div', 'Copia textos, cores e configurações. Convidados e recados nunca são copiados.')); w.lastChild.className = 'me-dica';
+        corpo.appendChild(w);
+      }
+      const rod = montarRodape([{ rotulo: '← Voltar', fn: () => { est.nome = nome.value; est.slug = slugifyLocal(slug.value); est.passo = 0; renderNovo(est); } }, { rotulo: 'Continuar →', prim: true, desativado: true, fn: () => { est.passo = 2; renderNovo(est); } }]);
+      if (est.slug || est.nome) atualizarRodape();
+      nome.focus();
+    }
+
+    if (est.passo === 2) {
+      corpo.appendChild(el('p', 'O anfitrião é quem cuida do evento no dia a dia, em ' + location.host + '/e/' + est.slug + '/admin. Ele só enxerga este evento.', 'margin:0 0 12px;color:var(--ink-soft);'));
+      const ops = el('div');
+      const usuario = inputTexto(est.usuario || est.slug);
+      const senha = campoSenha(est.senha);
+      const camposLogin = el('div'); camposLogin.append(campoTexto('Usuário', usuario), senha.wrap);
+      const opcao = (valor, titulo, desc) => {
+        const l = el('label'); l.className = 'me-opcao' + (est.criarLogin === valor ? ' sel' : ''); l.style.fontWeight = '400'; l.style.margin = '0 0 10px';
+        const r = document.createElement('input'); r.type = 'radio'; r.name = 'me-login'; r.checked = est.criarLogin === valor;
+        const t = el('div'); t.append(el('b', titulo), el('span', desc));
+        l.append(r, t);
+        l.addEventListener('click', () => { est.criarLogin = valor; est.usuario = usuario.value; est.senha = senha.inp.value; renderNovo(est); });
+        return l;
+      };
+      ops.append(opcao(true, 'Criar o acesso do anfitrião agora', 'Defina usuário e senha para entregar a quem vai cuidar do evento.'), opcao(false, 'Definir depois', 'Por enquanto só você (admin master) gerencia o evento. Dá para criar o acesso na aba Anfitriões.'));
+      corpo.appendChild(ops);
+      if (est.criarLogin) corpo.appendChild(camposLogin);
+      const validarLogin = () => !est.criarLogin || (usuario.value.trim() && senha.inp.value.length >= 6);
+      const atualizar = () => { est.usuario = usuario.value; est.senha = senha.inp.value; rod.querySelector('.prim').disabled = !validarLogin(); };
+      usuario.addEventListener('input', atualizar); senha.inp.addEventListener('input', atualizar);
+      const rod = montarRodape([{ rotulo: '← Voltar', fn: () => { atualizar(); est.passo = 1; renderNovo(est); } }, { rotulo: 'Continuar →', prim: true, fn: () => { atualizar(); est.passo = 3; renderNovo(est); } }]);
+      atualizar();
+    }
+
+    if (est.passo === 3) {
+      const tipo = tiposCatalogo.find((t) => t.id === est.tipo);
+      const tab = document.createElement('table'); tab.className = 'me-resumo';
+      const linha = (a, b) => { const tr = document.createElement('tr'); tr.append(el('td', a), el('td', b)); tab.appendChild(tr); };
+      linha('Tipo', tipo ? tipo.nome : est.tipo);
+      linha('Nome', est.nome);
+      linha('Endereço', location.origin + '/e/' + est.slug);
+      linha('Ponto de partida', est.copiarDe ? 'Cópia de /e/' + est.copiarDe : 'Padrão do tipo');
+      linha('Anfitrião', est.criarLogin ? 'Usuário “' + est.usuario + '”' : 'Definir depois');
+      corpo.appendChild(el('p', 'Confira antes de criar:', 'margin:0 0 8px;color:var(--ink-soft);'));
+      corpo.appendChild(tab);
+      corpo.appendChild(erroBox);
+      montarRodape([
+        { rotulo: '← Voltar', desativado: est.enviando, fn: () => { est.passo = 2; est.erro = ''; renderNovo(est); } },
+        { rotulo: est.enviando ? 'Criando…' : 'Criar evento', prim: true, desativado: est.enviando, fn: async () => {
+          est.enviando = true; est.erro = ''; renderNovo(est);
+          const d = await apiEventos('POST', { nome: est.nome.trim(), slug: est.slug, tipo: est.tipo, copiarDe: est.copiarDe, anfitriaoUsuario: est.criarLogin ? est.usuario.trim() : '', anfitriaoSenha: est.criarLogin ? est.senha : '' });
+          est.enviando = false;
+          if (d.erro) { est.erro = d.erro; renderNovo(est); return; }
+          renderNovoConcluido(est, d);
+        } },
+      ]);
+    }
+  }
+
+  function renderNovoConcluido(est, criado) {
+    const corpo = document.getElementById('me-corpo');
+    corpo.innerHTML = '';
+    montarPassos(PASSOS_NOVO.length, PASSOS_NOVO);
+    document.getElementById('me-passos').querySelectorAll('.me-passo').forEach((p) => { p.className = 'me-passo ok'; });
+    document.getElementById('me-passo-rot').textContent = 'Evento criado';
+    document.getElementById('me-titulo').textContent = '🎉 ' + criado.nome + ' está pronto';
+    corpo.appendChild(el('p', 'Guarde estes dados. A senha não poderá ser consultada depois, só trocada.', 'margin:0 0 12px;color:var(--ink-soft);'));
+    corpo.appendChild(linhaCopiar('Site do evento', location.origin + '/e/' + criado.slug + '/'));
+    if (est.criarLogin) {
+      corpo.appendChild(linhaCopiar('Painel do anfitrião', location.origin + '/e/' + criado.slug + '/admin'));
+      corpo.appendChild(linhaCopiar('Usuário', est.usuario.trim()));
+      corpo.appendChild(linhaCopiar('Senha', est.senha));
+    } else {
+      corpo.appendChild(el('p', 'Sem anfitrião por enquanto. Crie o acesso na aba Anfitriões quando quiser.', 'font-size:13px;color:var(--ink-soft);'));
+    }
+    montarRodape([{ rotulo: 'Fechar', fn: () => { fecharDialogo(); carregarEventos(); } }, { rotulo: 'Gerir este evento →', prim: true, fn: () => irParaEvento(criado.slug) }]);
+  }
+
+  // ----- Editar evento -----
+  function abrirEditarEvento(ev) {
+    document.getElementById('me-titulo').textContent = 'Editar evento';
+    montarPassos(0, []);
+    const corpo = document.getElementById('me-corpo'); corpo.innerHTML = '';
+    const nome = inputTexto(ev.nome);
+    const slug = inputTexto(ev.slug);
+    const sel = document.createElement('select');
+    tiposCatalogo.forEach((t) => sel.appendChild(new Option(t.nome, t.id)));
+    sel.value = ev.tipo;
+    const status = el('div'); const erroBox = el('div'); erroBox.className = 'me-erro';
+    corpo.appendChild(campoTexto('Nome do evento', nome));
+    const wSlug = el('div'); const lSlug = el('label', 'Endereço do site'); lSlug.style.marginTop = '14px';
+    const url = el('div'); url.className = 'me-url'; const pre = el('span', location.host + '/e/'); pre.className = 'pre'; url.append(pre, slug);
+    wSlug.append(lSlug, url, status);
+    corpo.appendChild(wSlug);
+    const aviso = el('div', '⚠️ Mudar o endereço faz os links já enviados aos convidados deixarem de funcionar.', 'display:none;margin-top:6px;font-size:12px;color:var(--err);');
+    corpo.appendChild(aviso);
+    const wTipo = campoTexto('Tipo (template)', sel);
+    const avisoTipo = el('div', '⚠️ Mudar o tipo altera quais módulos o site oferece. Conteúdo já preenchido não é apagado.', 'display:none;margin-top:6px;font-size:12px;color:var(--err);');
+    wTipo.appendChild(avisoTipo); corpo.appendChild(wTipo); corpo.appendChild(erroBox);
+    const validar = () => {
+      const s = slugifyLocal(slug.value);
+      aviso.style.display = s !== ev.slug ? 'block' : 'none';
+      avisoTipo.style.display = sel.value !== ev.tipo ? 'block' : 'none';
+      if (!s) { status.className = 'me-erro'; status.textContent = 'Informe um endereço com letras e números.'; return false; }
+      if (!slugDisponivel(s, ev.slug)) { status.className = 'me-erro'; status.textContent = 'Esse endereço já está em uso por outro evento.'; return false; }
+      status.className = 'me-ok'; status.textContent = s === ev.slug ? '' : '✓ Endereço disponível';
+      return true;
+    };
+    const rod = montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: async () => {
+      if (!nome.value.trim() || !validar()) return;
+      rod.querySelector('.prim').disabled = true;
+      const d = await apiEventos('PATCH', { slug: ev.slug, novoNome: nome.value.trim(), novoSlug: slugifyLocal(slug.value), novoTipo: sel.value });
+      if (d.erro) { erroBox.textContent = d.erro; rod.querySelector('.prim').disabled = false; return; }
+      fecharDialogo(); carregarEventos();
+    } }]);
+    [nome, slug, sel].forEach((x) => { x.addEventListener('input', validar); x.addEventListener('change', validar); });
+    validar();
+    abrirDialogo();
+  }
+
+  // ----- Login do anfitrião -----
+  function abrirLoginAnfitriao(ev) {
+    document.getElementById('me-titulo').textContent = ev.anfitriaoUsuario ? 'Trocar acesso do anfitrião' : 'Criar acesso do anfitrião';
+    montarPassos(0, []);
+    const corpo = document.getElementById('me-corpo'); corpo.innerHTML = '';
+    corpo.appendChild(el('p', 'Evento: ' + ev.nome + '. Painel em ' + location.host + '/e/' + ev.slug + '/admin.', 'margin:0;color:var(--ink-soft);'));
+    const usuario = inputTexto(ev.anfitriaoUsuario || ev.slug);
+    const senha = campoSenha(gerarSenha());
+    const erroBox = el('div'); erroBox.className = 'me-erro';
+    corpo.append(campoTexto('Usuário', usuario), senha.wrap, erroBox);
+    const rod = montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar acesso', prim: true, fn: async () => {
+      if (!usuario.value.trim() || senha.inp.value.length < 6) { erroBox.textContent = 'Informe o usuário e uma senha de pelo menos 6 caracteres.'; return; }
+      const d = await apiEventos('PUT', { slug: ev.slug, anfitriaoUsuario: usuario.value.trim(), anfitriaoSenha: senha.inp.value });
+      if (d.erro) { erroBox.textContent = d.erro; return; }
+      corpo.innerHTML = '';
+      document.getElementById('me-titulo').textContent = '✓ Acesso salvo';
+      corpo.appendChild(el('p', 'Guarde estes dados. A senha não poderá ser consultada depois, só trocada.', 'margin:0 0 12px;color:var(--ink-soft);'));
+      corpo.appendChild(linhaCopiar('Painel do anfitrião', urlAnfitriao(ev.slug)));
+      corpo.appendChild(linhaCopiar('Usuário', usuario.value.trim()));
+      corpo.appendChild(linhaCopiar('Senha', senha.inp.value));
+      montarRodape([{ rotulo: 'Fechar', prim: true, fn: () => { fecharDialogo(); carregarAnfitrioes(); } }]);
+    } }]);
+    abrirDialogo();
+    usuario.focus();
+  }
+
+  document.getElementById('btnNovoEvento').addEventListener('click', abrirNovoEvento);
 
   const tabs = document.querySelectorAll('nav button');
   tabs.forEach((b) => b.addEventListener('click', () => {
