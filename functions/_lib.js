@@ -26,6 +26,40 @@ export function checkBasicAuth(request, env) {
   return user === env.ADMIN_USER && pass === env.ADMIN_PASSWORD;
 }
 
+function lerBasicAuth(request) {
+  const header = request.headers.get('Authorization') || '';
+  if (!header.startsWith('Basic ')) return null;
+  let decoded;
+  try { decoded = atob(header.slice(6)); } catch (e) { return null; }
+  const idx = decoded.indexOf(':');
+  if (idx === -1) return null;
+  return { user: decoded.slice(0, idx), pass: decoded.slice(idx + 1) };
+}
+
+export async function hashSenha(senha, salt) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + senha));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export function novoSalt() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Quem é o solicitante do admin? 'master' (secrets ADMIN_USER/ADMIN_PASSWORD: gerencia todos os
+// eventos) ou 'evento' (login próprio do evento: só enxerga e altera o evento do parâmetro ?e=).
+export async function identificarAdmin(request, env) {
+  const cred = lerBasicAuth(request);
+  if (!cred) return null;
+  if (checkBasicAuth(request, env)) return { tipo: 'master' };
+  const slug = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
+  if (!slug) return null;
+  const ev = await env.DB.prepare('SELECT id, admin_usuario, admin_senha_salt, admin_senha_hash FROM eventos WHERE slug = ?').bind(slug).first();
+  if (!ev || !ev.admin_usuario || !ev.admin_senha_hash) return null;
+  if (cred.user !== ev.admin_usuario) return null;
+  if ((await hashSenha(cred.pass, ev.admin_senha_salt)) !== ev.admin_senha_hash) return null;
+  return { tipo: 'evento', eventoId: ev.id };
+}
+
 export async function gerarCodigoUnico(db) {
   let codigo;
   let existe = true;
@@ -61,8 +95,8 @@ export async function recalcularStatusGrupo(db, codigo) {
 // evento cadastrado — mantém funcionando os links antigos (/?c=CODIGO) do casamento original.
 export async function resolverEvento(db, request) {
   const slug = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
-  if (slug) return db.prepare('SELECT * FROM eventos WHERE slug = ?').bind(slug).first();
-  return db.prepare('SELECT * FROM eventos ORDER BY id LIMIT 1').first();
+  if (slug) return db.prepare('SELECT id, slug, nome FROM eventos WHERE slug = ?').bind(slug).first();
+  return db.prepare('SELECT id, slug, nome FROM eventos ORDER BY id LIMIT 1').first();
 }
 
 export function eventoNaoEncontrado() {

@@ -1,4 +1,4 @@
-import { jsonResponse, recalcularStatusGrupo } from '../../../_lib.js';
+import { jsonResponse, recalcularStatusGrupo, resolverEvento, eventoNaoEncontrado } from '../../../_lib.js';
 
 // body: { id, novoCodigoGrupo }
 export async function onRequestPost({ request, env }) {
@@ -7,13 +7,14 @@ export async function onRequestPost({ request, env }) {
   if (!id || !novoCodigoGrupo) return jsonResponse({ erro: 'Dados incompletos.' }, 400);
 
   const db = env.DB;
-  const atual = await db.prepare('SELECT codigo_grupo FROM convidados WHERE id = ?').bind(id).first();
+  const evento = await resolverEvento(db, request);
+  if (!evento) return eventoNaoEncontrado();
+  const atual = await db.prepare('SELECT c.codigo_grupo FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE c.id = ? AND g.evento_id = ?').bind(id, evento.id).first();
   if (!atual) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
 
-  const origem = await db.prepare('SELECT evento_id FROM grupos WHERE codigo = ?').bind(atual.codigo_grupo).first();
   const destino = await db.prepare('SELECT evento_id FROM grupos WHERE codigo = ?').bind(novoCodigoGrupo).first();
   if (!destino) return jsonResponse({ erro: 'Grupo de destino não encontrado.' }, 404);
-  if (origem && origem.evento_id !== destino.evento_id) return jsonResponse({ erro: 'Não dá pra mover convidado entre eventos diferentes.' }, 400);
+  if (destino.evento_id !== evento.id) return jsonResponse({ erro: 'Grupo de destino não encontrado.' }, 404);
 
   await db.prepare('UPDATE convidados SET codigo_grupo = ? WHERE id = ?').bind(novoCodigoGrupo, id).run();
 

@@ -1,4 +1,4 @@
-import { jsonResponse, recalcularStatusGrupo } from '../../_lib.js';
+import { jsonResponse, recalcularStatusGrupo, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
 // body: { id, confirmado }
 export async function onRequestPost({ request, env }) {
@@ -7,7 +7,9 @@ export async function onRequestPost({ request, env }) {
   if (!id) return jsonResponse({ erro: 'Convidado não informado.' }, 400);
 
   const db = env.DB;
-  const convidado = await db.prepare('SELECT codigo_grupo FROM convidados WHERE id = ?').bind(id).first();
+  const evento = await resolverEvento(db, request);
+  if (!evento) return eventoNaoEncontrado();
+  const convidado = await db.prepare('SELECT c.codigo_grupo FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE c.id = ? AND g.evento_id = ?').bind(id, evento.id).first();
   if (!convidado) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
 
   await db.prepare('UPDATE convidados SET confirmado = ? WHERE id = ?').bind(confirmado ? 1 : 0, id).run();

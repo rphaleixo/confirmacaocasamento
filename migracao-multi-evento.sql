@@ -5,7 +5,10 @@ CREATE TABLE eventos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
   nome TEXT NOT NULL,
-  criado_em TEXT
+  criado_em TEXT,
+  admin_usuario TEXT,
+  admin_senha_salt TEXT,
+  admin_senha_hash TEXT
 );
 INSERT INTO eventos (id, slug, nome, criado_em) VALUES (1, 'casamento', 'Casamento', datetime('now'));
 

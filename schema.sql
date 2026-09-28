@@ -4,7 +4,11 @@ CREATE TABLE eventos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
   nome TEXT NOT NULL,
-  criado_em TEXT
+  criado_em TEXT,
+  -- login próprio do painel do evento (senha guardada só como hash)
+  admin_usuario TEXT,
+  admin_senha_salt TEXT,
+  admin_senha_hash TEXT
 );
 
 CREATE TABLE grupos (

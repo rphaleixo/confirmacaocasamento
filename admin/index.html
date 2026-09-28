@@ -103,6 +103,7 @@
     <label for="eventoSel" style="font-size:13px;">Evento:</label>
     <select id="eventoSel" style="padding:6px 10px;border-radius:8px;"></select>
     <button id="btnNovoEvento" type="button" style="border-radius:999px;padding:7px 12px;cursor:pointer;">+ Novo evento</button>
+    <button id="btnSenhaEvento" type="button" style="border-radius:999px;padding:7px 12px;cursor:pointer;">🔑 Login do evento</button>
   </div>
   <a id="verSite" href="/" target="_blank" style="color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
 </header>
@@ -269,7 +270,11 @@
 <script>
   // ---------- EVENTOS ----------
   // Todas as chamadas /api/ do admin levam ?e=<slug do evento selecionado>.
-  let eventoAtual = null;
+  // /e/<slug>/admin = painel do próprio evento (login do evento, sem acesso aos outros);
+  // /admin/ = painel geral (login master), com seletor e criação de eventos.
+  const matchEvento = location.pathname.match(/^\/e\/([^\/]+)\/admin/);
+  const modoEvento = !!matchEvento;
+  let eventoAtual = modoEvento ? decodeURIComponent(matchEvento[1]) : null;
   let listaEventos = [];
   const fetchOriginal = window.fetch.bind(window);
   window.fetch = function (url, opts) {
@@ -281,6 +286,11 @@
   function urlSite() { return location.origin + '/e/' + eventoAtual + '/'; }
 
   async function iniciarEventos() {
+    if (modoEvento) {
+      document.getElementById('eventoSel').parentElement.style.display = 'none';
+      document.getElementById('verSite').href = urlSite();
+      return;
+    }
     listaEventos = await fetchOriginal('/api/admin/eventos').then((r) => r.json());
     const sel = document.getElementById('eventoSel');
     sel.innerHTML = '';
@@ -298,13 +308,27 @@
     localStorage.setItem('eventoAdmin', e.target.value);
     location.href = location.pathname + '?e=' + encodeURIComponent(e.target.value);
   });
+  document.getElementById('btnSenhaEvento').addEventListener('click', async () => {
+    const ev = listaEventos.find((e) => e.slug === eventoAtual);
+    const adminUsuario = prompt('Usuário do painel de "' + eventoAtual + '" (painel em /e/' + eventoAtual + '/admin):', (ev && ev.adminUsuario) || eventoAtual);
+    if (!adminUsuario) return;
+    const adminSenha = prompt('Nova senha (mínimo 6 caracteres):');
+    if (!adminSenha) return;
+    const r = await fetchOriginal('/api/admin/eventos', { method: 'PUT', body: JSON.stringify({ slug: eventoAtual, adminUsuario, adminSenha }) });
+    const d = await r.json();
+    alert(d.erro || 'Login do evento atualizado.');
+  });
   document.getElementById('btnNovoEvento').addEventListener('click', async () => {
     const nome = prompt('Nome do evento (ex.: Aniversário da Helena):');
     if (!nome) return;
     const slug = prompt('Endereço do evento (só letras, números e hífen). Ficará em /e/<endereço>:', nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
     if (!slug) return;
     const copiar = confirm('Copiar textos, cores e configurações do evento "' + eventoAtual + '" como ponto de partida?\n(OK = copiar, Cancelar = evento em branco). Convidados e recados nunca são copiados.');
-    const r = await fetchOriginal('/api/admin/eventos', { method: 'POST', body: JSON.stringify({ nome, slug, copiarDe: copiar ? eventoAtual : '' }) });
+    const adminUsuario = prompt('Usuário de acesso ao painel DESTE evento (ex.: ' + slug + '):', slug);
+    if (!adminUsuario) return;
+    const adminSenha = prompt('Senha de acesso ao painel deste evento (mínimo 6 caracteres):');
+    if (!adminSenha) return;
+    const r = await fetchOriginal('/api/admin/eventos', { method: 'POST', body: JSON.stringify({ nome, slug, copiarDe: copiar ? eventoAtual : '', adminUsuario, adminSenha }) });
     const d = await r.json();
     if (d.erro) { alert(d.erro); return; }
     localStorage.setItem('eventoAdmin', d.slug);
