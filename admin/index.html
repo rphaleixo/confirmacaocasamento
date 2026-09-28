@@ -9,8 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
   :root{
-    --wine:#75003D; --wine-soft:#AC0070; --blush:#FFE8F2; --blush-deep:#F3DEE7;
-    --cream:#FFF8FB; --gold:#ED0190; --ink:#4C002A; --ink-soft:#704757; --border:#E7C7D5;
+    --wine:#1F3A5F; --wine-soft:#3F6EA5; --blush:#F3F5F9; --blush-deep:#E4E9F1;
+    --cream:#FFFFFF; --gold:#C9A227; --ink:#1B2433; --ink-soft:#5B6678; --border:#D5DCE7;
     --ok:#2E7D32; --err:#B00020;
   }
   *{box-sizing:border-box;}
@@ -99,7 +99,59 @@
   .separador-campo{margin:18px 0 6px;padding-top:12px;border-top:1px dashed var(--border);font-weight:700;font-size:12.5px;color:var(--wine);}
   .campo-cores{display:flex;gap:16px;flex-wrap:wrap;}
   .campo-cor-item{display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
+  .campo-cor-item{max-width:190px !important;}
 
+  /* header do evento */
+  header{position:relative;}
+  .hd-info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .hd-sub{font-size:12.5px;opacity:.85;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .hd-badge{background:rgba(255,255,255,.18);border-radius:999px;padding:2px 10px;font-size:11.5px;}
+  .hd-acoes{display:flex;gap:8px;flex-wrap:wrap;}
+  .hd-btn{color:var(--cream);font-size:13px;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:8px 14px;white-space:nowrap;background:transparent;cursor:pointer;text-decoration:none;font-family:inherit;}
+  .hd-btn:hover{background:rgba(255,255,255,.14);}
+  /* navegação principal do evento + submenu */
+  .topbar{position:sticky;top:0;z-index:20;background:var(--cream);box-shadow:0 1px 0 var(--border);}
+  .topbar nav{border-bottom:none;}
+  nav button .ico{margin-right:6px;}
+  #subheader{display:none;gap:8px;padding:10px 16px;background:var(--blush);border-top:1px solid var(--border);overflow-x:auto;}
+  #subheader button{background:#fff;border:1px solid var(--border);color:var(--ink-soft);padding:7px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  #subheader button.active{background:var(--wine);border-color:var(--wine);color:#fff;font-weight:600;}
+  /* Conteúdo: menu lateral por módulo */
+  .ct-layout{display:grid;grid-template-columns:230px 1fr;gap:20px;align-items:start;}
+  .ct-side{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:8px;position:sticky;top:110px;}
+  .ct-tit{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);padding:10px 10px 4px;}
+  .ct-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:9px 10px;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit;}
+  .ct-item:hover{background:var(--blush);}
+  .ct-item.active{background:var(--wine);color:#fff;font-weight:600;}
+  .ct-item .nm{flex:1;}
+  .ct-item .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;}
+  .ct-item.off .nm{opacity:.55;}
+  .ct-item.off .dot{background:#B7BFCC;}
+  .ct-item.active .dot.off{background:#B7BFCC;}
+  @media (max-width:760px){
+    .ct-layout{grid-template-columns:1fr;}
+    .ct-side{position:static;display:flex;overflow-x:auto;gap:4px;padding:6px;}
+    .ct-tit{display:none;}
+    .ct-item{width:auto;white-space:nowrap;flex-shrink:0;}
+  }
+  .ct-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .ct-head h3{margin:0;font-size:17px;color:var(--wine);}
+  .switch{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft);cursor:pointer;margin:0;font-weight:400;}
+  .switch input{position:absolute;opacity:0;width:0;height:0;}
+  .switch .trilho{width:38px;height:22px;border-radius:99px;background:#B7BFCC;position:relative;transition:.15s;flex-shrink:0;}
+  .switch .trilho::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s;}
+  .switch input:checked + .trilho{background:var(--ok);}
+  .switch input:checked + .trilho::after{left:19px;}
+  /* paletas */
+  .pal-card{position:relative;}
+  .pal-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--err);font-size:12px;line-height:1;cursor:pointer;padding:0;}
+  .pal-salvar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:12px;border:1px dashed var(--border);border-radius:10px;background:var(--blush);}
+  .pal-salvar input{flex:1;min-width:190px;}
+  .pal-salvar button{border:1px solid var(--wine);background:var(--wine);color:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;}
+  .cor-hex{width:96px !important;font-family:ui-monospace,monospace;font-size:12.5px !important;padding:6px 8px !important;}
+  .pal-preview{margin-top:14px;border-radius:12px;padding:16px;border:1px solid var(--border);}
+  .pal-preview .t{font-size:17px;font-weight:700;margin-bottom:4px;} .pal-preview .p{font-size:12.5px;margin-bottom:10px;opacity:.85;}
+  .pal-preview .b{display:inline-block;padding:7px 14px;border-radius:99px;font-size:12.5px;margin-right:8px;} .pal-preview .l{height:3px;width:60px;margin-bottom:10px;border-radius:2px;}
   .subnav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
   .subnav button{background:var(--cream);border:1px solid var(--border);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;flex-shrink:0;white-space:nowrap;}
   .subnav button.active{background:var(--wine);border-color:var(--wine);color:#fff;font-weight:600;}
@@ -109,7 +161,7 @@
   }
 
   dialog{border:none;border-radius:12px;padding:22px 24px;max-width:420px;width:90vw;box-shadow:0 20px 50px rgba(0,0,0,.25);}
-  dialog::backdrop{background:rgba(20,4,12,.45);}
+  dialog::backdrop{background:rgba(15,23,42,.5);}
   dialog h3{margin:0 0 4px;font-size:16px;}
   dialog hr{border:none;border-top:1px solid var(--blush-deep);margin:18px 0;}
   dialog #ng-fechar, dialog #ad-fechar, dialog #crop-cancelar{background:none;border:none;color:var(--ink-soft);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;}
@@ -136,28 +188,26 @@
 </head>
 <body>
 <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-  <h1 id="tituloAdmin">🎛️ Plataforma — Admin master</h1>
-  <div id="bannerEvento" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;">
-    <a href="/admin/" style="color:var(--cream);border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;text-decoration:none;">← Voltar à plataforma</a>
-    <span id="bannerNome"></span>
+  <div class="hd-info">
+    <h1 id="tituloAdmin">🎛️ Plataforma — Admin master</h1>
+    <div class="hd-sub" id="hdSub" style="display:none;"></div>
   </div>
-  <a id="verSite" href="/" target="_blank" style="display:none;color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
+  <div class="hd-acoes">
+    <a id="voltarPlataforma" class="hd-btn" href="/admin/" style="display:none;">← Plataforma</a>
+    <a id="verSite" class="hd-btn" href="/" target="_blank" style="display:none;">👁️ Ver site</a>
+    <button id="copiarSite" class="hd-btn" type="button" style="display:none;">🔗 Copiar link do site</button>
+  </div>
 </header>
+<div class="topbar">
 <nav id="navMaster">
-  <button data-tab="visao" class="active">Visão geral</button>
-  <button data-tab="eventos">Eventos</button>
-  <button data-tab="anfitrioes">Anfitriões</button>
-  <button data-tab="templates">Templates</button>
+  <button data-tab="visao" class="active"><span class="ico">📈</span>Visão geral</button>
+  <button data-tab="eventos"><span class="ico">🎉</span>Eventos</button>
+  <button data-tab="anfitrioes"><span class="ico">🔑</span>Anfitriões</button>
+  <button data-tab="templates"><span class="ico">🧩</span>Templates</button>
 </nav>
-<nav id="navEvento" style="display:none;">
-  <button data-tab="painel" class="active">Painel</button>
-  <button data-tab="mesclar">Mesclar grupos</button>
-  <button data-tab="mover">Mover convidado</button>
-  <button data-tab="importar">Importar lista</button>
-  <button data-tab="conteudo">Conteúdo</button>
-  <button data-tab="ordem">Ordem dos módulos</button>
-  <button data-tab="recados">Recados</button>
-</nav>
+<nav id="navEvento" style="display:none;"></nav>
+<div id="subheader"></div>
+</div>
 <main>
 
   <section id="tab-visao" class="tab active">
@@ -192,7 +242,7 @@
     <div id="tp-lista"></div>
   </section>
 
-  <section id="tab-painel" class="tab active">
+  <section id="tab-painel" class="tab">
     <div class="cards">
       <div class="card"><div class="num" id="p-cadastrados">--</div><div class="lbl">Convidados cadastrados</div></div>
       <div class="card"><div class="num" id="p-confirmados">--</div><div class="lbl" id="p-confirmados-lbl">Convidados confirmados</div></div>
@@ -310,9 +360,11 @@
   </section>
 
   <section id="tab-conteudo" class="tab">
-    <p class="hint">Textos e fotos do site público, por módulo. A posição de cada módulo não muda por aqui — só o conteúdo (isso é na aba "Ordem dos módulos"). Salvar um módulo já atualiza o site na hora.</p>
-    <div class="subnav" id="ct-subnav"></div>
-    <div id="ct-form">Carregando...</div>
+    <p class="hint">Escolha à esquerda o que quer editar. Cada módulo pode ser ligado ou desligado no topo do painel. Salvar já atualiza o site na hora. Para mudar a posição dos módulos, use “Ordem dos módulos”.</p>
+    <div class="ct-layout">
+      <aside class="ct-side" id="ct-subnav"></aside>
+      <div id="ct-form">Carregando...</div>
+    </div>
   </section>
 
   <section id="tab-ordem" class="tab">
@@ -381,15 +433,28 @@
     document.getElementById('navEvento').style.display = '';
     document.getElementById('verSite').style.display = '';
     document.getElementById('verSite').href = urlSite();
+    const copiar = document.getElementById('copiarSite');
+    copiar.style.display = '';
+    copiar.addEventListener('click', () => {
+      navigator.clipboard.writeText(urlSite());
+      copiar.textContent = 'Copiado ✓';
+      setTimeout(() => { copiar.textContent = '🔗 Copiar link do site'; }, 1500);
+    });
     document.getElementById('tab-visao').classList.remove('active');
-    document.getElementById('tab-painel').classList.add('active');
-    if (modoEvento) {
-      document.getElementById('tituloAdmin').textContent = '🎊 Área do anfitrião';
-    } else {
-      document.getElementById('tituloAdmin').textContent = '🎛️ Admin master';
-      document.getElementById('bannerEvento').style.display = 'flex';
-      document.getElementById('bannerNome').textContent = 'Gerindo o evento: ' + eventoAtual + ' (/e/' + eventoAtual + ')';
-    }
+    document.getElementById('tituloAdmin').textContent = eventoAtual;
+    const sub = document.getElementById('hdSub');
+    sub.style.display = 'flex';
+    sub.textContent = modoEvento ? 'Área do anfitrião' : 'Admin master · gerindo este evento';
+    if (!modoEvento) document.getElementById('voltarPlataforma').style.display = '';
+    montarNavEvento();
+    abrirAreaEvento('painel');
+    // nome e tipo reais do evento no cabeçalho
+    fetchOriginal('/api/conteudo?e=' + encodeURIComponent(eventoAtual)).then((r) => r.json()).then((d) => {
+      if (d._nome) document.getElementById('tituloAdmin').textContent = d._nome;
+      const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
+      const badge = document.createElement('span'); badge.className = 'hd-badge'; badge.textContent = tipos[d._tipo] || d._tipo || '';
+      sub.appendChild(badge);
+    }).catch(() => {});
   }
 
   // ---------- PLATAFORMA (só master) ----------
@@ -800,22 +865,68 @@
 
   document.getElementById('btnNovoEvento').addEventListener('click', abrirNovoEvento);
 
-  const tabs = document.querySelectorAll('nav button');
-  tabs.forEach((b) => b.addEventListener('click', () => {
-    tabs.forEach((x) => x.classList.remove('active'));
+  // ---------- NAVEGAÇÃO ----------
+  const CARREGADORES = {
+    visao: () => carregarVisao(),
+    eventos: () => carregarTemplates().then(carregarEventos),
+    anfitrioes: () => carregarAnfitrioes(),
+    templates: () => carregarTemplates(),
+    painel: () => carregarPainel(),
+    mesclar: () => carregarMesclar(),
+    mover: () => carregarMover(),
+    importar: () => {},
+    conteudo: () => carregarConteudo(),
+    ordem: () => carregarOrdem(),
+    recados: () => carregarRecados(),
+  };
+  function abrirAba(tab) {
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (CARREGADORES[tab]) CARREGADORES[tab]();
+  }
+
+  // Menu do evento: 4 áreas, cada uma com suas abas no submenu (menos botões, mais claro).
+  const NAV_EVENTO = [
+    { id: 'painel', icone: '📊', rotulo: 'Painel', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
+    { id: 'convidados', icone: '👥', rotulo: 'Convidados', abas: [{ tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
+    { id: 'site', icone: '🎨', rotulo: 'Site', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'recados', icone: '💬', rotulo: 'Recados', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
+  ];
+  function abrirAreaEvento(areaId, tabInicial) {
+    const area = NAV_EVENTO.find((a) => a.id === areaId);
+    document.querySelectorAll('#navEvento button').forEach((b) => b.classList.toggle('active', b.dataset.area === areaId));
+    const sub = document.getElementById('subheader');
+    sub.innerHTML = '';
+    const tabAtiva = tabInicial || area.abas[0].tab;
+    if (area.abas.length > 1) {
+      area.abas.forEach((a) => {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = a.rotulo;
+        b.className = a.tab === tabAtiva ? 'active' : '';
+        b.addEventListener('click', () => abrirAreaEvento(areaId, a.tab));
+        sub.appendChild(b);
+      });
+      sub.style.display = 'flex';
+    } else {
+      sub.style.display = 'none';
+    }
+    abrirAba(tabAtiva);
+  }
+  function montarNavEvento() {
+    const nav = document.getElementById('navEvento');
+    nav.innerHTML = '';
+    NAV_EVENTO.forEach((a) => {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.area = a.id;
+      const ico = document.createElement('span'); ico.className = 'ico'; ico.textContent = a.icone;
+      b.append(ico, a.rotulo);
+      b.addEventListener('click', () => abrirAreaEvento(a.id));
+      nav.appendChild(b);
+    });
+  }
+
+  document.querySelectorAll('#navMaster button').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('#navMaster button').forEach((x) => x.classList.remove('active'));
     b.classList.add('active');
-    document.getElementById('tab-' + b.dataset.tab).classList.add('active');
-    if (b.dataset.tab === 'visao') carregarVisao();
-    if (b.dataset.tab === 'eventos') { carregarTemplates().then(carregarEventos); }
-    if (b.dataset.tab === 'anfitrioes') carregarAnfitrioes();
-    if (b.dataset.tab === 'templates') carregarTemplates();
-    if (b.dataset.tab === 'painel') carregarPainel();
-    if (b.dataset.tab === 'mesclar') carregarMesclar();
-    if (b.dataset.tab === 'mover') carregarMover();
-    if (b.dataset.tab === 'conteudo') carregarConteudo();
-    if (b.dataset.tab === 'ordem') carregarOrdem();
-    if (b.dataset.tab === 'recados') carregarRecados();
+    abrirAba(b.dataset.tab);
   }));
 
   function msg(id, texto, ok) {
@@ -1319,13 +1430,45 @@
     adaptarAoTipo(ctDados);
     ctGrupoAtivo = 0;
     subnav.innerHTML = '';
+    ctItens = [];
+    let ultimaCategoria = '';
     GRUPOS_ATIVOS.forEach((grupo, i) => {
+      const categoria = /Apar|Hero/i.test(grupo.titulo) ? 'Visual' : /Rodap/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
+      if (categoria !== ultimaCategoria) {
+        const t = document.createElement('div'); t.className = 'ct-tit'; t.textContent = categoria;
+        subnav.appendChild(t);
+        ultimaCategoria = categoria;
+      }
       const btn = document.createElement('button');
-      btn.textContent = grupo.titulo;
+      btn.type = 'button'; btn.className = 'ct-item';
+      const ico = document.createElement('span'); ico.textContent = iconeDoGrupo(grupo);
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = grupo.titulo;
+      btn.append(ico, nm);
+      if (grupo.toggle) { const dot = document.createElement('span'); dot.className = 'dot'; btn.appendChild(dot); }
       btn.addEventListener('click', () => { ctGrupoAtivo = i; renderConteudoGrupo(); });
       subnav.appendChild(btn);
+      ctItens.push(btn);
+      atualizarEstadoItem(i);
     });
     renderConteudoGrupo();
+  }
+
+  let ctItens = [];
+  function iconeDoGrupo(g) {
+    const porToggle = { countdown: '⏳', presente_teaser: '🎁', timeline: '📖', padrinhos: '🤵', madrinhas_pais: '👨‍👩‍👧', mapa: '📍', galeria: '📷', presentes: '🎁', recados: '💬' };
+    if (g.toggle) return porToggle[g.toggle] || '▫️';
+    if (/Apar/i.test(g.titulo)) return '🎨';
+    if (/Hero|capa/i.test(g.titulo)) return '🖼️';
+    if (/Confirma/i.test(g.titulo)) return '✅';
+    return '🔻';
+  }
+  function moduloLigado(g) { return !g.toggle || ctDados['secao.' + g.toggle + '.ativa'] !== '0'; }
+  function atualizarEstadoItem(i) {
+    const g = GRUPOS_ATIVOS[i]; const btn = ctItens[i];
+    if (!btn || !g.toggle) return;
+    const ligado = moduloLigado(g);
+    btn.classList.toggle('off', !ligado);
+    btn.title = ligado ? 'Módulo ligado' : 'Módulo desligado (não aparece no site)';
   }
 
   function isoParaDataHora(iso) {
@@ -1398,12 +1541,25 @@
     }
 
     if (campo.tipo === 'paletas') {
+      const CHAVES_CORES = ['aparencia.cor_primaria', 'aparencia.cor_secundaria', 'aparencia.cor_destaque', 'aparencia.cor_fundo', 'aparencia.cor_texto'];
+      const aplicar = (cores) => {
+        CHAVES_CORES.forEach((chave, i) => {
+          const input = fs.querySelector('input[type=color][data-chave="' + chave + '"]');
+          if (input) { input.value = cores[i]; input.dispatchEvent(new Event('input')); }
+        });
+      };
+      let minhas = [];
+      try { minhas = JSON.parse(ctDados['aparencia.paletas_custom'] || '[]'); } catch (e) { minhas = []; }
+      if (!Array.isArray(minhas)) minhas = [];
+
       const label = document.createElement('label');
       label.textContent = campo.label;
       fs.appendChild(label);
       const wrap = document.createElement('div');
       wrap.style.display = 'flex'; wrap.style.gap = '10px'; wrap.style.flexWrap = 'wrap';
-      PALETAS_PRONTAS.forEach((paleta) => {
+
+      const cartao = (paleta, custom, indice) => {
+        const holder = document.createElement('div'); holder.className = 'pal-card';
         const box = document.createElement('button');
         box.type = 'button';
         box.title = paleta.nome;
@@ -1419,18 +1575,53 @@
         nomeEl.style.cssText = 'font-size:10px;color:var(--ink-soft);line-height:1.2;text-align:center;';
         nomeEl.textContent = paleta.nome;
         box.append(swatch, nomeEl);
-        box.addEventListener('click', () => {
-          const chavesCores = ['aparencia.cor_primaria', 'aparencia.cor_secundaria', 'aparencia.cor_destaque', 'aparencia.cor_fundo', 'aparencia.cor_texto'];
-          chavesCores.forEach((chave, i) => {
-            const input = fs.querySelector('input[type=color][data-chave="' + chave + '"]');
-            if (input) input.value = paleta.cores[i];
+        box.addEventListener('click', () => aplicar(paleta.cores));
+        holder.appendChild(box);
+        if (custom) {
+          const del = document.createElement('button');
+          del.type = 'button'; del.className = 'pal-del'; del.title = 'Excluir esta paleta'; del.textContent = '×';
+          del.addEventListener('click', async () => {
+            minhas.splice(indice, 1);
+            await salvarMinhasPaletas(minhas);
+            renderConteudoGrupo();
           });
-        });
-        wrap.appendChild(box);
-      });
+          holder.appendChild(del);
+        }
+        return holder;
+      };
+
+      if (minhas.length) {
+        const t = document.createElement('div'); t.className = 'dica-campo'; t.style.margin = '0 0 6px'; t.textContent = 'Minhas paletas';
+        fs.appendChild(t);
+        const wMinhas = document.createElement('div'); wMinhas.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;';
+        minhas.forEach((pl, i) => wMinhas.appendChild(cartao(pl, true, i)));
+        fs.appendChild(wMinhas);
+        const t2 = document.createElement('div'); t2.className = 'dica-campo'; t2.style.margin = '0 0 6px'; t2.textContent = 'Paletas prontas';
+        fs.appendChild(t2);
+      }
+      PALETAS_PRONTAS.forEach((paleta) => wrap.appendChild(cartao(paleta, false)));
       fs.appendChild(wrap);
-      const dica = document.createElement('div'); dica.className = 'dica-campo'; dica.textContent = 'Escolher uma paleta só preenche os campos de cor abaixo — clique em "Salvar este módulo" pra aplicar.';
+      const dica = document.createElement('div'); dica.className = 'dica-campo'; dica.textContent = 'Escolher uma paleta preenche as cores abaixo e mostra a prévia — depois clique em "Salvar" pra aplicar no site.';
       fs.appendChild(dica);
+
+      // criar paleta própria: ajuste as cores abaixo e salve com um nome
+      const salvar = document.createElement('div'); salvar.className = 'pal-salvar';
+      const nomeInput = document.createElement('input'); nomeInput.type = 'text'; nomeInput.placeholder = 'Nome da nova paleta (ex.: Festa da Helena)';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '＋ Salvar as cores abaixo como minha paleta';
+      const aviso = document.createElement('span'); aviso.style.cssText = 'font-size:12px;color:var(--ink-soft);';
+      btn.addEventListener('click', async () => {
+        const nome = nomeInput.value.trim();
+        if (!nome) { aviso.style.color = 'var(--err)'; aviso.textContent = 'Dê um nome à paleta.'; nomeInput.focus(); return; }
+        const cores = CHAVES_CORES.map((chave) => { const i = fs.querySelector('input[type=color][data-chave="' + chave + '"]'); return i ? i.value : '#000000'; });
+        minhas.push({ nome: nome.slice(0, 40), cores });
+        btn.disabled = true;
+        const ok = await salvarMinhasPaletas(minhas);
+        btn.disabled = false;
+        if (!ok) { minhas.pop(); aviso.style.color = 'var(--err)'; aviso.textContent = 'Não consegui salvar agora.'; return; }
+        renderConteudoGrupo();
+      });
+      salvar.append(nomeInput, btn, aviso);
+      fs.appendChild(salvar);
       return;
     }
 
@@ -1564,21 +1755,51 @@
       fs.appendChild(label);
       const wrap = document.createElement('div');
       wrap.className = 'campo-cores';
+      const inputs = {};
+      const preview = document.createElement('div'); preview.className = 'pal-preview';
+      const pl = document.createElement('div'); pl.className = 'l';
+      const pt = document.createElement('div'); pt.className = 't'; pt.textContent = 'Prévia do seu site';
+      const pp = document.createElement('div'); pp.className = 'p'; pp.textContent = 'Assim ficam o fundo, os textos e os botões.';
+      const pb1 = document.createElement('span'); pb1.className = 'b'; pb1.textContent = 'Botão principal';
+      const pb2 = document.createElement('span'); pb2.className = 'b'; pb2.textContent = 'Detalhe';
+      preview.append(pl, pt, pp, pb1, pb2);
+      const atualizarPrevia = () => {
+        const v = (k) => inputs[k].value;
+        preview.style.background = v('aparencia.cor_fundo');
+        pt.style.color = v('aparencia.cor_texto'); pp.style.color = v('aparencia.cor_texto');
+        pl.style.background = v('aparencia.cor_destaque');
+        pb1.style.background = v('aparencia.cor_primaria'); pb1.style.color = v('aparencia.cor_fundo');
+        pb2.style.background = v('aparencia.cor_secundaria'); pb2.style.color = v('aparencia.cor_fundo');
+      };
       campo.itens.forEach((item) => {
         const box = document.createElement('div');
         box.className = 'campo-cor-item';
         box.style.maxWidth = '150px';
         const lbl = document.createElement('span'); lbl.style.fontWeight = '600'; lbl.style.fontSize = '11.5px'; lbl.textContent = item.label;
+        const linha = document.createElement('div'); linha.style.cssText = 'display:flex;align-items:center;gap:6px;';
         const input = document.createElement('input');
         input.type = 'color';
         input.title = item.dica || '';
         input.dataset.chave = item.chave;
-        input.value = ctDados[item.chave] || '#75003D';
-        box.append(input, lbl);
+        input.value = ctDados[item.chave] || '#1F3A5F';
+        // campo de texto com o código da cor (#RRGGBB): dá pra digitar ou colar de qualquer site de paletas
+        const hex = document.createElement('input');
+        hex.type = 'text'; hex.className = 'cor-hex'; hex.maxLength = 7; hex.value = input.value.toUpperCase(); hex.placeholder = '#RRGGBB';
+        input.addEventListener('input', () => { hex.value = input.value.toUpperCase(); atualizarPrevia(); });
+        hex.addEventListener('input', () => {
+          let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v;
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) { input.value = v.toLowerCase(); atualizarPrevia(); hex.style.borderColor = ''; }
+          else hex.style.borderColor = 'var(--err)';
+        });
+        inputs[item.chave] = input;
+        linha.append(input, hex);
+        box.append(linha, lbl);
         if (item.dica) { const d = document.createElement('span'); d.className = 'dica-campo'; d.textContent = item.dica; box.appendChild(d); }
         wrap.appendChild(box);
       });
       fs.appendChild(wrap);
+      fs.appendChild(preview);
+      atualizarPrevia();
       return;
     }
 
@@ -1660,30 +1881,46 @@
     }
   }
 
+  async function salvarMinhasPaletas(lista) {
+    const valor = JSON.stringify(lista);
+    try {
+      const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify({ 'aparencia.paletas_custom': valor }) });
+      const d = await r.json();
+      if (d.erro) return false;
+      ctDados['aparencia.paletas_custom'] = valor;
+      return true;
+    } catch (e) { return false; }
+  }
+
   function renderConteudoGrupo() {
-    Array.from(document.getElementById('ct-subnav').children).forEach((btn, i) => {
-      btn.classList.toggle('active', i === ctGrupoAtivo);
-    });
+    ctItens.forEach((btn, i) => btn.classList.toggle('active', i === ctGrupoAtivo));
 
     const grupo = GRUPOS_ATIVOS[ctGrupoAtivo];
     const form = document.getElementById('ct-form');
     form.innerHTML = '';
 
+    const head = document.createElement('div'); head.className = 'ct-head';
+    const h3 = document.createElement('h3'); h3.textContent = iconeDoGrupo(grupo) + ' ' + grupo.titulo;
+    head.appendChild(h3);
     const fs = document.createElement('fieldset');
-    const legend = document.createElement('legend');
-    legend.append(grupo.titulo);
+    fs.style.paddingTop = '14px';
     if (grupo.toggle) {
       const chaveAtiva = 'secao.' + grupo.toggle + '.ativa';
       const wrap = document.createElement('label');
-      wrap.className = 'toggle-ativa';
+      wrap.className = 'switch';
       const chk = document.createElement('input');
       chk.type = 'checkbox';
       chk.dataset.chave = chaveAtiva;
       chk.checked = ctDados[chaveAtiva] !== '0';
-      wrap.append(chk, ' Módulo ativo');
-      legend.appendChild(wrap);
+      const trilho = document.createElement('span'); trilho.className = 'trilho';
+      const txt = document.createElement('span');
+      const rotular = () => { txt.textContent = chk.checked ? 'Módulo ligado no site' : 'Módulo desligado (não aparece no site)'; };
+      rotular();
+      chk.addEventListener('change', () => { rotular(); ctItens[ctGrupoAtivo].classList.toggle('off', !chk.checked); });
+      wrap.append(chk, trilho, txt);
+      head.appendChild(wrap);
     }
-    fs.appendChild(legend);
+    form.appendChild(head);
     grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
     form.appendChild(fs);
 
@@ -1696,7 +1933,7 @@
     btnSalvar.addEventListener('click', async () => {
       btnSalvar.disabled = true;
       const payload = {};
-      fs.querySelectorAll('[data-chave]').forEach((el) => {
+      form.querySelectorAll('[data-chave]').forEach((el) => {
         payload[el.dataset.chave] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
       });
       const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
@@ -1803,7 +2040,7 @@
   }
 
   iniciarEventos();
-  if (gerindoEvento) carregarPainel(); else carregarVisao();
+  if (!gerindoEvento) carregarVisao();
 </script>
 </body>
 </html>
