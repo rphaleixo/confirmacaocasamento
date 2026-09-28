@@ -1,13 +1,7 @@
+// Gestão transversal da plataforma — SÓ o admin master. O anfitrião (login do evento) recebe 403.
 import { jsonResponse, hashSenha, novoSalt } from '../../_lib.js';
 
-const SOMENTE_MASTER = () => jsonResponse({ erro: 'Só o administrador geral gerencia eventos.' }, 403);
-
-// GET — lista os eventos cadastrados
-export async function onRequestGet({ env, data }) {
-  if (data.admin.tipo !== 'master') return SOMENTE_MASTER();
-  const { results } = await env.DB.prepare('SELECT id, slug, nome, admin_usuario AS adminUsuario FROM eventos ORDER BY id').all();
-  return jsonResponse(results);
-}
+const SOMENTE_MASTER = () => jsonResponse({ erro: 'Só o administrador master gerencia eventos.' }, 403);
 
 function slugify(texto) {
   return String(texto || '')
@@ -16,8 +10,24 @@ function slugify(texto) {
     .slice(0, 40);
 }
 
-// body: { nome, slug?, copiarDe?, adminUsuario?, adminSenha? } — login próprio do evento (opcional; sem ele só o admin geral acessa)
-//  — cria um evento novo (endereço /e/<slug>).
+// GET — lista todos os eventos com números resumidos
+export async function onRequestGet({ env, data }) {
+  if (data.admin.tipo !== 'master') return SOMENTE_MASTER();
+  const { results } = await env.DB
+    .prepare(
+      `SELECT e.id, e.slug, e.nome, e.criado_em AS criadoEm, e.admin_usuario AS anfitriaoUsuario,
+              (SELECT COUNT(*) FROM grupos g WHERE g.evento_id = e.id) AS grupos,
+              (SELECT COUNT(*) FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE g.evento_id = e.id) AS convidados,
+              (SELECT COUNT(*) FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE g.evento_id = e.id AND c.confirmado = 1) AS confirmados,
+              (SELECT COUNT(*) FROM recados r WHERE r.evento_id = e.id AND r.aprovado = 0) AS recadosPendentes
+       FROM eventos e ORDER BY e.id`
+    )
+    .all();
+  return jsonResponse(results);
+}
+
+// POST body: { nome, slug?, copiarDe?, anfitriaoUsuario?, anfitriaoSenha? }
+// Cria um evento novo em /e/<slug>. O login do anfitrião é opcional na criação (pode ser definido depois).
 // copiarDe = slug de outro evento cujas configurações/conteúdo serão copiados como ponto de partida
 // (convidados, grupos e recados nunca são copiados).
 export async function onRequestPost({ request, env, data }) {
@@ -32,17 +42,17 @@ export async function onRequestPost({ request, env, data }) {
   const existente = await db.prepare('SELECT 1 FROM eventos WHERE slug = ?').bind(slug).first();
   if (existente) return jsonResponse({ erro: 'Já existe um evento com esse endereço.' }, 400);
 
-  const adminUsuario = (payload.adminUsuario || '').trim();
-  const adminSenha = String(payload.adminSenha || '');
-  if ((adminUsuario && adminSenha.length < 6) || (!adminUsuario && adminSenha)) {
+  const usuario = (payload.anfitriaoUsuario || '').trim();
+  const senha = String(payload.anfitriaoSenha || '');
+  if ((usuario && senha.length < 6) || (!usuario && senha)) {
     return jsonResponse({ erro: 'Informe usuário e uma senha de pelo menos 6 caracteres.' }, 400);
   }
-  const salt = adminUsuario ? novoSalt() : null;
-  const hash = adminUsuario ? await hashSenha(adminSenha, salt) : null;
+  const salt = usuario ? novoSalt() : null;
+  const hash = usuario ? await hashSenha(senha, salt) : null;
 
   const res = await db
     .prepare('INSERT INTO eventos (slug, nome, criado_em, admin_usuario, admin_senha_salt, admin_senha_hash) VALUES (?, ?, ?, ?, ?, ?)')
-    .bind(slug, nome, new Date().toISOString(), adminUsuario || null, salt, hash)
+    .bind(slug, nome, new Date().toISOString(), usuario || null, salt, hash)
     .run();
   const id = res.meta.last_row_id;
 
@@ -50,7 +60,6 @@ export async function onRequestPost({ request, env, data }) {
   if (origemSlug) {
     const origem = await db.prepare('SELECT id FROM eventos WHERE slug = ?').bind(origemSlug).first();
     if (origem) {
-      // não copia estado de presentes já escolhidos; o resto do conteúdo/configuração vai igual
       await db
         .prepare('INSERT INTO conteudo (evento_id, chave, valor) SELECT ?, chave, valor FROM conteudo WHERE evento_id = ?')
         .bind(id, origem.id)
@@ -61,21 +70,43 @@ export async function onRequestPost({ request, env, data }) {
   return jsonResponse({ id, slug, nome });
 }
 
-// PUT body: { slug, adminUsuario, adminSenha } — define/troca o login do evento (só admin geral)
+// PUT body: { slug, anfitriaoUsuario, anfitriaoSenha } — define/troca o login do anfitrião do evento
 export async function onRequestPut({ request, env, data }) {
   if (data.admin.tipo !== 'master') return SOMENTE_MASTER();
   const payload = await request.json().catch(() => ({}));
   const slug = (payload.slug || '').trim().toLowerCase();
-  const adminUsuario = (payload.adminUsuario || '').trim();
-  const adminSenha = String(payload.adminSenha || '');
-  if (!slug || !adminUsuario || adminSenha.length < 6) {
+  const usuario = (payload.anfitriaoUsuario || '').trim();
+  const senha = String(payload.anfitriaoSenha || '');
+  if (!slug || !usuario || senha.length < 6) {
     return jsonResponse({ erro: 'Informe usuário e uma senha de pelo menos 6 caracteres.' }, 400);
   }
   const salt = novoSalt();
   const res = await env.DB
     .prepare('UPDATE eventos SET admin_usuario = ?, admin_senha_salt = ?, admin_senha_hash = ? WHERE slug = ?')
-    .bind(adminUsuario, salt, await hashSenha(adminSenha, salt), slug)
+    .bind(usuario, salt, await hashSenha(senha, salt), slug)
     .run();
   if (!res.meta.changes) return jsonResponse({ erro: 'Evento não encontrado.' }, 404);
   return jsonResponse({ ok: true });
+}
+
+// PATCH body: { slug, novoNome?, novoSlug? } — renomeia o evento e/ou troca o endereço (/e/<slug>).
+// Os links antigos do endereço anterior deixam de funcionar.
+export async function onRequestPatch({ request, env, data }) {
+  if (data.admin.tipo !== 'master') return SOMENTE_MASTER();
+  const payload = await request.json().catch(() => ({}));
+  const slug = (payload.slug || '').trim().toLowerCase();
+  const db = env.DB;
+  const evento = await db.prepare('SELECT id, nome FROM eventos WHERE slug = ?').bind(slug).first();
+  if (!evento) return jsonResponse({ erro: 'Evento não encontrado.' }, 404);
+
+  const novoNome = (payload.novoNome || '').trim() || evento.nome;
+  const novoSlug = payload.novoSlug ? slugify(payload.novoSlug) : slug;
+  if (!novoSlug) return jsonResponse({ erro: 'Endereço inválido: use letras e números.' }, 400);
+  if (novoSlug !== slug) {
+    const existente = await db.prepare('SELECT 1 FROM eventos WHERE slug = ?').bind(novoSlug).first();
+    if (existente) return jsonResponse({ erro: 'Já existe um evento com esse endereço.' }, 400);
+  }
+
+  await db.prepare('UPDATE eventos SET nome = ?, slug = ? WHERE id = ?').bind(novoNome, novoSlug, evento.id).run();
+  return jsonResponse({ ok: true, slug: novoSlug, nome: novoNome });
 }
