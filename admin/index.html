@@ -149,6 +149,31 @@
   @media (max-width:980px){.ap-layout{grid-template-columns:1fr;} .ap-previa{position:static;order:-1;}}
   .ap-sec{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
   .ap-sec h4{margin:0 0 2px;font-size:15px;color:var(--wine);} .ap-sec .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
+  .ap-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-radius:12px;padding:14px 18px;margin-bottom:18px;color:#fff;}
+  .ap-banner.cores{background:linear-gradient(120deg,#1F3A5F,#3F6EA5);}
+  .ap-banner.tipografia{background:linear-gradient(120deg,#3B2A5F,#7B5EA7);}
+  .ap-banner h3{margin:0;font-size:18px;} .ap-banner p{margin:2px 0 0;font-size:12.5px;opacity:.9;}
+  .ap-passos{display:flex;gap:6px;align-items:center;font-size:12.5px;}
+  .ap-passos button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:12.5px;}
+  .ap-passos button.atual{background:#fff;color:#1B2433;font-weight:700;border-color:#fff;}
+  .ap-nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .ap-nav button{border:1px solid var(--border);background:#fff;border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--ink);}
+  .papeis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .papel{background:#fff;border:2px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;}
+  .papel.sel{border-color:var(--ink);box-shadow:0 4px 14px rgba(15,23,42,.18);}
+  .papel .amostra{position:relative;height:56px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
+  .papel .amostra input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0;}
+  .papel .nome{font-weight:700;font-size:13px;} .papel .uso{font-size:11px;color:var(--ink-soft);line-height:1.35;min-height:44px;}
+  .papel .trocar{border:1px dashed var(--border);background:var(--blush);border-radius:8px;padding:6px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .papel.sel .trocar{background:var(--ink);color:#fff;border-style:solid;}
+  .fonte-abas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .fonte-abas button{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer;font-size:13px;font-family:inherit;color:var(--ink);}
+  .fonte-abas button.active{background:#3B2A5F;border-color:#3B2A5F;color:#fff;font-weight:700;}
+  .fonte-resumo{display:flex;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px;}
+  .fonte-resumo div{flex:1;min-width:180px;} .fonte-resumo small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
+  .fonte-resumo .v{font-size:22px;line-height:1.2;color:var(--ink);}
+  .mk.modo-tipografia .rt.cor{display:none;} .mk.modo-cores .rt.fnt{display:none;}
+  .mk .rt.fnt{background:#3B2A5F;}
   .swap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .swap .chip{border:3px solid transparent;border-radius:10px;padding:12px 14px;min-width:96px;font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);font-family:inherit;}
   .swap .chip.sel{border-color:var(--ink);transform:translateY(-2px);}
@@ -401,7 +426,10 @@
   </section>
 
   <section id="tab-aparencia" class="tab">
-    <p class="hint">Cores e fontes do site do evento. A prévia ao lado mostra, ao vivo, como cada escolha aparece no site. Clique em “Salvar aparência” para aplicar.</p>
+    <div class="ap-banner" id="ap-banner">
+      <div><h3 id="ap-banner-tit"></h3><p id="ap-banner-sub"></p></div>
+      <div class="ap-passos"><button type="button" id="ap-passo-cores">1 · Cores</button><span>›</span><button type="button" id="ap-passo-tipo">2 · Tipografia</button></div>
+    </div>
     <div class="ap-layout">
       <div id="ap-form">Carregando...</div>
       <aside class="ap-previa" id="ap-previa"></aside>
@@ -916,14 +944,16 @@
     mesclar: () => carregarMesclar(),
     mover: () => carregarMover(),
     importar: () => {},
-    aparencia: () => carregarAparencia(),
+    cores: () => carregarAparencia('cores'),
+    tipografia: () => carregarAparencia('tipografia'),
     conteudo: () => carregarConteudo(),
     ordem: () => carregarOrdem(),
     recados: () => carregarRecados(),
   };
   function abrirAba(tab) {
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
+    const secao = (tab === 'cores' || tab === 'tipografia') ? 'aparencia' : tab; // Cores e Tipografia dividem a mesma tela
+    document.getElementById('tab-' + secao).classList.add('active');
     if (CARREGADORES[tab]) CARREGADORES[tab]();
   }
 
@@ -931,7 +961,7 @@
   const NAV_EVENTO = [
     { id: 'painel', icone: '📊', rotulo: 'Painel', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', icone: '👥', rotulo: 'Convidados', abas: [{ tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
-    { id: 'site', icone: '🎨', rotulo: 'Site', abas: [{ tab: 'aparencia', rotulo: 'Aparência (cores e fontes)' }, { tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', icone: '🎨', rotulo: 'Site', abas: [{ tab: 'cores', rotulo: '🎨 Cores' }, { tab: 'tipografia', rotulo: '🔤 Tipografia' }, { tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'recados', icone: '💬', rotulo: 'Recados', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
   ];
   function abrirAreaEvento(areaId, tabInicial) {
@@ -1324,15 +1354,17 @@
     { nome: 'Verde água', cores: ['#1F5E56', '#3F8F82', '#C9A227', '#EAF7F4', '#0F2E29'] },
   ];
 
-  const GRUPO_APARENCIA = { titulo: 'Aparência (cores e fontes)', campos: [
+  const GRUPO_CORES = { titulo: 'Cores', campos: [
     { chave: '__paletas__', label: 'Paletas prontas', tipo: 'paletas' },
     { chave: '__cores__', label: 'Cores do site', tipo: 'cores', itens: [
-      { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais, barra fixa — a cor "de marca" do site.' },
-      { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos (eyebrow), bordas, contorno de botões — usada em detalhes menores.' },
-      { chave: 'aparencia.cor_destaque', label: 'Destaque', dica: 'Hover dos botões, pontinhos da timeline e da galeria — o "brilho" do site.' },
-      { chave: 'aparencia.cor_fundo', label: 'Fundo', dica: 'Fundo das seções claras e ponto de partida de todos os tons claros (cartões, divisórias).' },
-      { chave: 'aparencia.cor_texto', label: 'Texto', dica: 'Cor do texto principal em fundo claro (títulos, parágrafos).' },
+      { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais e barra fixa: a cor "de marca".' },
+      { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos, bordas e contornos de botões.' },
+      { chave: 'aparencia.cor_destaque', label: 'Destaque', dica: 'O "brilho": pontinhos, linhas e hover dos botões.' },
+      { chave: 'aparencia.cor_fundo', label: 'Fundo', dica: 'Fundo das seções claras e ponto de partida dos tons claros.' },
+      { chave: 'aparencia.cor_texto', label: 'Texto', dica: 'Títulos e parágrafos em fundo claro.' },
     ]},
+  ]};
+  const GRUPO_TIPOGRAFIA = { titulo: 'Tipografia', campos: [
     { chave: '__fontes__', label: 'Fontes', tipo: 'fontes' },
   ]};
 
@@ -1798,68 +1830,59 @@
       const label = document.createElement('label');
       label.textContent = campo.label;
       fs.appendChild(label);
-      const wrap = document.createElement('div');
-      wrap.className = 'campo-cores';
-      const inputs = {};
+      const dica = document.createElement('div'); dica.className = 'dica-campo'; dica.style.margin = '0 0 10px';
+      dica.textContent = 'Clique na cor para mudá-la, ou digite o código. Para trocar duas cores de papel (ex.: o Destaque virar a Primária), use “⇄ Trocar” em uma e depois em outra.';
+      fs.appendChild(dica);
+      const grade = document.createElement('div'); grade.className = 'papeis';
+      const inputs = {}, cards = {}, amostras = {};
+      let escolhido = null;
+      const swapMsg = document.createElement('div'); swapMsg.className = 'swap-msg';
+
       campo.itens.forEach((item) => {
-        const box = document.createElement('div');
-        box.className = 'campo-cor-item';
-        const lbl = document.createElement('span'); lbl.style.fontWeight = '600'; lbl.style.fontSize = '11.5px'; lbl.textContent = item.label;
-        const linha = document.createElement('div'); linha.style.cssText = 'display:flex;align-items:center;gap:6px;';
+        const card = document.createElement('div'); card.className = 'papel';
+        const amostra = document.createElement('label'); amostra.className = 'amostra'; amostra.title = 'Clique para escolher a cor';
         const input = document.createElement('input');
-        input.type = 'color';
-        input.title = item.dica || '';
-        input.dataset.chave = item.chave;
-        input.value = ctDados[item.chave] || '#1F3A5F';
-        // campo de texto com o código da cor (#RRGGBB): dá pra digitar ou colar de qualquer site de paletas
+        input.type = 'color'; input.dataset.chave = item.chave; input.value = ctDados[item.chave] || '#1F3A5F';
+        amostra.appendChild(input);
+        const nome = document.createElement('div'); nome.className = 'nome'; nome.textContent = item.label;
+        const uso = document.createElement('div'); uso.className = 'uso'; uso.textContent = item.dica || '';
+        // código da cor (#RRGGBB): dá pra digitar ou colar de qualquer site de paletas
         const hex = document.createElement('input');
-        hex.type = 'text'; hex.className = 'cor-hex'; hex.maxLength = 7; hex.value = input.value.toUpperCase(); hex.placeholder = '#RRGGBB';
-        input.addEventListener('input', () => { hex.value = input.value.toUpperCase(); });
+        hex.type = 'text'; hex.className = 'cor-hex'; hex.style.width = '100%'; hex.maxLength = 7; hex.placeholder = '#RRGGBB';
+        const trocar = document.createElement('button'); trocar.type = 'button'; trocar.className = 'trocar'; trocar.textContent = '⇄ Trocar';
+
+        const pintar = () => {
+          amostra.style.background = input.value; amostra.style.color = contrasteTexto(input.value);
+          hex.value = input.value.toUpperCase();
+        };
+        input.addEventListener('input', pintar);
         hex.addEventListener('input', () => {
           let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v;
-          if (/^#[0-9a-fA-F]{6}$/.test(v)) { input.value = v.toLowerCase(); hex.style.borderColor = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) { input.value = v.toLowerCase(); amostra.style.background = input.value; hex.style.borderColor = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
           else hex.style.borderColor = 'var(--err)';
         });
-        inputs[item.chave] = input;
-        linha.append(input, hex);
-        box.append(linha, lbl);
-        if (item.dica) { const d = document.createElement('span'); d.className = 'dica-campo'; d.textContent = item.dica; box.appendChild(d); }
-        wrap.appendChild(box);
-      });
-      fs.appendChild(wrap);
-
-      // Trocar papéis: clique numa cor e depois em outra para elas trocarem de lugar
-      const tl = document.createElement('label'); tl.textContent = 'Trocar cores de lugar'; tl.style.marginTop = '18px';
-      const th = document.createElement('div'); th.className = 'dica-campo';
-      th.textContent = 'Ex.: quer que a cor de destaque vire a primária? Clique em “Destaque” e depois em “Primária” — as duas trocam de papel e a prévia mostra como fica.';
-      const chips = document.createElement('div'); chips.className = 'swap';
-      const swapMsg = document.createElement('div'); swapMsg.className = 'swap-msg';
-      let escolhido = null;
-      const botoes = campo.itens.map((item, idx) => {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = item.label;
-        b.addEventListener('click', () => {
-          if (escolhido === null) { escolhido = idx; swapMsg.textContent = 'Agora clique na cor que vai trocar de lugar com “' + item.label + '”.'; pintar(); return; }
-          if (escolhido === idx) { escolhido = null; swapMsg.textContent = ''; pintar(); return; }
-          const k1 = campo.itens[escolhido].chave, k2 = item.chave;
-          const v1 = inputs[k1].value, v2 = inputs[k2].value;
-          inputs[k1].value = v2; inputs[k2].value = v1;
-          [k1, k2].forEach((k) => inputs[k].dispatchEvent(new Event('input', { bubbles: true })));
-          swapMsg.textContent = '“' + campo.itens[escolhido].label + '” e “' + item.label + '” trocaram de lugar. Confira a prévia e salve se gostar.';
-          escolhido = null; pintar();
+        trocar.addEventListener('click', () => {
+          if (escolhido === null) {
+            escolhido = item.chave; card.classList.add('sel'); trocar.textContent = 'Escolhida ✓';
+            swapMsg.textContent = 'Agora clique em “⇄ Trocar” na cor que vai trocar de lugar com “' + item.label + '”.';
+            return;
+          }
+          const outro = escolhido;
+          if (outro === item.chave) { escolhido = null; card.classList.remove('sel'); trocar.textContent = '⇄ Trocar'; swapMsg.textContent = ''; return; }
+          const v1 = inputs[outro].value, v2 = input.value;
+          inputs[outro].value = v2; input.value = v1;
+          const nomeOutro = campo.itens.find((i) => i.chave === outro).label;
+          [inputs[outro], input].forEach((e) => e.dispatchEvent(new Event('input', { bubbles: true })));
+          Object.values(cards).forEach((c) => { c.classList.remove('sel'); c.querySelector('.trocar').textContent = '⇄ Trocar'; });
+          swapMsg.textContent = '“' + nomeOutro + '” e “' + item.label + '” trocaram de papel. Confira a prévia ao lado e salve se gostar.';
+          escolhido = null;
         });
-        chips.appendChild(b);
-        return b;
+        inputs[item.chave] = input; cards[item.chave] = card; amostras[item.chave] = amostra;
+        card.append(amostra, nome, uso, hex, trocar);
+        grade.appendChild(card);
+        pintar();
       });
-      function pintar() {
-        campo.itens.forEach((item, i) => {
-          const c = inputs[item.chave].value;
-          botoes[i].style.background = c; botoes[i].style.color = contrasteTexto(c);
-          botoes[i].classList.toggle('sel', escolhido === i);
-        });
-      }
-      fs.addEventListener('input', pintar);
-      pintar();
-      fs.append(tl, th, chips, swapMsg);
+      fs.append(grade, swapMsg);
       return;
     }
 
@@ -1883,16 +1906,42 @@
       }, { rootMargin: '120px' }) : null;
       const observar = (el, fontes) => { el._fontes = fontes; if (io) io.observe(el); else fontes.forEach((f) => CAT.carregar(f)); };
 
-      const secao = (titulo, sub) => {
+      // resumo do que está escolhido + abas para navegar (uma seção por vez, sem rolar a página toda)
+      const resumo = document.createElement('div'); resumo.className = 'fonte-resumo';
+      const rT = document.createElement('div'), rX = document.createElement('div');
+      const rTs = document.createElement('small'); rTs.textContent = 'Fonte dos títulos';
+      const rTv = document.createElement('div'); rTv.className = 'v';
+      const rXs = document.createElement('small'); rXs.textContent = 'Fonte do texto';
+      const rXv = document.createElement('div'); rXv.className = 'v';
+      rT.append(rTs, rTv); rX.append(rXs, rXv); resumo.append(rT, rX);
+      const atualizarResumo = () => {
+        const ft = CAT.porId[hT.value], fx = CAT.porId[hX.value];
+        CAT.carregar(ft); CAT.carregar(fx);
+        rTv.textContent = ft.nome; rTv.style.fontFamily = CAT.familia(ft); rTv.style.fontStyle = ft.estiloTitulo;
+        rXv.textContent = fx.nome; rXv.style.fontFamily = CAT.familia(fx); rXv.style.fontSize = '17px';
+      };
+      hT.addEventListener('input', atualizarResumo); hX.addEventListener('input', atualizarResumo);
+      fs.appendChild(resumo);
+      const abas = document.createElement('div'); abas.className = 'fonte-abas';
+      fs.appendChild(abas);
+      const paineis = [];
+      const secao = (titulo, sub, rotuloAba) => {
         const w = document.createElement('div'); w.className = 'ap-sec';
         const h = document.createElement('h4'); h.textContent = titulo;
         const p = document.createElement('p'); p.className = 'sub'; p.textContent = sub;
-        w.append(h, p); fs.appendChild(w);
+        w.append(h, p);
+        fs.appendChild(w);
+        const aba = document.createElement('button'); aba.type = 'button'; aba.textContent = rotuloAba;
+        const i = paineis.length;
+        aba.addEventListener('click', () => mostrar(i));
+        abas.appendChild(aba);
+        paineis.push({ w, aba });
         return w;
       };
+      const mostrar = (i) => paineis.forEach((pn, j) => { pn.w.style.display = i === j ? '' : 'none'; pn.aba.classList.toggle('active', i === j); });
 
       // 1) combinações prontas
-      const sComb = secao('Combinações prontas', 'Um título e um texto escolhidos para combinar. Clique para usar as duas fontes de uma vez.');
+      const sComb = secao('Combinações prontas', 'Um título e um texto escolhidos para combinar. Clique para usar as duas fontes de uma vez.', '✨ Combinações prontas');
       const gComb = document.createElement('div'); gComb.className = 'fonte-grid';
       CAT.combinacoes.forEach((cb) => {
         const ft = CAT.porId[cb.titulo], fx = CAT.porId[cb.texto];
@@ -1912,8 +1961,8 @@
       sComb.appendChild(gComb);
 
       // 2) e 3) fonte dos títulos / do texto, com filtro por categoria e contexto de uso
-      const montarLista = (papel, titulo, sub, amostra) => {
-        const sec = secao(titulo, sub);
+      const montarLista = (papel, titulo, sub, rotuloAba) => {
+        const sec = secao(titulo, sub, rotuloAba);
         const fontes = CAT.lista.filter((f) => f[papel]);
         const cats = Object.keys(CAT.categorias).filter((c) => fontes.some((f) => f.categoria === c));
         const filtros = document.createElement('div'); filtros.className = 'fonte-filtros';
@@ -1947,8 +1996,10 @@
         sec.append(filtros, grade);
         desenhar();
       };
-      montarLista('titulo', 'Fonte dos títulos', 'Nomes, títulos de módulos e números da contagem. Manuscritas ficam lindas, mas use com títulos curtos.');
-      montarLista('texto', 'Fonte do texto', 'Parágrafos, formulário de confirmação e informações práticas. Priorize legibilidade no celular.');
+      montarLista('titulo', 'Fonte dos títulos', 'Nomes, títulos de módulos e números da contagem. Manuscritas ficam lindas, mas use com títulos curtos.', '🔠 Fonte dos títulos');
+      montarLista('texto', 'Fonte do texto', 'Parágrafos, formulário de confirmação e informações práticas. Priorize legibilidade no celular.', '📄 Fonte do texto');
+      mostrar(0);
+      atualizarResumo();
       return;
     }
 
@@ -2099,6 +2150,7 @@
     btnSalvar.addEventListener('click', async () => {
       btnSalvar.disabled = true;
       const payload = {};
+      if (opcoes.rascunho) Object.assign(payload, opcoes.rascunho); // inclui o que foi mexido na outra etapa
       form.querySelectorAll('[data-chave]').forEach((el) => {
         payload[el.dataset.chave] = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
       });
@@ -2106,25 +2158,59 @@
       const d = await r.json();
       btnSalvar.disabled = false;
       if (d.erro) { msg(msgDiv.id, d.erro, false); return; }
+      if (opcoes.rascunho) Object.keys(opcoes.rascunho).forEach((k) => delete opcoes.rascunho[k]);
       Object.assign(ctDados, payload);
       msg(msgDiv.id, 'Salvo — o site já está com essa versão.', true);
     });
     form.appendChild(btnSalvar);
     form.appendChild(msgDiv);
+    if (opcoes.rodape) opcoes.rodape(form);
+    if (opcoes.rascunho) {
+      const guardar = (ev) => { const e = ev.target; if (e && e.dataset && e.dataset.chave) opcoes.rascunho[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; };
+      form.addEventListener('input', guardar); form.addEventListener('change', guardar);
+    }
   }
 
   // ---------- APARÊNCIA (aba própria: cores, fontes e prévia ao vivo) ----------
-  async function carregarAparencia() {
+  // Alterações ainda não salvas de Cores e Tipografia (valem para as duas etapas, com um único "Salvar")
+  let rascunhoAparencia = {};
+  const TEXTOS_APARENCIA = {
+    cores: ['🎨 Cores', 'Etapa 1 de 2: escolha as cores do site e o papel de cada uma.'],
+    tipografia: ['🔤 Tipografia', 'Etapa 2 de 2: agora vamos às letras do site. As cores ficam como você deixou.'],
+  };
+
+  async function carregarAparencia(modo) {
+    modo = modo || 'cores';
     const form = document.getElementById('ap-form');
     const previa = document.getElementById('ap-previa');
+    const banner = document.getElementById('ap-banner');
+    banner.className = 'ap-banner ' + modo;
+    document.getElementById('ap-banner-tit').textContent = TEXTOS_APARENCIA[modo][0];
+    document.getElementById('ap-banner-sub').textContent = TEXTOS_APARENCIA[modo][1];
+    const irPara = (m) => { abrirAreaEvento('site', m); };
+    document.getElementById('ap-passo-cores').className = modo === 'cores' ? 'atual' : '';
+    document.getElementById('ap-passo-tipo').className = modo === 'tipografia' ? 'atual' : '';
+    document.getElementById('ap-passo-cores').onclick = () => irPara('cores');
+    document.getElementById('ap-passo-tipo').onclick = () => irPara('tipografia');
     try {
       ctDados = await fetch('/api/conteudo').then((r) => r.json());
     } catch (e) {
       form.textContent = 'Não consegui carregar agora. Recarregue a página pra tentar de novo.';
       return;
     }
-    renderGrupoEm(GRUPO_APARENCIA, form, { msgId: 'ap-msg', semCabecalho: true, semMoldura: true, rotuloSalvar: 'Salvar aparência' });
-    montarPrevia(form, previa);
+    Object.assign(ctDados, rascunhoAparencia); // mostra o que já foi alterado e ainda não salvo
+    renderGrupoEm(modo === 'cores' ? GRUPO_CORES : GRUPO_TIPOGRAFIA, form, {
+      msgId: 'ap-msg', semCabecalho: true, semMoldura: true, rotuloSalvar: 'Salvar aparência (cores e tipografia)',
+      rascunho: rascunhoAparencia,
+      rodape: (container) => {
+        const nav = document.createElement('div'); nav.className = 'ap-nav';
+        const b = document.createElement('button'); b.type = 'button';
+        if (modo === 'cores') { b.textContent = 'Próxima etapa: Tipografia →'; b.addEventListener('click', () => irPara('tipografia')); nav.append(document.createElement('span'), b); }
+        else { b.textContent = '← Voltar para Cores'; b.addEventListener('click', () => irPara('cores')); nav.appendChild(b); }
+        container.appendChild(nav);
+      },
+    });
+    montarPrevia(form, previa, modo);
   }
 
   function contrasteTexto(hex) {
@@ -2135,30 +2221,31 @@
   }
 
   // Miniatura do site que reage às cores e fontes escolhidas no formulário.
-  function montarPrevia(form, box) {
+  function montarPrevia(form, box, modo) {
     box.innerHTML = '';
     const CAT = window.FONTES_CATALOGO;
     const ehAniv = ctDados._tipo === 'aniversario';
     const legAtiva = document.createElement('label'); legAtiva.className = 'switch'; legAtiva.style.margin = '0 0 8px';
     const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = true;
     const trilho = document.createElement('span'); trilho.className = 'trilho';
-    legAtiva.append(chk, trilho, document.createTextNode('Mostrar o papel de cada cor'));
-    const titulo = document.createElement('div'); titulo.style.cssText = 'font-weight:700;color:var(--wine);margin-bottom:8px;'; titulo.textContent = 'Prévia no site';
-    const mk = document.createElement('div'); mk.className = 'mk';
-    const nomes = ehAniv ? 'Helena' : 'Ana &amp; Beto';
+    legAtiva.append(chk, trilho, document.createTextNode(modo === 'cores' ? 'Mostrar o papel de cada cor' : 'Mostrar onde cada fonte é usada'));
+    const titulo = document.createElement('div'); titulo.style.cssText = 'font-weight:700;color:var(--wine);margin-bottom:8px;'; titulo.textContent = modo === 'cores' ? 'Prévia das cores no site' : 'Prévia da tipografia no site';
+    modo = modo || 'cores';
+    const mk = document.createElement('div'); mk.className = 'mk modo-' + modo;
+    const nomes = (ehAniv ? 'Helena' : 'Ana &amp; Beto') + '<span class="rt fnt in">Título</span>';
     mk.innerHTML =
-      '<div class="mk-hero"><span class="rt">Primária</span>' +
-        '<div class="mk-eb"><span class="t-eb">' + (ehAniv ? 'Você é nosso convidado' : 'Nosso casamento') + '</span><span class="rt in" style="margin-left:6px">Destaque</span></div>' +
+      '<div class="mk-hero"><span class="rt cor">Primária</span>' +
+        '<div class="mk-eb"><span class="t-eb">' + (ehAniv ? 'Você é nosso convidado' : 'Nosso casamento') + '</span><span class="rt cor in" style="margin-left:6px">Destaque</span></div>' +
         '<div class="mk-nomes disp">' + nomes + '</div>' +
         '<div class="mk-data">12 de junho de 2027 · 15h00</div>' +
         '<div class="mk-btn">Confirmar presença</div></div>' +
-      '<div class="mk-sec"><span class="rt">Fundo</span>' +
-        '<div class="mk-eb"><span class="t-eb2">Para o grande dia</span><span class="rt in">Secundária</span></div>' +
-        '<div class="mk-tit disp">Faltam apenas <span class="rt in">Texto</span></div>' +
+      '<div class="mk-sec"><span class="rt cor">Fundo</span>' +
+        '<div class="mk-eb"><span class="t-eb2">Para o grande dia</span><span class="rt cor in">Secundária</span></div>' +
+        '<div class="mk-tit disp">Faltam apenas <span class="rt cor in">Texto</span><span class="rt fnt in">Título</span></div>' +
         '<div class="mk-cd disp"><div><b class="t-num">120</b><span>dias</span></div><div><b class="t-num">08</b><span>horas</span></div><div><b class="t-num">45</b><span>min</span></div></div>' +
-        '<div class="mk-card">Um cartão com texto corrido, borda suave e o resto do conteúdo do seu evento.</div>' +
+        '<div class="mk-card">Um cartão com texto corrido, borda suave e o resto do conteúdo do seu evento. <span class="rt fnt in">Texto</span></div>' +
         '<div class="mk-dots"><i></i><i></i><i></i></div></div>' +
-      '<div class="mk-map"><span class="rt">Primária</span><div class="mk-tit disp" style="margin-bottom:6px">Onde vai ser</div><div class="mk-data" style="margin-bottom:8px">Nome do local, endereço</div><div class="mk-btn">Como chegar ↗</div></div>' +
+      '<div class="mk-map"><span class="rt cor">Primária</span><div class="mk-tit disp" style="margin-bottom:6px">Onde vai ser</div><div class="mk-data" style="margin-bottom:8px">Nome do local, endereço</div><div class="mk-btn">Como chegar ↗</div></div>' +
       '<div class="mk-foot" style="font-size:10.5px;padding:10px;">Feito com amor</div>';
     const lista = document.createElement('ul'); lista.className = 'mk-legenda';
     const itens = [
@@ -2168,23 +2255,33 @@
       ['aparencia.cor_fundo', 'Fundo', 'fundo das seções claras e dos cartões'],
       ['aparencia.cor_texto', 'Texto', 'títulos e parágrafos em fundo claro'],
     ];
-    const marcas = itens.map(([chave, nome, uso]) => {
-      const li = document.createElement('li'); const i = document.createElement('i');
-      const t = document.createElement('span'); t.textContent = nome + ': ' + uso;
-      li.append(i, t); lista.appendChild(li);
-      return { chave, i };
-    });
+    let marcas = [];
+    let nomeFonteT = null, nomeFonteX = null;
+    if (modo === 'cores') {
+      marcas = itens.map(([chave, nome, uso]) => {
+        const li = document.createElement('li'); const i = document.createElement('i');
+        const t = document.createElement('span'); t.textContent = nome + ': ' + uso;
+        li.append(i, t); lista.appendChild(li);
+        return { chave, i };
+      });
+    } else {
+      const l1 = document.createElement('li'); nomeFonteT = document.createElement('span'); l1.appendChild(nomeFonteT);
+      const l2 = document.createElement('li'); nomeFonteX = document.createElement('span'); l2.appendChild(nomeFonteX);
+      lista.append(l1, l2);
+    }
     chk.addEventListener('change', () => mk.classList.toggle('sem-leg', !chk.checked));
     box.append(titulo, legAtiva, mk, lista);
 
     const q = (sel) => mk.querySelector(sel);
     const qa = (sel) => Array.from(mk.querySelectorAll(sel));
-    const val = (chave, padrao) => { const e = form.querySelector('[data-chave="' + chave + '"]'); return (e && e.value) || padrao; };
+    // lê do formulário (se o campo está na etapa atual) ou do que já está carregado/rascunhado
+    const val = (chave, padrao) => { const e = form.querySelector('[data-chave="' + chave + '"]'); return (e && e.value) || ctDados[chave] || padrao; };
     function atualizar() {
       const p = val('aparencia.cor_primaria', '#1F3A5F'), sc = val('aparencia.cor_secundaria', '#3F6EA5'), d = val('aparencia.cor_destaque', '#C9A227');
       const f = val('aparencia.cor_fundo', '#EAF1FB'), tx = val('aparencia.cor_texto', '#14213D');
-      const fTitulo = CAT.porId[val('aparencia.fonte_titulo', '')] || CAT.porId['cormorant-garamond'];
-      const fTexto = CAT.porId[val('aparencia.fonte_texto', '')] || CAT.porId['inter'];
+      const leg = CAT.legado[ctDados['aparencia.fontes']] || CAT.legado.classico;
+      const fTitulo = CAT.porId[val('aparencia.fonte_titulo', '')] || CAT.porId[leg.titulo];
+      const fTexto = CAT.porId[val('aparencia.fonte_texto', '')] || CAT.porId[leg.texto];
       CAT.carregar(fTitulo); CAT.carregar(fTexto);
       mk.style.fontFamily = CAT.familia(fTexto);
       qa('.disp').forEach((e) => { e.style.fontFamily = CAT.familia(fTitulo); e.style.fontStyle = fTitulo.estiloTitulo; });
@@ -2200,6 +2297,10 @@
       q('.mk-map .mk-btn').style.cssText = 'background:' + f + ';color:' + p + ';';
       const foot = q('.mk-foot'); foot.style.background = 'color-mix(in srgb,' + p + ' 78%, black 22%)'; foot.style.color = f;
       marcas.forEach((m) => { m.i.style.background = val(m.chave, '#ccc'); });
+      if (nomeFonteT) {
+        nomeFonteT.textContent = 'Título: ' + fTitulo.nome + ' — ' + fTitulo.uso;
+        nomeFonteX.textContent = 'Texto: ' + fTexto.nome + ' — ' + fTexto.uso;
+      }
     }
     form.addEventListener('input', atualizar);
     form.addEventListener('change', atualizar);
