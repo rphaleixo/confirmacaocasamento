@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script src="/fontes.js"></script>
 <style>
   :root{
     --wine:#1F3A5F; --wine-soft:#3F6EA5; --blush:#F3F5F9; --blush-deep:#E4E9F1;
@@ -143,6 +144,38 @@
   .switch input:checked + .trilho{background:var(--ok);}
   .switch input:checked + .trilho::after{left:19px;}
   /* paletas */
+  .ap-layout{display:grid;grid-template-columns:1fr 350px;gap:22px;align-items:start;}
+  .ap-previa{position:sticky;top:112px;}
+  @media (max-width:980px){.ap-layout{grid-template-columns:1fr;} .ap-previa{position:static;order:-1;}}
+  .ap-sec{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+  .ap-sec h4{margin:0 0 2px;font-size:15px;color:var(--wine);} .ap-sec .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
+  .swap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .swap .chip{border:3px solid transparent;border-radius:10px;padding:12px 14px;min-width:96px;font-size:12.5px;font-weight:600;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);font-family:inherit;}
+  .swap .chip.sel{border-color:var(--ink);transform:translateY(-2px);}
+  .swap-msg{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:18px;}
+  .fonte-filtros{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+  .fonte-filtros button{background:#fff;border:1px solid var(--border);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--ink-soft);}
+  .fonte-filtros button.active{background:var(--wine);border-color:var(--wine);color:#fff;}
+  .fonte-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;max-height:440px;overflow-y:auto;padding:4px;}
+  .fonte-card{border:2px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .fonte-card:hover{border-color:var(--wine-soft);} .fonte-card.sel{border-color:var(--wine);background:var(--blush);}
+  .fonte-amostra{font-size:21px;line-height:1.25;margin-bottom:6px;color:var(--ink);}
+  .fonte-nome{font-size:12.5px;font-weight:700;} .fonte-cat{font-size:10.5px;color:var(--wine-soft);text-transform:uppercase;letter-spacing:.04em;}
+  .fonte-uso{font-size:11.5px;color:var(--ink-soft);margin-top:3px;line-height:1.35;}
+  .mk{border-radius:14px;overflow:hidden;border:1px solid var(--border);font-size:12px;box-shadow:0 8px 24px rgba(15,23,42,.12);}
+  .mk > div{position:relative;padding:16px 16px;text-align:center;}
+  .mk .rt{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.62);color:#fff;font-size:9.5px;padding:2px 7px;border-radius:99px;font-family:system-ui,sans-serif;font-style:normal;letter-spacing:.02em;}
+  .mk.sem-leg .rt{display:none;}
+  .mk .rt.in{position:static;display:inline-block;margin-left:6px;vertical-align:middle;}
+  .mk-eb{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;}
+  .mk-nomes{font-size:30px;line-height:1.1;margin:4px 0;} .mk-data{font-size:12px;margin-bottom:12px;opacity:.9;}
+  .mk-btn{display:inline-block;padding:8px 16px;border-radius:99px;font-size:11.5px;}
+  .mk-tit{font-size:20px;margin-bottom:8px;} .mk-cd{display:flex;justify-content:center;gap:16px;margin-bottom:10px;}
+  .mk-cd b{display:block;font-size:22px;font-weight:500;} .mk-cd span{font-size:9.5px;opacity:.75;}
+  .mk-card{border-radius:10px;padding:10px 12px;font-size:11.5px;margin:0 auto 10px;text-align:left;}
+  .mk-dots{display:flex;gap:6px;justify-content:center;} .mk-dots i{width:9px;height:9px;border-radius:50%;display:block;}
+  .mk-legenda{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;padding-left:0;list-style:none;} .mk-legenda li{margin:3px 0;display:flex;gap:6px;align-items:center;}
+  .mk-legenda i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.2);flex-shrink:0;}
   .pal-card{position:relative;}
   .pal-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--err);font-size:12px;line-height:1;cursor:pointer;padding:0;}
   .pal-salvar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:12px;border:1px dashed var(--border);border-radius:10px;background:var(--blush);}
@@ -364,6 +397,14 @@
     <div class="ct-layout">
       <aside class="ct-side" id="ct-subnav"></aside>
       <div id="ct-form">Carregando...</div>
+    </div>
+  </section>
+
+  <section id="tab-aparencia" class="tab">
+    <p class="hint">Cores e fontes do site do evento. A prévia ao lado mostra, ao vivo, como cada escolha aparece no site. Clique em “Salvar aparência” para aplicar.</p>
+    <div class="ap-layout">
+      <div id="ap-form">Carregando...</div>
+      <aside class="ap-previa" id="ap-previa"></aside>
     </div>
   </section>
 
@@ -875,6 +916,7 @@
     mesclar: () => carregarMesclar(),
     mover: () => carregarMover(),
     importar: () => {},
+    aparencia: () => carregarAparencia(),
     conteudo: () => carregarConteudo(),
     ordem: () => carregarOrdem(),
     recados: () => carregarRecados(),
@@ -889,7 +931,7 @@
   const NAV_EVENTO = [
     { id: 'painel', icone: '📊', rotulo: 'Painel', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', icone: '👥', rotulo: 'Convidados', abas: [{ tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
-    { id: 'site', icone: '🎨', rotulo: 'Site', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', icone: '🎨', rotulo: 'Site', abas: [{ tab: 'aparencia', rotulo: 'Aparência (cores e fontes)' }, { tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'recados', icone: '💬', rotulo: 'Recados', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
   ];
   function abrirAreaEvento(areaId, tabInicial) {
@@ -1282,18 +1324,19 @@
     { nome: 'Verde água', cores: ['#1F5E56', '#3F8F82', '#C9A227', '#EAF7F4', '#0F2E29'] },
   ];
 
-  const GRUPOS_CONTEUDO = [
-    { titulo: 'Aparência (cores e fonte)', campos: [
-      { chave: '__paletas__', label: 'Paletas prontas', tipo: 'paletas' },
-      { chave: '__cores__', label: 'Paleta de cores', tipo: 'cores', itens: [
-        { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais, barra fixa — a cor "de marca" do site.' },
-        { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos (eyebrow), bordas, contorno de botões — usada em detalhes menores.' },
-        { chave: 'aparencia.cor_destaque', label: 'Destaque', dica: 'Hover dos botões, pontinhos da timeline e da galeria — o "brilho" do site.' },
-        { chave: 'aparencia.cor_fundo', label: 'Fundo', dica: 'Fundo das seções claras e ponto de partida de todos os tons claros (cartões, divisórias).' },
-        { chave: 'aparencia.cor_texto', label: 'Texto', dica: 'Cor do texto principal em fundo claro (títulos, parágrafos).' },
-      ]},
-      { chave: 'aparencia.fontes', label: 'Combinação de fontes', tipo: 'select', opcoes: FONTES_OPCOES },
+  const GRUPO_APARENCIA = { titulo: 'Aparência (cores e fontes)', campos: [
+    { chave: '__paletas__', label: 'Paletas prontas', tipo: 'paletas' },
+    { chave: '__cores__', label: 'Cores do site', tipo: 'cores', itens: [
+      { chave: 'aparencia.cor_primaria', label: 'Primária', dica: 'Mapa, rodapé, botões principais, barra fixa — a cor "de marca" do site.' },
+      { chave: 'aparencia.cor_secundaria', label: 'Secundária', dica: 'Textos pequenos (eyebrow), bordas, contorno de botões — usada em detalhes menores.' },
+      { chave: 'aparencia.cor_destaque', label: 'Destaque', dica: 'Hover dos botões, pontinhos da timeline e da galeria — o "brilho" do site.' },
+      { chave: 'aparencia.cor_fundo', label: 'Fundo', dica: 'Fundo das seções claras e ponto de partida de todos os tons claros (cartões, divisórias).' },
+      { chave: 'aparencia.cor_texto', label: 'Texto', dica: 'Cor do texto principal em fundo claro (títulos, parágrafos).' },
     ]},
+    { chave: '__fontes__', label: 'Fontes', tipo: 'fontes' },
+  ]};
+
+  const GRUPOS_CONTEUDO = [
     { titulo: 'Hero (capa)', campos: [
       { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome' },
       { chave: 'hero.noiva', label: 'Nome da noiva' },
@@ -1547,7 +1590,7 @@
       const aplicar = (cores) => {
         CHAVES_CORES.forEach((chave, i) => {
           const input = fs.querySelector('input[type=color][data-chave="' + chave + '"]');
-          if (input) { input.value = cores[i]; input.dispatchEvent(new Event('input')); }
+          if (input) { input.value = cores[i]; input.dispatchEvent(new Event('input', { bubbles: true })); }
         });
       };
       let minhas = [];
@@ -1585,7 +1628,7 @@
           del.addEventListener('click', async () => {
             minhas.splice(indice, 1);
             await salvarMinhasPaletas(minhas);
-            renderConteudoGrupo();
+            rerenderAtual();
           });
           holder.appendChild(del);
         }
@@ -1620,7 +1663,7 @@
         const ok = await salvarMinhasPaletas(minhas);
         btn.disabled = false;
         if (!ok) { minhas.pop(); aviso.style.color = 'var(--err)'; aviso.textContent = 'Não consegui salvar agora.'; return; }
-        renderConteudoGrupo();
+        rerenderAtual();
       });
       salvar.append(nomeInput, btn, aviso);
       fs.appendChild(salvar);
@@ -1758,25 +1801,9 @@
       const wrap = document.createElement('div');
       wrap.className = 'campo-cores';
       const inputs = {};
-      const preview = document.createElement('div'); preview.className = 'pal-preview';
-      const pl = document.createElement('div'); pl.className = 'l';
-      const pt = document.createElement('div'); pt.className = 't'; pt.textContent = 'Prévia do seu site';
-      const pp = document.createElement('div'); pp.className = 'p'; pp.textContent = 'Assim ficam o fundo, os textos e os botões.';
-      const pb1 = document.createElement('span'); pb1.className = 'b'; pb1.textContent = 'Botão principal';
-      const pb2 = document.createElement('span'); pb2.className = 'b'; pb2.textContent = 'Detalhe';
-      preview.append(pl, pt, pp, pb1, pb2);
-      const atualizarPrevia = () => {
-        const v = (k) => inputs[k].value;
-        preview.style.background = v('aparencia.cor_fundo');
-        pt.style.color = v('aparencia.cor_texto'); pp.style.color = v('aparencia.cor_texto');
-        pl.style.background = v('aparencia.cor_destaque');
-        pb1.style.background = v('aparencia.cor_primaria'); pb1.style.color = v('aparencia.cor_fundo');
-        pb2.style.background = v('aparencia.cor_secundaria'); pb2.style.color = v('aparencia.cor_fundo');
-      };
       campo.itens.forEach((item) => {
         const box = document.createElement('div');
         box.className = 'campo-cor-item';
-        box.style.maxWidth = '150px';
         const lbl = document.createElement('span'); lbl.style.fontWeight = '600'; lbl.style.fontSize = '11.5px'; lbl.textContent = item.label;
         const linha = document.createElement('div'); linha.style.cssText = 'display:flex;align-items:center;gap:6px;';
         const input = document.createElement('input');
@@ -1787,10 +1814,10 @@
         // campo de texto com o código da cor (#RRGGBB): dá pra digitar ou colar de qualquer site de paletas
         const hex = document.createElement('input');
         hex.type = 'text'; hex.className = 'cor-hex'; hex.maxLength = 7; hex.value = input.value.toUpperCase(); hex.placeholder = '#RRGGBB';
-        input.addEventListener('input', () => { hex.value = input.value.toUpperCase(); atualizarPrevia(); });
+        input.addEventListener('input', () => { hex.value = input.value.toUpperCase(); });
         hex.addEventListener('input', () => {
           let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v;
-          if (/^#[0-9a-fA-F]{6}$/.test(v)) { input.value = v.toLowerCase(); atualizarPrevia(); hex.style.borderColor = ''; }
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) { input.value = v.toLowerCase(); hex.style.borderColor = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
           else hex.style.borderColor = 'var(--err)';
         });
         inputs[item.chave] = input;
@@ -1800,8 +1827,128 @@
         wrap.appendChild(box);
       });
       fs.appendChild(wrap);
-      fs.appendChild(preview);
-      atualizarPrevia();
+
+      // Trocar papéis: clique numa cor e depois em outra para elas trocarem de lugar
+      const tl = document.createElement('label'); tl.textContent = 'Trocar cores de lugar'; tl.style.marginTop = '18px';
+      const th = document.createElement('div'); th.className = 'dica-campo';
+      th.textContent = 'Ex.: quer que a cor de destaque vire a primária? Clique em “Destaque” e depois em “Primária” — as duas trocam de papel e a prévia mostra como fica.';
+      const chips = document.createElement('div'); chips.className = 'swap';
+      const swapMsg = document.createElement('div'); swapMsg.className = 'swap-msg';
+      let escolhido = null;
+      const botoes = campo.itens.map((item, idx) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = item.label;
+        b.addEventListener('click', () => {
+          if (escolhido === null) { escolhido = idx; swapMsg.textContent = 'Agora clique na cor que vai trocar de lugar com “' + item.label + '”.'; pintar(); return; }
+          if (escolhido === idx) { escolhido = null; swapMsg.textContent = ''; pintar(); return; }
+          const k1 = campo.itens[escolhido].chave, k2 = item.chave;
+          const v1 = inputs[k1].value, v2 = inputs[k2].value;
+          inputs[k1].value = v2; inputs[k2].value = v1;
+          [k1, k2].forEach((k) => inputs[k].dispatchEvent(new Event('input', { bubbles: true })));
+          swapMsg.textContent = '“' + campo.itens[escolhido].label + '” e “' + item.label + '” trocaram de lugar. Confira a prévia e salve se gostar.';
+          escolhido = null; pintar();
+        });
+        chips.appendChild(b);
+        return b;
+      });
+      function pintar() {
+        campo.itens.forEach((item, i) => {
+          const c = inputs[item.chave].value;
+          botoes[i].style.background = c; botoes[i].style.color = contrasteTexto(c);
+          botoes[i].classList.toggle('sel', escolhido === i);
+        });
+      }
+      fs.addEventListener('input', pintar);
+      pintar();
+      fs.append(tl, th, chips, swapMsg);
+      return;
+    }
+
+    if (campo.tipo === 'fontes') {
+      const CAT = window.FONTES_CATALOGO;
+      const legado = CAT.legado[ctDados['aparencia.fontes']] || CAT.legado.classico;
+      const inicial = (chave, padrao) => (CAT.porId[ctDados[chave]] ? ctDados[chave] : padrao);
+      const hT = document.createElement('input'); hT.type = 'hidden'; hT.dataset.chave = 'aparencia.fonte_titulo'; hT.value = inicial('aparencia.fonte_titulo', legado.titulo);
+      const hX = document.createElement('input'); hX.type = 'hidden'; hX.dataset.chave = 'aparencia.fonte_texto'; hX.value = inicial('aparencia.fonte_texto', legado.texto);
+      fs.append(hT, hX);
+
+      const cartoes = []; // {btn, papel, teste}
+      const marcar = () => cartoes.forEach((c) => c.btn.classList.toggle('sel', c.teste()));
+      const escolher = (papel, id) => {
+        (papel === 'titulo' ? hT : hX).value = id;
+        (papel === 'titulo' ? hT : hX).dispatchEvent(new Event('input', { bubbles: true }));
+        marcar();
+      };
+      const io = ('IntersectionObserver' in window) ? new IntersectionObserver((entradas) => {
+        entradas.forEach((e) => { if (e.isIntersecting) { (e.target._fontes || []).forEach((f) => CAT.carregar(f)); io.unobserve(e.target); } });
+      }, { rootMargin: '120px' }) : null;
+      const observar = (el, fontes) => { el._fontes = fontes; if (io) io.observe(el); else fontes.forEach((f) => CAT.carregar(f)); };
+
+      const secao = (titulo, sub) => {
+        const w = document.createElement('div'); w.className = 'ap-sec';
+        const h = document.createElement('h4'); h.textContent = titulo;
+        const p = document.createElement('p'); p.className = 'sub'; p.textContent = sub;
+        w.append(h, p); fs.appendChild(w);
+        return w;
+      };
+
+      // 1) combinações prontas
+      const sComb = secao('Combinações prontas', 'Um título e um texto escolhidos para combinar. Clique para usar as duas fontes de uma vez.');
+      const gComb = document.createElement('div'); gComb.className = 'fonte-grid';
+      CAT.combinacoes.forEach((cb) => {
+        const ft = CAT.porId[cb.titulo], fx = CAT.porId[cb.texto];
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fonte-card';
+        const am = document.createElement('div'); am.className = 'fonte-amostra'; am.textContent = 'Ana & Beto';
+        am.style.fontFamily = CAT.familia(ft); am.style.fontStyle = ft.estiloTitulo;
+        const tx = document.createElement('div'); tx.style.cssText = 'font-size:12.5px;margin-bottom:6px;font-family:' + CAT.familia(fx) + ';'; tx.textContent = 'Confirme sua presença até 1º de maio.';
+        const nm = document.createElement('div'); nm.className = 'fonte-nome'; nm.textContent = cb.nome;
+        const cn = document.createElement('div'); cn.className = 'fonte-cat'; cn.textContent = ft.nome + ' + ' + fx.nome;
+        const us = document.createElement('div'); us.className = 'fonte-uso'; us.textContent = cb.uso;
+        btn.append(am, tx, nm, cn, us);
+        btn.addEventListener('click', () => { hT.value = cb.titulo; hX.value = cb.texto; hT.dispatchEvent(new Event('input', { bubbles: true })); marcar(); });
+        observar(btn, [ft, fx]);
+        gComb.appendChild(btn);
+        cartoes.push({ btn, papel: 'comb', teste: () => hT.value === cb.titulo && hX.value === cb.texto });
+      });
+      sComb.appendChild(gComb);
+
+      // 2) e 3) fonte dos títulos / do texto, com filtro por categoria e contexto de uso
+      const montarLista = (papel, titulo, sub, amostra) => {
+        const sec = secao(titulo, sub);
+        const fontes = CAT.lista.filter((f) => f[papel]);
+        const cats = Object.keys(CAT.categorias).filter((c) => fontes.some((f) => f.categoria === c));
+        const filtros = document.createElement('div'); filtros.className = 'fonte-filtros';
+        const grade = document.createElement('div'); grade.className = 'fonte-grid';
+        let filtro = 'todas';
+        const desenhar = () => {
+          grade.innerHTML = '';
+          for (let i = cartoes.length - 1; i >= 0; i--) if (cartoes[i].papel === papel) cartoes.splice(i, 1);
+          fontes.filter((f) => filtro === 'todas' || f.categoria === filtro).forEach((f) => {
+            const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fonte-card';
+            const am = document.createElement('div'); am.className = 'fonte-amostra';
+            am.style.fontFamily = CAT.familia(f);
+            if (papel === 'titulo') { am.textContent = 'Ana & Beto'; am.style.fontStyle = f.estiloTitulo; }
+            else { am.textContent = 'Confirme sua presença'; am.style.fontSize = '15px'; }
+            const nm = document.createElement('div'); nm.className = 'fonte-nome'; nm.textContent = f.nome;
+            const ct = document.createElement('div'); ct.className = 'fonte-cat'; ct.textContent = f.categoriaNome;
+            const us = document.createElement('div'); us.className = 'fonte-uso'; us.textContent = f.uso;
+            btn.append(am, nm, ct, us);
+            btn.addEventListener('click', () => escolher(papel, f.id));
+            observar(btn, [f]);
+            grade.appendChild(btn);
+            cartoes.push({ btn, papel, teste: () => (papel === 'titulo' ? hT.value : hX.value) === f.id });
+          });
+          marcar();
+        };
+        [['todas', 'Todas']].concat(cats.map((c) => [c, CAT.categorias[c]])).forEach(([id, nome]) => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = nome; if (id === filtro) b.className = 'active';
+          b.addEventListener('click', () => { filtro = id; Array.from(filtros.children).forEach((x) => x.classList.toggle('active', x === b)); desenhar(); });
+          filtros.appendChild(b);
+        });
+        sec.append(filtros, grade);
+        desenhar();
+      };
+      montarLista('titulo', 'Fonte dos títulos', 'Nomes, títulos de módulos e números da contagem. Manuscritas ficam lindas, mas use com títulos curtos.');
+      montarLista('texto', 'Fonte do texto', 'Parágrafos, formulário de confirmação e informações práticas. Priorize legibilidade no celular.');
       return;
     }
 
@@ -1894,18 +2041,35 @@
     } catch (e) { return false; }
   }
 
+  let rerenderAtual = () => {};
+
   function renderConteudoGrupo() {
     ctItens.forEach((btn, i) => btn.classList.toggle('active', i === ctGrupoAtivo));
-
     const grupo = GRUPOS_ATIVOS[ctGrupoAtivo];
-    const form = document.getElementById('ct-form');
+    renderGrupoEm(grupo, document.getElementById('ct-form'), {
+      msgId: 'ct-msg',
+      aoAlternar: (ligado) => ctItens[ctGrupoAtivo].classList.toggle('off', !ligado),
+    });
+  }
+
+  // Desenha um grupo de campos (módulo do site, aparência...) dentro de "form", com botão de salvar.
+  function renderGrupoEm(grupo, form, opcoes) {
+    opcoes = opcoes || {};
+    rerenderAtual = () => {
+      // mantém no formulário o que ainda não foi salvo
+      form.querySelectorAll('[data-chave]').forEach((e) => { ctDados[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
+      renderGrupoEm(grupo, form, opcoes);
+    };
     form.innerHTML = '';
 
     const head = document.createElement('div'); head.className = 'ct-head';
-    const h3 = document.createElement('h3'); h3.textContent = iconeDoGrupo(grupo) + ' ' + grupo.titulo;
-    head.appendChild(h3);
+    if (!opcoes.semCabecalho) {
+      const h3 = document.createElement('h3'); h3.textContent = iconeDoGrupo(grupo) + ' ' + grupo.titulo;
+      head.appendChild(h3);
+    }
     const fs = document.createElement('fieldset');
     fs.style.paddingTop = '14px';
+    if (opcoes.semMoldura) { fs.style.border = 'none'; fs.style.padding = '0'; }
     if (grupo.toggle) {
       const chaveAtiva = 'secao.' + grupo.toggle + '.ativa';
       const wrap = document.createElement('label');
@@ -1918,20 +2082,20 @@
       const txt = document.createElement('span');
       const rotular = () => { txt.textContent = chk.checked ? 'Módulo ligado no site' : 'Módulo desligado (não aparece no site)'; };
       rotular();
-      chk.addEventListener('change', () => { rotular(); ctItens[ctGrupoAtivo].classList.toggle('off', !chk.checked); });
+      chk.addEventListener('change', () => { rotular(); if (opcoes.aoAlternar) opcoes.aoAlternar(chk.checked); });
       wrap.append(chk, trilho, txt);
       head.appendChild(wrap);
     }
-    form.appendChild(head);
+    if (head.children.length) form.appendChild(head);
     grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
     form.appendChild(fs);
 
     const btnSalvar = document.createElement('button');
     btnSalvar.className = 'action';
-    btnSalvar.textContent = 'Salvar este módulo';
+    btnSalvar.textContent = opcoes.rotuloSalvar || 'Salvar este módulo';
     const msgDiv = document.createElement('div');
     msgDiv.className = 'msg';
-    msgDiv.id = 'ct-msg';
+    msgDiv.id = opcoes.msgId || 'ct-msg';
     btnSalvar.addEventListener('click', async () => {
       btnSalvar.disabled = true;
       const payload = {};
@@ -1941,12 +2105,105 @@
       const r = await fetch('/api/admin/conteudo', { method: 'POST', body: JSON.stringify(payload) });
       const d = await r.json();
       btnSalvar.disabled = false;
-      if (d.erro) { msg('ct-msg', d.erro, false); return; }
+      if (d.erro) { msg(msgDiv.id, d.erro, false); return; }
       Object.assign(ctDados, payload);
-      msg('ct-msg', 'Salvo — o site já está com essa versão.', true);
+      msg(msgDiv.id, 'Salvo — o site já está com essa versão.', true);
     });
     form.appendChild(btnSalvar);
     form.appendChild(msgDiv);
+  }
+
+  // ---------- APARÊNCIA (aba própria: cores, fontes e prévia ao vivo) ----------
+  async function carregarAparencia() {
+    const form = document.getElementById('ap-form');
+    const previa = document.getElementById('ap-previa');
+    try {
+      ctDados = await fetch('/api/conteudo').then((r) => r.json());
+    } catch (e) {
+      form.textContent = 'Não consegui carregar agora. Recarregue a página pra tentar de novo.';
+      return;
+    }
+    renderGrupoEm(GRUPO_APARENCIA, form, { msgId: 'ap-msg', semCabecalho: true, semMoldura: true, rotuloSalvar: 'Salvar aparência' });
+    montarPrevia(form, previa);
+  }
+
+  function contrasteTexto(hex) {
+    const h = String(hex || '#000000').replace('#', '');
+    const c = [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)));
+    const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return l > 0.45 ? '#111111' : '#FFFFFF';
+  }
+
+  // Miniatura do site que reage às cores e fontes escolhidas no formulário.
+  function montarPrevia(form, box) {
+    box.innerHTML = '';
+    const CAT = window.FONTES_CATALOGO;
+    const ehAniv = ctDados._tipo === 'aniversario';
+    const legAtiva = document.createElement('label'); legAtiva.className = 'switch'; legAtiva.style.margin = '0 0 8px';
+    const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = true;
+    const trilho = document.createElement('span'); trilho.className = 'trilho';
+    legAtiva.append(chk, trilho, document.createTextNode('Mostrar o papel de cada cor'));
+    const titulo = document.createElement('div'); titulo.style.cssText = 'font-weight:700;color:var(--wine);margin-bottom:8px;'; titulo.textContent = 'Prévia no site';
+    const mk = document.createElement('div'); mk.className = 'mk';
+    const nomes = ehAniv ? 'Helena' : 'Ana &amp; Beto';
+    mk.innerHTML =
+      '<div class="mk-hero"><span class="rt">Primária</span>' +
+        '<div class="mk-eb"><span class="t-eb">' + (ehAniv ? 'Você é nosso convidado' : 'Nosso casamento') + '</span><span class="rt in" style="margin-left:6px">Destaque</span></div>' +
+        '<div class="mk-nomes disp">' + nomes + '</div>' +
+        '<div class="mk-data">12 de junho de 2027 · 15h00</div>' +
+        '<div class="mk-btn">Confirmar presença</div></div>' +
+      '<div class="mk-sec"><span class="rt">Fundo</span>' +
+        '<div class="mk-eb"><span class="t-eb2">Para o grande dia</span><span class="rt in">Secundária</span></div>' +
+        '<div class="mk-tit disp">Faltam apenas <span class="rt in">Texto</span></div>' +
+        '<div class="mk-cd disp"><div><b class="t-num">120</b><span>dias</span></div><div><b class="t-num">08</b><span>horas</span></div><div><b class="t-num">45</b><span>min</span></div></div>' +
+        '<div class="mk-card">Um cartão com texto corrido, borda suave e o resto do conteúdo do seu evento.</div>' +
+        '<div class="mk-dots"><i></i><i></i><i></i></div></div>' +
+      '<div class="mk-map"><span class="rt">Primária</span><div class="mk-tit disp" style="margin-bottom:6px">Onde vai ser</div><div class="mk-data" style="margin-bottom:8px">Nome do local, endereço</div><div class="mk-btn">Como chegar ↗</div></div>' +
+      '<div class="mk-foot" style="font-size:10.5px;padding:10px;">Feito com amor</div>';
+    const lista = document.createElement('ul'); lista.className = 'mk-legenda';
+    const itens = [
+      ['aparencia.cor_primaria', 'Primária', 'topo da capa, mapa, rodapé e botões principais'],
+      ['aparencia.cor_secundaria', 'Secundária', 'textos pequenos, bordas e contornos'],
+      ['aparencia.cor_destaque', 'Destaque', 'brilhos: linha da capa, pontinhos e detalhes'],
+      ['aparencia.cor_fundo', 'Fundo', 'fundo das seções claras e dos cartões'],
+      ['aparencia.cor_texto', 'Texto', 'títulos e parágrafos em fundo claro'],
+    ];
+    const marcas = itens.map(([chave, nome, uso]) => {
+      const li = document.createElement('li'); const i = document.createElement('i');
+      const t = document.createElement('span'); t.textContent = nome + ': ' + uso;
+      li.append(i, t); lista.appendChild(li);
+      return { chave, i };
+    });
+    chk.addEventListener('change', () => mk.classList.toggle('sem-leg', !chk.checked));
+    box.append(titulo, legAtiva, mk, lista);
+
+    const q = (sel) => mk.querySelector(sel);
+    const qa = (sel) => Array.from(mk.querySelectorAll(sel));
+    const val = (chave, padrao) => { const e = form.querySelector('[data-chave="' + chave + '"]'); return (e && e.value) || padrao; };
+    function atualizar() {
+      const p = val('aparencia.cor_primaria', '#1F3A5F'), sc = val('aparencia.cor_secundaria', '#3F6EA5'), d = val('aparencia.cor_destaque', '#C9A227');
+      const f = val('aparencia.cor_fundo', '#EAF1FB'), tx = val('aparencia.cor_texto', '#14213D');
+      const fTitulo = CAT.porId[val('aparencia.fonte_titulo', '')] || CAT.porId['cormorant-garamond'];
+      const fTexto = CAT.porId[val('aparencia.fonte_texto', '')] || CAT.porId['inter'];
+      CAT.carregar(fTitulo); CAT.carregar(fTexto);
+      mk.style.fontFamily = CAT.familia(fTexto);
+      qa('.disp').forEach((e) => { e.style.fontFamily = CAT.familia(fTitulo); e.style.fontStyle = fTitulo.estiloTitulo; });
+      const hero = q('.mk-hero'); hero.style.background = 'linear-gradient(135deg,' + p + ', color-mix(in srgb,' + p + ' 72%, black 28%))'; hero.style.color = f;
+      q('.t-eb').style.color = d;
+      q('.mk-hero .mk-btn').style.cssText = 'background:' + f + ';color:' + p + ';';
+      const sec = q('.mk-sec'); sec.style.background = f; sec.style.color = tx;
+      q('.t-eb2').style.color = sc;
+      qa('.t-num').forEach((e) => { e.style.color = p; });
+      const card = q('.mk-card'); card.style.background = 'color-mix(in srgb, white 88%,' + f + ' 12%)'; card.style.border = '1px solid color-mix(in srgb,' + f + ' 50%,' + sc + ' 35%)';
+      qa('.mk-dots i').forEach((e) => { e.style.background = d; });
+      const map = q('.mk-map'); map.style.background = p; map.style.color = f;
+      q('.mk-map .mk-btn').style.cssText = 'background:' + f + ';color:' + p + ';';
+      const foot = q('.mk-foot'); foot.style.background = 'color-mix(in srgb,' + p + ' 78%, black 22%)'; foot.style.color = f;
+      marcas.forEach((m) => { m.i.style.background = val(m.chave, '#ccc'); });
+    }
+    form.addEventListener('input', atualizar);
+    form.addEventListener('change', atualizar);
+    atualizar();
   }
 
   // ---------- ORDEM DOS BLOCOS ----------
