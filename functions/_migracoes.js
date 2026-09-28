@@ -45,6 +45,23 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '002-tipos-e-acessos',
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos'))) return null;
+      const tem = await db.prepare("SELECT 1 AS ok FROM pragma_table_info('eventos') WHERE name = 'tipo'").first();
+      if (tem) return null;
+      return [
+        "ALTER TABLE eventos ADD COLUMN tipo TEXT NOT NULL DEFAULT 'casamento'",
+        `CREATE TABLE IF NOT EXISTS acessos (
+           evento_id INTEGER NOT NULL REFERENCES eventos(id),
+           dia TEXT NOT NULL,
+           visitas INTEGER NOT NULL DEFAULT 0,
+           PRIMARY KEY (evento_id, dia)
+         )`,
+      ];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

@@ -5,6 +5,8 @@ CREATE TABLE eventos (
   slug TEXT NOT NULL UNIQUE,
   nome TEXT NOT NULL,
   criado_em TEXT,
+  -- template do evento (ver functions/_tipos.js): define módulos e padrões
+  tipo TEXT NOT NULL DEFAULT 'casamento',
   -- login próprio do painel do evento (senha guardada só como hash)
   admin_usuario TEXT,
   admin_senha_salt TEXT,
@@ -56,3 +58,11 @@ CREATE TABLE recados (
 );
 
 CREATE INDEX idx_recados_evento ON recados(evento_id);
+
+-- Visitas ao site de cada evento, agregadas por dia (UTC) — alimenta os dados de uso do admin master.
+CREATE TABLE acessos (
+  evento_id INTEGER NOT NULL REFERENCES eventos(id),
+  dia TEXT NOT NULL,
+  visitas INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (evento_id, dia)
+);

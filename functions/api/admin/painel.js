@@ -1,4 +1,5 @@
 import { jsonResponse, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
+import { TIPOS, tipoDe } from '../../_tipos.js';
 
 const META_PADRAO = '150';
 const MENSAGEM_PADRAO =
@@ -29,7 +30,7 @@ export async function onRequestGet({ request, env }) {
   const configMap = {};
   config.results.forEach((r) => { configMap[r.chave] = r.valor; });
   const metaConvidados = Number(configMap['config.meta_convidados']) || Number(META_PADRAO);
-  const mensagemTemplate = configMap['config.mensagem_template'] || MENSAGEM_PADRAO;
+  const mensagemTemplate = configMap['config.mensagem_template'] || TIPOS[tipoDe(evento.tipo)].mensagemPadrao || MENSAGEM_PADRAO;
 
   const totalCadastrados = convidados.length;
   const adultosConfirmados = convidados.filter((c) => c.tipo === 'adulto' && c.confirmado === 1).length;

@@ -30,6 +30,12 @@
   table{width:100%;border-collapse:collapse;background:var(--cream);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
   th,td{padding:9px 10px;text-align:left;font-size:13px;border-bottom:1px solid var(--blush-deep);}
   th{background:var(--blush-deep);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+  .grafico-visitas{display:flex;align-items:flex-end;gap:6px;height:120px;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:12px;}
+  .grafico-visitas .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--ink-soft);}
+  .grafico-visitas .barra{width:100%;background:var(--wine);border-radius:4px 4px 0 0;min-height:2px;}
+  .tp-card{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:12px;}
+  .tp-card h4{margin:0 0 4px;color:var(--wine);}
+  .tp-mods{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .tag{font-size:10.5px;padding:2px 8px;border-radius:999px;background:var(--blush-deep);color:var(--wine-soft);}
   td button{font-size:11.5px;padding:4px 8px;border:1px solid var(--border);background:#fff;color:var(--wine);border-radius:6px;cursor:pointer;white-space:nowrap;}
   label{display:block;font-weight:600;font-size:12px;margin:14px 0 4px;color:var(--ink);}
@@ -98,15 +104,20 @@
 </head>
 <body>
 <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-  <h1 id="tituloAdmin">🎊 Confirmação de presença — Admin master</h1>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <label for="eventoSel" style="font-size:13px;">Evento:</label>
-    <select id="eventoSel" style="padding:6px 10px;border-radius:8px;"></select>
+  <h1 id="tituloAdmin">🎛️ Plataforma — Admin master</h1>
+  <div id="bannerEvento" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;">
+    <a href="/admin/" style="color:var(--cream);border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;text-decoration:none;">← Voltar à plataforma</a>
+    <span id="bannerNome"></span>
   </div>
-  <a id="verSite" href="/" target="_blank" style="color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
+  <a id="verSite" href="/" target="_blank" style="display:none;color:var(--cream);font-size:13px;border:1px solid color-mix(in srgb, var(--cream) 40%, transparent);border-radius:999px;padding:8px 14px;white-space:nowrap;">👁️ Ver site</a>
 </header>
-<nav>
-  <button data-tab="plataforma" id="navPlataforma">Plataforma</button>
+<nav id="navMaster">
+  <button data-tab="visao" class="active">Visão geral</button>
+  <button data-tab="eventos">Eventos</button>
+  <button data-tab="anfitrioes">Anfitriões</button>
+  <button data-tab="templates">Templates</button>
+</nav>
+<nav id="navEvento" style="display:none;">
   <button data-tab="painel" class="active">Painel</button>
   <button data-tab="mesclar">Mesclar grupos</button>
   <button data-tab="mover">Mover convidado</button>
@@ -117,13 +128,36 @@
 </nav>
 <main>
 
-  <section id="tab-plataforma" class="tab">
-    <p style="color:var(--ink-soft);">Gestão da plataforma (só o admin master vê esta área). Cada evento tem seu endereço, suas configurações e seu anfitrião, sem interferência entre eles.</p>
+  <section id="tab-visao" class="tab active">
+    <div class="cards" id="v-cards"></div>
+    <h3 style="margin:22px 0 8px;">Visitas aos sites (últimos 14 dias)</h3>
+    <div id="v-grafico" class="grafico-visitas"></div>
+    <h3 style="margin:22px 0 8px;">Eventos por tipo</h3>
+    <div id="v-tipos"></div>
+  </section>
+
+  <section id="tab-eventos" class="tab">
+    <p class="hint">Cada evento tem endereço, tipo (template), configurações e anfitrião próprios, sem interferência entre eles. "Gerir evento" abre o painel completo daquele evento.</p>
+    <div style="overflow-x:auto;">
     <table>
-      <thead><tr><th>Evento</th><th>Endereço</th><th>Convidados</th><th>Confirmados</th><th>Recados p/ moderar</th><th>Anfitrião</th><th>Ações</th></tr></thead>
-      <tbody id="plat-tbody"></tbody>
+      <thead><tr><th>Evento</th><th>Tipo</th><th>Endereço</th><th>Convidados</th><th>Confirmados</th><th>Resposta</th><th>Visitas (7d / total)</th><th>Última confirmação</th><th>Ações</th></tr></thead>
+      <tbody id="ev-tbody"></tbody>
     </table>
+    </div>
     <button class="action" id="btnNovoEvento" type="button">+ Novo evento</button>
+  </section>
+
+  <section id="tab-anfitrioes" class="tab">
+    <p class="hint">O anfitrião acessa só o próprio evento, em <b>/e/&lt;endereço&gt;/admin</b>. Aqui você cria, troca a senha ou revoga o acesso. Sem login de anfitrião, só o admin master gerencia o evento.</p>
+    <table>
+      <thead><tr><th>Evento</th><th>Painel do anfitrião</th><th>Usuário</th><th>Ações</th></tr></thead>
+      <tbody id="an-tbody"></tbody>
+    </table>
+  </section>
+
+  <section id="tab-templates" class="tab">
+    <p class="hint">Templates são os tipos de evento. Cada tipo define quais módulos o site do evento oferece e os textos iniciais. Ao criar um evento você escolhe o tipo.</p>
+    <div id="tp-lista"></div>
   </section>
 
   <section id="tab-painel" class="tab active">
@@ -276,116 +310,226 @@
 </dialog>
 
 <script>
-  // ---------- EVENTOS ----------
-  // Todas as chamadas /api/ do admin levam ?e=<slug do evento selecionado>.
-  // /e/<slug>/admin = área do anfitrião (login do evento, sem acesso aos outros);
-  // /admin/ = admin master (acessa todos os eventos), com seletor e a aba Plataforma.
+  // ---------- EVENTOS / MODOS ----------
+  // Todas as chamadas /api/ do admin levam ?e=<slug do evento sendo gerido>.
+  //  - /e/<slug>/admin  = área do anfitrião (login do evento; só enxerga o próprio evento);
+  //  - /admin/          = plataforma do admin master (visão geral, eventos, anfitriões, templates);
+  //  - /admin/?e=<slug> = admin master gerindo um evento específico (mesmo painel do anfitrião).
   const matchEvento = location.pathname.match(/^\/e\/([^\/]+)\/admin/);
   const modoEvento = !!matchEvento;
-  let eventoAtual = modoEvento ? decodeURIComponent(matchEvento[1]) : null;
+  const slugUrl = new URLSearchParams(location.search).get('e');
+  let eventoAtual = modoEvento ? decodeURIComponent(matchEvento[1]) : (slugUrl || null);
+  const gerindoEvento = !!eventoAtual; // anfitrião, ou master com ?e=
   let listaEventos = [];
+  let tiposCatalogo = [];
   const fetchOriginal = window.fetch.bind(window);
   window.fetch = function (url, opts) {
-    if (typeof url === 'string' && url.indexOf('/api/') === 0 && eventoAtual) {
+    if (typeof url === 'string' && url.indexOf('/api/') === 0 && eventoAtual && url.indexOf('/api/admin/eventos') !== 0 && url.indexOf('/api/admin/plataforma') !== 0) {
       url += (url.indexOf('?') === -1 ? '?' : '&') + 'e=' + encodeURIComponent(eventoAtual);
     }
     return fetchOriginal(url, opts);
   };
   function urlSite() { return location.origin + '/e/' + eventoAtual + '/'; }
+  function urlSiteDe(slug) { return location.origin + '/e/' + slug + '/'; }
+  function urlAnfitriao(slug) { return location.origin + '/e/' + slug + '/admin'; }
 
-  async function iniciarEventos() {
-    if (modoEvento) {
-      document.getElementById('eventoSel').parentElement.style.display = 'none';
-      document.getElementById('navPlataforma').style.display = 'none';
-      document.getElementById('tituloAdmin').textContent = '🎊 Área do anfitrião';
-      document.getElementById('verSite').href = urlSite();
-      return;
-    }
-    listaEventos = await fetchOriginal('/api/admin/eventos').then((r) => r.json());
-    const sel = document.getElementById('eventoSel');
-    sel.innerHTML = '';
-    listaEventos.forEach((ev) => {
-      const o = document.createElement('option');
-      o.value = ev.slug; o.textContent = ev.nome + ' (/e/' + ev.slug + ')';
-      sel.appendChild(o);
-    });
-    const salvo = new URLSearchParams(location.search).get('e') || localStorage.getItem('eventoAdmin');
-    eventoAtual = listaEventos.some((ev) => ev.slug === salvo) ? salvo : (listaEventos[0] && listaEventos[0].slug);
-    sel.value = eventoAtual;
+  function iniciarEventos() {
+    if (!gerindoEvento) return; // master na plataforma: nada de evento selecionado
+    document.getElementById('navMaster').style.display = 'none';
+    document.getElementById('navEvento').style.display = '';
+    document.getElementById('verSite').style.display = '';
     document.getElementById('verSite').href = urlSite();
+    document.getElementById('tab-visao').classList.remove('active');
+    document.getElementById('tab-painel').classList.add('active');
+    if (modoEvento) {
+      document.getElementById('tituloAdmin').textContent = '🎊 Área do anfitrião';
+    } else {
+      document.getElementById('tituloAdmin').textContent = '🎛️ Admin master';
+      document.getElementById('bannerEvento').style.display = 'flex';
+      document.getElementById('bannerNome').textContent = 'Gerindo o evento: ' + eventoAtual + ' (/e/' + eventoAtual + ')';
+    }
   }
-  document.getElementById('eventoSel').addEventListener('change', (e) => {
-    localStorage.setItem('eventoAdmin', e.target.value);
-    location.href = location.pathname + '?e=' + encodeURIComponent(e.target.value);
-  });
+
   // ---------- PLATAFORMA (só master) ----------
   function slugifyLocal(t) {
-    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
   }
-  async function api(metodo, corpo) {
+  async function apiEventos(metodo, corpo) {
     const r = await fetchOriginal('/api/admin/eventos', { method: metodo, body: JSON.stringify(corpo) });
     return r.json();
   }
-  function irParaEvento(slug) {
-    localStorage.setItem('eventoAdmin', slug);
-    location.href = location.pathname + '?e=' + encodeURIComponent(slug);
+  function irParaEvento(slug) { location.href = '/admin/?e=' + encodeURIComponent(slug); }
+  function el(tag, texto, estilo) {
+    const e = document.createElement(tag);
+    if (texto !== undefined && texto !== null) e.textContent = texto;
+    if (estilo) e.style.cssText = estilo;
+    return e;
+  }
+  function fmtData(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return isNaN(d) ? '—' : d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+  function botao(container, rotulo, fn) {
+    const b = el('button', rotulo, 'margin:0 4px 4px 0;');
+    b.type = 'button'; b.addEventListener('click', fn);
+    container.appendChild(b);
   }
 
-  async function carregarPlataforma() {
+  async function carregarVisao() {
+    const r = await fetchOriginal('/api/admin/plataforma');
+    if (!r.ok) return;
+    const d = await r.json();
+    const t = d.totais;
+    const cards = document.getElementById('v-cards');
+    cards.innerHTML = '';
+    [
+      [t.eventos, 'Eventos'],
+      [t.eventosAtivos30d, 'Ativos nos últimos 30 dias'],
+      [t.comAnfitriao + '/' + t.eventos, 'Com anfitrião definido'],
+      [t.convidados, 'Convidados cadastrados'],
+      [t.confirmados, 'Convidados confirmados'],
+      [t.visitas30d, 'Visitas aos sites (30 dias)'],
+      [t.visitas, 'Visitas aos sites (total)'],
+      [t.recadosPendentes, 'Recados para moderar'],
+    ].forEach(([num, lbl]) => {
+      const c = el('div'); c.className = 'card';
+      const n = el('div', num); n.className = 'num';
+      const l = el('div', lbl); l.className = 'lbl';
+      c.append(n, l); cards.appendChild(c);
+    });
+
+    // gráfico de barras simples: últimos 14 dias (dias sem visita = 0)
+    const graf = document.getElementById('v-grafico');
+    graf.innerHTML = '';
+    const porDia = {};
+    d.visitasPorDia.forEach((x) => { porDia[x.dia] = x.visitas; });
+    const dias = [];
+    for (let i = 13; i >= 0; i--) { const dt = new Date(Date.now() - i * 86400000); dias.push(dt.toISOString().slice(0, 10)); }
+    const max = Math.max(1, ...dias.map((x) => porDia[x] || 0));
+    dias.forEach((dia) => {
+      const v = porDia[dia] || 0;
+      const col = el('div'); col.className = 'col'; col.title = dia + ': ' + v + ' visita(s)';
+      const barra = el('div'); barra.className = 'barra'; barra.style.height = Math.round((v / max) * 80) + 'px';
+      col.append(el('span', v || ''), barra, el('span', dia.slice(8, 10) + '/' + dia.slice(5, 7)));
+      graf.appendChild(col);
+    });
+
+    const tiposEl = document.getElementById('v-tipos');
+    tiposEl.innerHTML = '';
+    d.tipos.forEach((tp) => tiposEl.appendChild(el('span', tp.nome + ': ' + tp.eventos, 'display:inline-block;margin:0 8px 8px 0;padding:6px 12px;border-radius:999px;background:var(--blush-deep);')));
+  }
+
+  async function carregarEventos() {
     const r = await fetchOriginal('/api/admin/eventos');
     if (!r.ok) return;
     listaEventos = await r.json();
-    const tbody = document.getElementById('plat-tbody');
+    const tbody = document.getElementById('ev-tbody');
     tbody.innerHTML = '';
     listaEventos.forEach((ev) => {
       const tr = document.createElement('tr');
-      const cel = (txt) => { const td = document.createElement('td'); td.textContent = txt; tr.appendChild(td); return td; };
+      const cel = (txt) => { const td = el('td', txt); tr.appendChild(td); return td; };
       cel(ev.nome);
+      cel(ev.tipoNome);
       cel('/e/' + ev.slug);
       cel(ev.convidados);
-      cel(ev.confirmados);
-      cel(ev.recadosPendentes);
-      cel(ev.anfitriaoUsuario || '— sem login —');
-      const acoes = document.createElement('td');
-      const btn = (rotulo, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = rotulo; b.style.marginRight = '4px'; b.addEventListener('click', fn); acoes.appendChild(b); };
-      btn('Gerir evento', () => irParaEvento(ev.slug));
-      btn('Editar nome/endereço', async () => {
+      cel(ev.confirmados + (ev.recadosPendentes ? ' · ' + ev.recadosPendentes + ' recado(s) p/ moderar' : ''));
+      cel(ev.grupos ? Math.round((ev.gruposAbertos / ev.grupos) * 100) + '% abriram o convite' : '—');
+      cel(ev.visitas7d + ' / ' + ev.visitas);
+      cel(fmtData(ev.ultimaConfirmacao));
+      const acoes = el('td');
+      botao(acoes, 'Gerir evento', () => irParaEvento(ev.slug));
+      botao(acoes, 'Editar', async () => {
         const novoNome = prompt('Nome do evento:', ev.nome);
         if (novoNome === null) return;
         const novoSlug = prompt('Endereço do evento (/e/<endereço>). Mudar o endereço faz os links já enviados deixarem de funcionar:', ev.slug);
         if (novoSlug === null) return;
-        const d = await api('PATCH', { slug: ev.slug, novoNome, novoSlug });
+        const novoTipo = prompt('Tipo do evento (' + Object.keys(tiposPorId()).join(' ou ') + '). Mudar o tipo altera quais módulos o site oferece:', ev.tipo);
+        if (novoTipo === null) return;
+        const d = await apiEventos('PATCH', { slug: ev.slug, novoNome, novoSlug, novoTipo });
         if (d.erro) { alert(d.erro); return; }
-        if (eventoAtual === ev.slug) localStorage.setItem('eventoAdmin', d.slug);
-        location.href = location.pathname + '?e=' + encodeURIComponent(eventoAtual === ev.slug ? d.slug : eventoAtual);
+        carregarEventos();
       });
-      btn('Login do anfitrião', async () => {
-        const anfitriaoUsuario = prompt('Usuário do anfitrião de "' + ev.nome + '" (painel em /e/' + ev.slug + '/admin):', ev.anfitriaoUsuario || ev.slug);
-        if (!anfitriaoUsuario) return;
-        const anfitriaoSenha = prompt('Nova senha do anfitrião (mínimo 6 caracteres):');
-        if (!anfitriaoSenha) return;
-        const d = await api('PUT', { slug: ev.slug, anfitriaoUsuario, anfitriaoSenha });
-        alert(d.erro || 'Login do anfitrião atualizado.');
-        carregarPlataforma();
-      });
-      btn('Abrir site', () => window.open('/e/' + ev.slug + '/', '_blank'));
+      botao(acoes, 'Abrir site', () => window.open(urlSiteDe(ev.slug), '_blank'));
       tr.appendChild(acoes);
       tbody.appendChild(tr);
     });
   }
 
+  function tiposPorId() { const o = {}; tiposCatalogo.forEach((t) => { o[t.id] = t; }); return o; }
+
+  async function carregarAnfitrioes() {
+    const r = await fetchOriginal('/api/admin/eventos');
+    if (!r.ok) return;
+    listaEventos = await r.json();
+    const tbody = document.getElementById('an-tbody');
+    tbody.innerHTML = '';
+    listaEventos.forEach((ev) => {
+      const tr = document.createElement('tr');
+      tr.appendChild(el('td', ev.nome));
+      tr.appendChild(el('td', urlAnfitriao(ev.slug)));
+      tr.appendChild(el('td', ev.anfitriaoUsuario || '— sem login —'));
+      const acoes = el('td');
+      botao(acoes, ev.anfitriaoUsuario ? 'Trocar usuário/senha' : 'Criar login', async () => {
+        const anfitriaoUsuario = prompt('Usuário do anfitrião de "' + ev.nome + '":', ev.anfitriaoUsuario || ev.slug);
+        if (!anfitriaoUsuario) return;
+        const anfitriaoSenha = prompt('Senha do anfitrião (mínimo 6 caracteres):');
+        if (!anfitriaoSenha) return;
+        const d = await apiEventos('PUT', { slug: ev.slug, anfitriaoUsuario, anfitriaoSenha });
+        alert(d.erro || 'Login do anfitrião salvo.');
+        carregarAnfitrioes();
+      });
+      if (ev.anfitriaoUsuario) {
+        botao(acoes, 'Revogar acesso', async () => {
+          if (!confirm('Revogar o acesso do anfitrião de "' + ev.nome + '"? Ele deixa de conseguir entrar.')) return;
+          const d = await apiEventos('DELETE', { slug: ev.slug });
+          alert(d.erro || 'Acesso revogado.');
+          carregarAnfitrioes();
+        });
+        botao(acoes, 'Copiar link', () => { navigator.clipboard.writeText(urlAnfitriao(ev.slug)); });
+      }
+      tr.appendChild(acoes);
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function carregarTemplates() {
+    const r = await fetchOriginal('/api/admin/plataforma');
+    if (!r.ok) return;
+    tiposCatalogo = (await r.json()).tipos;
+    const lista = document.getElementById('tp-lista');
+    lista.innerHTML = '';
+    tiposCatalogo.forEach((tp) => {
+      const card = el('div'); card.className = 'tp-card';
+      card.appendChild(el('h4', tp.nome + ' — ' + tp.eventos + ' evento(s)'));
+      card.appendChild(el('div', tp.descricao, 'font-size:13px;color:var(--ink-soft);'));
+      const mods = el('div'); mods.className = 'tp-mods';
+      tp.modulos.forEach((m) => { const tag = el('span', m.nome); tag.className = 'tag'; mods.appendChild(tag); });
+      card.appendChild(mods);
+      lista.appendChild(card);
+    });
+  }
+
   document.getElementById('btnNovoEvento').addEventListener('click', async () => {
+    if (!tiposCatalogo.length) await carregarTemplates();
+    const ids = tiposCatalogo.map((t) => t.id);
+    const tipo = prompt('Tipo do evento (' + tiposCatalogo.map((t) => t.id + ' = ' + t.nome).join('; ') + '):', ids[0]);
+    if (!tipo || !ids.includes(tipo.trim())) { if (tipo) alert('Tipo inválido.'); return; }
     const nome = prompt('Nome do evento (ex.: Aniversário da Helena):');
     if (!nome) return;
     const slug = prompt('Endereço do evento (só letras, números e hífen). Ficará em /e/<endereço>:', slugifyLocal(nome));
     if (!slug) return;
-    const copiar = eventoAtual && confirm('Copiar textos, cores e configurações do evento "' + eventoAtual + '" como ponto de partida?\n(OK = copiar, Cancelar = evento em branco). Convidados e recados nunca são copiados.');
-    const anfitriaoUsuario = prompt('Usuário do anfitrião deste evento (deixe em branco para definir depois):', slugifyLocal(slug));
-    let anfitriaoSenha = '';
-    if (anfitriaoUsuario) {
-      anfitriaoSenha = prompt('Senha do anfitrião (mínimo 6 caracteres):') || '';
+    const mesmoTipo = listaEventos.filter((e) => e.tipo === tipo.trim());
+    let copiarDe = '';
+    if (mesmoTipo.length) {
+      const origem = prompt('Copiar textos, cores e configurações de outro evento do mesmo tipo? Digite o endereço (' + mesmoTipo.map((e) => e.slug).join(', ') + ') ou deixe em branco para começar do padrão do tipo:', '');
+      if (origem === null) return;
+      copiarDe = origem.trim();
     }
-    const d = await api('POST', { nome, slug, copiarDe: copiar ? eventoAtual : '', anfitriaoUsuario: anfitriaoSenha ? anfitriaoUsuario : '', anfitriaoSenha });
+    const anfitriaoUsuario = prompt('Usuário do anfitrião deste evento (deixe em branco para definir depois):', '');
+    let anfitriaoSenha = '';
+    if (anfitriaoUsuario) anfitriaoSenha = prompt('Senha do anfitrião (mínimo 6 caracteres):') || '';
+    const d = await apiEventos('POST', { nome, slug, tipo: tipo.trim(), copiarDe, anfitriaoUsuario: anfitriaoSenha ? anfitriaoUsuario : '', anfitriaoSenha });
     if (d.erro) { alert(d.erro); return; }
     irParaEvento(d.slug);
   });
@@ -396,7 +540,10 @@
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
     b.classList.add('active');
     document.getElementById('tab-' + b.dataset.tab).classList.add('active');
-    if (b.dataset.tab === 'plataforma') carregarPlataforma();
+    if (b.dataset.tab === 'visao') carregarVisao();
+    if (b.dataset.tab === 'eventos') { carregarTemplates().then(carregarEventos); }
+    if (b.dataset.tab === 'anfitrioes') carregarAnfitrioes();
+    if (b.dataset.tab === 'templates') carregarTemplates();
     if (b.dataset.tab === 'painel') carregarPainel();
     if (b.dataset.tab === 'mesclar') carregarMesclar();
     if (b.dataset.tab === 'mover') carregarMover();
@@ -771,7 +918,8 @@
     { titulo: 'Hero (capa)', campos: [
       { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome' },
       { chave: 'hero.noiva', label: 'Nome da noiva' },
-      { chave: 'hero.noivo', label: 'Nome do noivo' },
+      { chave: 'hero.noivo', label: 'Nome do noivo', tipos: ['casamento'] },
+      { chave: 'hero.idade', label: 'Idade / destaque (ex.: 30 anos)', tipos: ['aniversario'] },
       { chave: 'hero.data_display', label: 'Data (texto)' },
       { chave: 'hero.data_iso', label: 'Data e horário do casamento', tipo: 'data_hora' },
       { chave: 'hero.horario_display', label: 'Horário (texto)' },
@@ -867,6 +1015,30 @@
   let ctDados = null;
   let ctGrupoAtivo = 0;
 
+  // O tipo do evento decide quais módulos e campos aparecem (casamento x aniversário...).
+  let GRUPOS_ATIVOS = GRUPOS_CONTEUDO;
+  const ROTULOS_POR_TIPO = {
+    aniversario: {
+      'hero.noiva': 'Nome do aniversariante',
+      'hero.data_iso': 'Data e horário da festa',
+    },
+  };
+  function modulosDoTipo(dados) {
+    try { const m = JSON.parse((dados && dados._modulos) || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; }
+  }
+  function adaptarAoTipo(dados) {
+    const tipo = (dados && dados._tipo) || 'casamento';
+    const modulos = modulosDoTipo(dados);
+    GRUPOS_ATIVOS = GRUPOS_CONTEUDO
+      .filter((g) => !g.toggle || !modulos || modulos.includes(g.toggle))
+      .map((g) => ({
+        ...g,
+        campos: g.campos
+          .filter((c) => !c.tipos || c.tipos.includes(tipo))
+          .map((c) => (ROTULOS_POR_TIPO[tipo] && ROTULOS_POR_TIPO[tipo][c.chave] ? { ...c, label: ROTULOS_POR_TIPO[tipo][c.chave] } : c)),
+      }));
+  }
+
   async function carregarConteudo() {
     const subnav = document.getElementById('ct-subnav');
     const form = document.getElementById('ct-form');
@@ -878,8 +1050,10 @@
       return;
     }
 
+    adaptarAoTipo(ctDados);
+    ctGrupoAtivo = 0;
     subnav.innerHTML = '';
-    GRUPOS_CONTEUDO.forEach((grupo, i) => {
+    GRUPOS_ATIVOS.forEach((grupo, i) => {
       const btn = document.createElement('button');
       btn.textContent = grupo.titulo;
       btn.addEventListener('click', () => { ctGrupoAtivo = i; renderConteudoGrupo(); });
@@ -1225,7 +1399,7 @@
       btn.classList.toggle('active', i === ctGrupoAtivo);
     });
 
-    const grupo = GRUPOS_CONTEUDO[ctGrupoAtivo];
+    const grupo = GRUPOS_ATIVOS[ctGrupoAtivo];
     const form = document.getElementById('ct-form');
     form.innerHTML = '';
 
@@ -1295,7 +1469,8 @@
     }
     let salva = [];
     try { salva = JSON.parse(dados['layout.ordem'] || '[]'); } catch (e) { salva = []; }
-    const chavesValidas = BLOCOS_ORDENAVEIS.map((b) => b.chave);
+    const modulosPermitidos = modulosDoTipo(dados);
+    const chavesValidas = BLOCOS_ORDENAVEIS.map((b) => b.chave).filter((c) => !modulosPermitidos || modulosPermitidos.includes(c));
     ordemAtual = salva.filter((c) => chavesValidas.includes(c));
     chavesValidas.forEach((c) => { if (!ordemAtual.includes(c)) ordemAtual.push(c); });
     renderOrdem();
@@ -1361,10 +1536,8 @@
     });
   }
 
-  iniciarEventos().then(() => {
-    if (modoEvento) carregarPainel();
-    else document.getElementById('navPlataforma').click(); // master começa pela gestão da plataforma
-  });
+  iniciarEventos();
+  if (gerindoEvento) carregarPainel(); else carregarVisao();
 </script>
 </body>
 </html>

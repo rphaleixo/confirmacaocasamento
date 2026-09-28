@@ -95,8 +95,8 @@ export async function recalcularStatusGrupo(db, codigo) {
 // evento cadastrado — mantém funcionando os links antigos (/?c=CODIGO) do casamento original.
 export async function resolverEvento(db, request) {
   const slug = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
-  if (slug) return db.prepare('SELECT id, slug, nome FROM eventos WHERE slug = ?').bind(slug).first();
-  return db.prepare('SELECT id, slug, nome FROM eventos ORDER BY id LIMIT 1').first();
+  if (slug) return db.prepare('SELECT id, slug, nome, tipo FROM eventos WHERE slug = ?').bind(slug).first();
+  return db.prepare('SELECT id, slug, nome, tipo FROM eventos ORDER BY id LIMIT 1').first();
 }
 
 export function eventoNaoEncontrado() {

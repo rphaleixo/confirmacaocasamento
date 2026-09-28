@@ -264,6 +264,7 @@
     <div class="hero-content">
       <div class="eyebrow" id="heroEyebrow">Nosso casamento</div>
       <h1 class="display"><span id="nomeNoiva">Noiva</span><span class="amp">&amp;</span><span id="nomeNoivo">Noivo</span></h1>
+      <div class="eyebrow" id="heroIdade" style="display:none;"></div>
       <div class="hero-date flanked"><span class="ln"></span><span id="heroData">12 de junho de 2027</span><span class="ln"></span></div>
       <div class="hero-time display" id="heroHorario">às 15h00</div>
       <div class="hero-cta-wrap">
@@ -551,7 +552,16 @@
   let conteudo = {};
   function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
   function aplicar(id, chave) { const el = document.getElementById(id); if (el) el.textContent = t(chave, el.textContent); }
-  function secaoAtiva(nome) { return conteudo['secao.' + nome + '.ativa'] !== '0'; }
+  // O tipo do evento (casamento, aniversário...) define quais módulos existem; os demais ficam sempre ocultos.
+  function modulosDoTipo() {
+    try { const m = JSON.parse(conteudo._modulos || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; }
+  }
+  function ehAniversario() { return conteudo._tipo === 'aniversario'; }
+  function secaoAtiva(nome) {
+    const permitidos = modulosDoTipo();
+    if (permitidos && permitidos.indexOf(nome) === -1) return false;
+    return conteudo['secao.' + nome + '.ativa'] !== '0';
+  }
   function renderPessoas(gridId, chave) {
     let pessoas = [];
     try { pessoas = JSON.parse(t(chave, '[]')); } catch (e) { pessoas = []; }
@@ -611,7 +621,15 @@
     aplicar('heroData', 'hero.data_display');
     aplicar('heroHorario', 'hero.horario_display');
     aplicar('heroCta', 'hero.cta_label');
-    document.title = t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo') + ' • Casamento';
+    document.title = ehAniversario()
+      ? t('hero.noiva', 'Aniversário') + ' • Aniversário'
+      : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo') + ' • Casamento';
+    if (ehAniversario()) {
+      // aniversário: um nome só (sem "&"), com a idade logo abaixo
+      document.querySelector('#hero .amp').style.display = 'none';
+      document.getElementById('nomeNoivo').style.display = 'none';
+      if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); idade.textContent = t('hero.idade', ''); idade.style.display = 'block'; }
+    }
     document.getElementById('deadlineChip').textContent = 'confirme até ' + t('hero.prazo_display', '01 de maio');
     document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', t('hero.prazo_display', '01 de maio'));
     if (t('hero.foto_url', '')) document.querySelector('.hero-img').style.background = 'center/cover url(' + t('hero.foto_url', '') + ')';
@@ -619,8 +637,8 @@
     aplicar('stickyTitulo', 'sticky.titulo');
     aplicar('stickyCta', 'sticky.cta_label');
     aplicar('footerTexto', 'footer.texto');
-    document.getElementById('footerNomes').textContent = t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
-    document.getElementById('footerDataLocal').textContent = t('hero.data_display', '12 de junho de 2027') + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + ', Rio de Janeiro';
+    document.getElementById('footerNomes').textContent = ehAniversario() ? t('hero.noiva', '') : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
+    document.getElementById('footerDataLocal').textContent = t('hero.data_display', '12 de junho de 2027') + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
     aplicar('countdownTitulo', 'countdown.titulo');
