@@ -309,6 +309,10 @@
   .rsvp-guest-row.vai .marca{background:var(--wine);border-color:var(--wine);}
   .rsvp-guest-row.vai .marca svg{opacity:1;transform:scale(1);}
   .rsvp-guest-row.vai .estado{color:var(--wine);font-weight:600;}
+  .rsvp-extras{margin:10px 0 4px;text-align:center;}
+  .rsvp-extra-row{display:flex;align-items:center;gap:8px;margin:0 0 8px;}
+  .rsvp-extra-row input{flex:1;min-width:0;padding:14px 16px;border:1.5px solid var(--wine);border-radius:14px;background:color-mix(in srgb, var(--blush) 55%, var(--cream));font:inherit;font-size:15px;color:var(--ink);min-height:54px;}
+  .rsvp-extra-row button{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--cream);color:var(--ink-soft);font-size:18px;line-height:1;}
   .rsvp-guest-row:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px;}
   .rsvp-atalhos{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 2px 4px;font-size:12.5px;color:var(--ink-soft);}
   .rsvp-label{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 6px;font-weight:500;}
@@ -584,6 +588,10 @@
         <p class="rsvp-instrucao" id="rsvpInstrucao">Toque no nome de quem vai.</p>
         <div id="rsvpListaConvidados" class="rsvp-lista"></div>
         <div class="rsvp-atalhos"><span id="rsvpContagem" aria-live="polite"></span><button type="button" class="link-btn" id="rsvpTodos">Marcar todos</button></div>
+        <div class="rsvp-extras" id="rsvpExtras" hidden>
+          <div id="rsvpExtrasLista"></div>
+          <button type="button" class="link-btn" id="rsvpAddCrianca">Adicionar criança que não está na lista</button>
+        </div>
 
         <label class="rsvp-label" for="rsvpResponsavel">Seu nome</label>
         <input class="rsvp-input" id="rsvpResponsavel" type="text" placeholder="Quem está respondendo" autocomplete="name" required>
@@ -622,13 +630,13 @@
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
     <div class="gift-como" id="presentesComo">
       <div class="gift-opcao" id="presentesOptLista" hidden>
-        <h3>Escolha na nossa lista</h3>
+        <h3 id="presentesListaTitulo">Escolha na nossa lista</h3>
         <p id="presentesListaTexto">Veja os presentes e marque o que você vai dar, para ninguém repetir.</p>
         <a href="#" class="pill solid" id="presentesListaCta">Ver lista de presentes →</a>
       </div>
       <div class="gift-opcao" id="presentesOptExterna" hidden>
-        <h3>Lista em outra loja</h3>
-        <p>Nossa lista está em outro site. Você será levado até lá.</p>
+        <h3 id="presentesExternaTitulo">Lista em outra loja</h3>
+        <p id="presentesExternaTexto">Nossa lista está em outro site. Você será levado até lá.</p>
         <a href="#" class="pill solid" id="presentesCta" target="_blank" rel="noopener">Abrir lista de presentes →</a>
       </div>
       <div class="gift-como-tit" id="presentesInfosTit" hidden>Dicas para presentear</div>
@@ -1202,7 +1210,7 @@
     if (!modulosVisiveis.some(function (el) { return el.id === 'presentes'; })) {
       document.querySelector('footer .flinks a[href="#presentes"]').style.display = 'none';
     }
-    if (!modulosVisiveis.some(function (el) { return el.id === 'map'; })) document.getElementById('rsvpComoChegar').hidden = true;
+    mapaVisivel = modulosVisiveis.some(function (el) { return el.id === 'map'; });
 
     // ---- Menu de navegação por âncoras (opcional, liga/desliga em Rodapé e barra fixa) ----
     if (t('config.mostrar_menu', '0') === '1' && modulosVisiveis.length) {
@@ -1244,6 +1252,18 @@
     iniciarRsvp();
   }).then(function (r) { if (r !== 'erro') revelarPagina(); }, function () { revelarPagina(); });
   let modoSaveTheDate = false;
+  let mapaVisivel = false;
+  // Link do Google Maps configurado no painel (coordenadas, id do lugar ou link colado); vazio se não houver
+  function urlGoogleMapsConfigurada() {
+    if (coordenadasLocal() || t('mapa.place_id', '')) return linkComoChegar();
+    const link = t('mapa.maps_url', '');
+    return /^https:\/\/([a-z0-9-]+\.)*(google\.[a-z.]+|goo\.gl)\//i.test(link) ? link : '';
+  }
+  function destinoComoChegar() {
+    if (mapaVisivel) return { href: '#' + ((window.ANCORAS_MODULOS && window.ANCORAS_MODULOS.de('map')) || 'map'), externo: false };
+    const u = urlGoogleMapsConfigurada();
+    return u ? { href: u, externo: true } : null;
+  }
 
   // ======= PRESENTES =======
   // Chamada: leva à seção de presentes deste site ou a um link externo (e some se o destino não existe).
@@ -1301,8 +1321,8 @@
     const optLista = $('presentesOptLista');
     optLista.hidden = !(ligado('lista') && itens.length);
     if (!optLista.hidden) {
-      const livres = itens.filter(function (it) { return !it.reservado; }).length;
-      $('presentesListaTexto').textContent = itens.length + (itens.length === 1 ? ' presente' : ' presentes') + ' para escolher' + (livres < itens.length ? ' · ' + livres + (livres === 1 ? ' disponível' : ' disponíveis') : '') + '. Marque o que você vai dar, para ninguém repetir.';
+      definir($('presentesListaTitulo'), t('presentes.lista_opcao_titulo', 'Escolha na nossa lista'));
+      definir($('presentesListaTexto'), t('presentes.lista_opcao_texto', 'Veja os presentes e marque o que você vai dar, para ninguém repetir.'));
       const a = $('presentesListaCta'); a.href = urlListaPresentes(); definir(a, t('presentes.lista_cta_label', 'Ver lista de presentes →'));
     }
 
@@ -1310,7 +1330,7 @@
     const urlExt = urlExterna(t('presentes.cta_url', ''));
     const optExt = $('presentesOptExterna');
     optExt.hidden = !(ligado('externa') && urlExt);
-    if (!optExt.hidden) { const a = $('presentesCta'); a.href = urlExt; definir(a, t('presentes.cta_label', 'Abrir lista de presentes →')); }
+    if (!optExt.hidden) { definir($('presentesExternaTitulo'), t('presentes.externa_titulo', 'Lista em outra loja')); definir($('presentesExternaTexto'), t('presentes.externa_texto', 'Nossa lista está em outro site. Você será levado até lá.')); const a = $('presentesCta'); a.href = urlExt; definir(a, t('presentes.cta_label', 'Abrir lista de presentes →')); }
 
     // 3) dicas e informações (tamanho de roupa, brinquedos de interesse...)
     let infos = [];
@@ -1326,6 +1346,7 @@
       boxInfos.appendChild(card);
     });
     boxInfos.hidden = !(infos.length && ligado('infos'));
+    definir($('presentesInfosTit'), t('presentes.infos_titulo', 'Dicas para presentear'));
     $('presentesInfosTit').hidden = boxInfos.hidden;
 
     // 4) PIX: título e texto configuráveis; chave (com botão de copiar) e/ou QR Code
@@ -1373,17 +1394,52 @@
     carregando.hidden = false;
 
     const SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-wine)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    const extrasBox = $('rsvpExtras'), extrasLista = $('rsvpExtrasLista');
+    // crianças acrescentadas pelo convidado na hora (não estavam na lista)
+    function nomesExtras() {
+      return Array.from(extrasLista.querySelectorAll('input')).map(function (i) { return i.value.replace(/\s+/g, ' ').trim(); }).filter(function (n) { return n.length >= 2; });
+    }
+    function novaCrianca() {
+      const row = document.createElement('div'); row.className = 'rsvp-extra-row';
+      const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 80; inp.autocomplete = 'off';
+      inp.placeholder = t('rsvp.criancas_placeholder', 'Nome da criança'); inp.setAttribute('aria-label', 'Nome da criança');
+      inp.addEventListener('input', atualizarContagem);
+      const rem = document.createElement('button'); rem.type = 'button'; rem.textContent = '×'; rem.setAttribute('aria-label', 'Remover criança');
+      rem.addEventListener('click', function () { row.remove(); atualizarContagem(); });
+      row.append(inp, rem); extrasLista.appendChild(row); inp.focus();
+    }
+    $('rsvpAddCrianca').addEventListener('click', novaCrianca);
+
+    let linhas = 0;
+    function adicionarLinha(c) {
+      const i = linhas++;
+      const row = document.createElement('label');
+      row.className = 'rsvp-guest-row';
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.id = 'rsvpConv' + i;
+      chk.setAttribute('data-nome', c.nome);
+      chk.checked = !!c.confirmado;
+      chk.addEventListener('change', atualizarContagem);
+      const marca = document.createElement('span'); marca.className = 'marca'; marca.innerHTML = SVG_CHECK; marca.setAttribute('aria-hidden', 'true');
+      const span = document.createElement('span'); span.className = 'nome'; span.textContent = c.nome;
+      const estado = document.createElement('span'); estado.className = 'estado'; estado.setAttribute('aria-hidden', 'true');
+      row.append(chk, marca, span, estado);
+      lista.appendChild(row);
+    }
     function atualizarContagem() {
       const chks = Array.from(lista.querySelectorAll('input[type=checkbox]'));
-      const vao = chks.filter(function (c) { return c.checked; }).length;
+      const extras = nomesExtras().length;
+      const marcados = chks.filter(function (c) { return c.checked; }).length;
+      const vao = marcados + extras, total = chks.length + extras;
       chks.forEach(function (c) {
         const row = c.closest('.rsvp-guest-row');
         row.classList.toggle('vai', c.checked);
         row.querySelector('.estado').textContent = c.checked ? 'Vai' : 'Não vai';
       });
-      $('rsvpContagem').textContent = chks.length > 1 ? vao + ' de ' + chks.length + (vao === 1 ? ' pessoa vai' : ' pessoas vão') : '';
+      $('rsvpContagem').textContent = total > 1 ? vao + ' de ' + total + (vao === 1 ? ' pessoa vai' : ' pessoas vão') : '';
       $('rsvpTodos').hidden = chks.length < 2;
-      $('rsvpTodos').textContent = vao === chks.length ? 'Desmarcar todos' : 'Marcar todos';
+      $('rsvpTodos').textContent = marcados === chks.length ? 'Desmarcar todos' : 'Marcar todos';
       if (vao > 0) $('rsvpNinguem').hidden = true;
       $('rsvpSubmitBtn').hidden = !$('rsvpNinguem').hidden;
     }
@@ -1403,21 +1459,9 @@
         $('rsvpJaRespondeu').hidden = data.statusConfirmacao !== 'Confirmado';
 
         lista.innerHTML = '';
-        data.convidados.forEach(function (c, i) {
-          const row = document.createElement('label');
-          row.className = 'rsvp-guest-row';
-          const chk = document.createElement('input');
-          chk.type = 'checkbox';
-          chk.id = 'rsvpConv' + i;
-          chk.setAttribute('data-nome', c.nome);
-          chk.checked = !!c.confirmado;
-          chk.addEventListener('change', atualizarContagem);
-          const marca = document.createElement('span'); marca.className = 'marca'; marca.innerHTML = SVG_CHECK; marca.setAttribute('aria-hidden', 'true');
-          const span = document.createElement('span'); span.className = 'nome'; span.textContent = c.nome;
-          const estado = document.createElement('span'); estado.className = 'estado'; estado.setAttribute('aria-hidden', 'true');
-          row.append(chk, marca, span, estado);
-          lista.appendChild(row);
-        });
+        data.convidados.forEach(adicionarLinha);
+        extrasBox.hidden = t('rsvp.criancas_mostrar', '1') === '0';
+        definir($('rsvpAddCrianca'), t('rsvp.criancas_botao', 'Adicionar criança que não está na lista'));
         form.hidden = false;
         atualizarContagem();
       })
@@ -1456,7 +1500,8 @@
       erroBox.hidden = true;
       const chks = Array.from(lista.querySelectorAll('input[type=checkbox]'));
       const convidados = chks.map(function (chk) { return { nome: chk.getAttribute('data-nome'), confirmado: chk.checked }; });
-      const payload = { codigo: codigo, responsavel: inpNome.value.trim(), contatoResponsavel: inpTel.value.trim(), convidados: convidados };
+      const extras = nomesExtras();
+      const payload = { codigo: codigo, responsavel: inpNome.value.trim(), contatoResponsavel: inpTel.value.trim(), convidados: convidados, criancasExtras: extras };
       const btns = [$('rsvpSubmitBtn'), $('rsvpNinguemEnviar')];
       const rotulo = $('rsvpSubmitBtn').textContent;
       btns.forEach(function (b) { b.disabled = true; }); $('rsvpSubmitBtn').textContent = 'Enviando…';
@@ -1465,7 +1510,10 @@
         .then(function (d) {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
           if (d && d.erro) { mostrarErro(d.erro); return; }
-          mostrarSucesso(convidados);
+          // as crianças acrescentadas agora fazem parte do grupo: viram linhas normais da lista
+          extras.forEach(function (n) { adicionarLinha({ nome: n, confirmado: true }); });
+          extrasLista.innerHTML = '';
+          mostrarSucesso(convidados.concat(extras.map(function (n) { return { nome: n, confirmado: true }; })));
         })
         .catch(function () {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
@@ -1484,8 +1532,10 @@
       const agenda = linkAgenda();
       $('rsvpAgenda').hidden = !vao.length || !agenda;
       if (agenda) $('rsvpAgenda').href = agenda;
-      $('rsvpComoChegar').href = linkComoChegar();
-      if (!vao.length) $('rsvpComoChegar').hidden = true;
+      // "Como chegar": leva à seção de localização do site, se ela existir; senão ao link do Google Maps configurado; sem nenhum dos dois, não aparece
+      const cc = $('rsvpComoChegar'), dest = destinoComoChegar();
+      cc.hidden = !vao.length || !dest;
+      if (dest) { cc.href = dest.href; if (dest.externo) { cc.target = '_blank'; cc.rel = 'noopener'; } else { cc.removeAttribute('target'); cc.removeAttribute('rel'); } }
       sucesso.hidden = false;
       rsvpRespondido = true; updateSticky();
       sucesso.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1501,11 +1551,11 @@
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
       if (!validarCampos(true)) return;
-      const algum = Array.from(lista.querySelectorAll('input[type=checkbox]')).some(function (c) { return c.checked; });
+      const algum = nomesExtras().length > 0 || Array.from(lista.querySelectorAll('input[type=checkbox]')).some(function (c) { return c.checked; });
       if (!algum) { $('rsvpNinguem').hidden = false; $('rsvpSubmitBtn').hidden = true; $('rsvpNinguemVoltar').focus(); return; }
       enviar();
     });
-    $('rsvpNinguemVoltar').addEventListener('click', function () { $('rsvpNinguem').hidden = true; $('rsvpSubmitBtn').hidden = false; lista.querySelector('input').focus(); });
+    $('rsvpNinguemVoltar').addEventListener('click', function () { $('rsvpNinguem').hidden = true; $('rsvpSubmitBtn').hidden = false; const p = lista.querySelector('input'); if (p) p.focus(); });
     $('rsvpNinguemEnviar').addEventListener('click', function () { if (validarCampos(true)) enviar(); });
   }
 

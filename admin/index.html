@@ -1823,7 +1823,7 @@
     return lista;
   }
   function mensagemPara(g, nome) { return preencherMensagem(ultimoPainelDados.mensagemTemplate, nome, linkConvite(g.codigo)); }
-  function linkWhatsapp(tel, texto) { return 'https://wa.me/' + tel + '?text=' + encodeURIComponent(texto); }
+  function linkWhatsapp(tel, texto) { return 'https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(String(texto).normalize('NFC')); }
   function primeiroNome(n) { return String(n || '').trim().split(/\s+/)[0] || n; }
 
   function desenharGrupos() {
@@ -2462,6 +2462,10 @@
       { chave: 'rsvp.eyebrow', label: 'Texto pequeno' },
       { chave: 'rsvp.titulo', label: 'Título' },
       { chave: 'rsvp.texto', label: 'Texto de apoio', tipo: 'textarea' },
+      { chave: '__bloco_criancas__', tipo: 'bloco_texto', liga: 'rsvp.criancas_mostrar', recolhe: true, label: 'Crianças que não estão na lista', sub: 'O convidado pode acrescentar, na hora de confirmar, crianças que não foram cadastradas. Elas entram no grupo como crianças confirmadas.', campos: [
+        { chave: 'rsvp.criancas_botao', label: 'Texto do botão' },
+        { chave: 'rsvp.criancas_placeholder', label: 'Texto de ajuda do campo de nome' },
+      ]},
       { chave: 'rsvp.cta_label', label: 'Texto do botão de confirmar' },
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },
@@ -2472,14 +2476,19 @@
       { etapa: 'textos', chave: 'presentes.texto', label: 'Texto', tipo: 'textarea', dica: 'É a primeira coisa que o convidado lê nesta seção. Abaixo aparecem só as formas de presentear que você ligar na próxima etapa.' },
       { etapa: 'como', chave: '__nota_como__', tipo: 'nota', label: 'Ligue as formas de presentear que fazem sentido para o seu evento. Elas podem aparecer juntas. Cada uma só mostra as configurações quando está ligada.' },
       { etapa: 'como', chave: '__bloco_lista__', tipo: 'bloco_texto', liga: 'presentes.mostrar_lista', padrao: '0', recolhe: true, label: 'Lista de presentes', sub: 'Os presentes ficam numa página própria, sem poluir o convite. O convidado vê um botão que leva até ela.', campos: [
+        { chave: 'presentes.lista_opcao_titulo', label: 'Título do cartão' },
+        { chave: 'presentes.lista_opcao_texto', label: 'Texto do cartão', tipo: 'textarea' },
         { chave: '__atalho_lista__', tipo: 'atalho_lista' },
         { chave: 'presentes.lista_cta_label', label: 'Texto do botão' },
       ]},
       { etapa: 'como', chave: '__bloco_externa__', tipo: 'bloco_texto', liga: 'presentes.mostrar_externa', padrao: '0', recolhe: true, label: 'Lista em outra loja', sub: 'Um botão que leva até uma lista que você criou em outro site.', campos: [
+        { chave: 'presentes.externa_titulo', label: 'Título do cartão' },
+        { chave: 'presentes.externa_texto', label: 'Texto do cartão', tipo: 'textarea' },
         { chave: 'presentes.cta_url', label: 'Link da lista', dica: 'Ex.: https://www.minhaloja.com.br/lista. Sem link, esta opção não aparece.' },
         { chave: 'presentes.cta_label', label: 'Texto do botão' },
       ]},
       { etapa: 'como', chave: '__bloco_infos__', tipo: 'bloco_texto', liga: 'presentes.mostrar_infos', padrao: '0', recolhe: true, label: 'Dicas e informações', sub: 'Ideal para aniversários sem lista: tamanho de roupa, brinquedos de interesse, cores e personagens favoritos.', campos: [
+        { chave: 'presentes.infos_titulo', label: 'Título acima das dicas' },
         { chave: 'presentes.infos', label: 'Dicas e informações', tipo: 'lista_infos' },
       ]},
       { etapa: 'como', chave: '__bloco_pix__', tipo: 'bloco_texto', liga: 'presentes.mostrar_pix', padrao: '0', recolhe: true, label: 'PIX', sub: 'Mostra a chave com botão "Copiar" e/ou o QR Code. Não processamos pagamento: é só para facilitar o PIX.', campos: [

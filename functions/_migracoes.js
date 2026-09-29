@@ -96,6 +96,24 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '005-textos-configuraveis',
+    // Textos que estavam fixos no site (opções de presentear, criança na confirmação) passam a ser campos editáveis
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos')) || !(await tabelaExiste(db, 'conteudo'))) return null;
+      const ins = (chave, texto) => `INSERT OR IGNORE INTO conteudo (evento_id, chave, valor) SELECT e.id, '${chave}', '${texto}' FROM eventos e`;
+      return [
+        ins('presentes.lista_opcao_titulo', 'Escolha na nossa lista'),
+        ins('presentes.lista_opcao_texto', 'Veja os presentes e marque o que você vai dar, para ninguém repetir.'),
+        ins('presentes.externa_titulo', 'Lista em outra loja'),
+        ins('presentes.externa_texto', 'Nossa lista está em outro site. Você será levado até lá.'),
+        ins('presentes.infos_titulo', 'Dicas para presentear'),
+        ins('rsvp.criancas_mostrar', '1'),
+        ins('rsvp.criancas_botao', 'Adicionar criança que não está na lista'),
+        ins('rsvp.criancas_placeholder', 'Nome da criança'),
+      ];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

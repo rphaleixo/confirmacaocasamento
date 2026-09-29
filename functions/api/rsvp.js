@@ -51,6 +51,23 @@ export async function onRequestPost({ request, env }) {
       .run();
   }
 
+  // Crianças que o convidado acrescentou na hora (não estavam na lista): entram no grupo como crianças confirmadas
+  const extras = Array.isArray(payload.criancasExtras) ? payload.criancasExtras.slice(0, 10) : [];
+  if (extras.length) {
+    const { results: atuais } = await db.prepare('SELECT nome FROM convidados WHERE codigo_grupo = ?').bind(codigo).all();
+    const jaTem = new Set(atuais.map((r) => String(r.nome).trim().toLowerCase()));
+    for (const bruto of extras) {
+      const nome = String(bruto || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (nome.length < 2) continue;
+      if (jaTem.has(nome.toLowerCase())) {
+        await db.prepare('UPDATE convidados SET confirmado = 1 WHERE codigo_grupo = ? AND lower(nome) = ?').bind(codigo, nome.toLowerCase()).run();
+      } else {
+        await db.prepare("INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES (?, '', ?, 1, 'crianca')").bind(nome, codigo).run();
+        jaTem.add(nome.toLowerCase());
+      }
+    }
+  }
+
   await db
     .prepare(
       'UPDATE grupos SET responsavel = ?, contato_responsavel = ?, data_confirmacao = ? WHERE codigo = ?'
