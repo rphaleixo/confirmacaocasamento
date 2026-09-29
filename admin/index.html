@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="/fontes.js"></script>
+<script src="/ancoras.js"></script>
 <style>
   /* Painel: ferramenta de trabalho em azul-marinho neutro. Topo fixo com menu, conteúdo em coluna de até 1120px. */
   :root{
@@ -3501,7 +3502,14 @@
       dir.appendChild(h('label', { class: 'switch', for: 'ct-toggle' }, chk, h('span', { class: 'trilho' }), txt));
     }
     if (!opcoes.semCabecalho && grupo.ancora && eventoAtual) {
-      dir.appendChild(h('a', { class: 'btn sm', href: urlSite() + '#' + grupo.ancora, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Ver no site' }));
+      const ancoraPublica = window.ANCORAS_MODULOS.de(grupo.ancora);
+      dir.appendChild(h('a', { class: 'btn sm', href: urlSite() + '#' + ancoraPublica, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Ver no site' }));
+      const copiarLink = btn('Copiar link do módulo', () => {
+        navigator.clipboard.writeText(urlSite() + '#' + ancoraPublica);
+        toast('Link copiado: ' + urlSite() + '#' + ancoraPublica);
+      }, 'sm', 'link');
+      copiarLink.title = 'Link direto para este módulo: ' + urlSite() + '#' + ancoraPublica;
+      dir.appendChild(copiarLink);
     }
     if (dir.children.length) head.appendChild(dir);
     if (head.children.length) form.appendChild(head);

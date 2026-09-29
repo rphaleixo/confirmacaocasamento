@@ -53,6 +53,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="/fontes.js"></script>
+<script src="/ancoras.js"></script>
 <style>
   :root{
     /* ===== paleta editável pela aba Site › Cores do painel — os 5 tokens abaixo ===== */
@@ -308,6 +309,8 @@
   .gift-section .eyebrow{color:var(--wine-pale);}
   .gift-section h2{font-size:27px;margin:8px 0 12px;color:var(--cream);font-weight:500;line-height:1.2;}
   .gift-section > p{font-size:14px;color:var(--wine-pale);margin:0 0 24px;}
+  .ancora-mod{display:block;height:0;width:0;overflow:hidden;scroll-margin-top:0;}
+  #hero > .ancora-mod{position:absolute;top:0;left:0;} /* a capa é uma coluna flex alinhada embaixo: a âncora fixa no topo */
   .gift-infos{display:flex;flex-direction:column;gap:10px;margin:0 0 22px;text-align:left;}
   .gift-info{background:var(--cream);color:var(--ink);border-radius:14px;padding:14px 16px;}
   .gift-info b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:16px;color:var(--wine);margin-bottom:3px;}
@@ -780,6 +783,27 @@
     document.addEventListener('click', function (ev) { const a = ev.target.closest && ev.target.closest('a[href]'); if (a) ev.preventDefault(); }, true);
     document.addEventListener('submit', function (ev) { ev.preventDefault(); }, true);
   }
+  // Âncoras públicas: cada módulo ganha um endereço direto (#confirmacao, #local...). Os ids antigos continuam valendo.
+  function criarAncoras() {
+    const mapa = (window.ANCORAS_MODULOS && window.ANCORAS_MODULOS.porId) || {};
+    Object.keys(mapa).forEach(function (idAntigo) {
+      const slug = mapa[idAntigo];
+      const secao = document.getElementById(idAntigo);
+      if (!secao || slug === idAntigo || document.getElementById(slug)) return;
+      const ponto = document.createElement('span');
+      ponto.id = slug; ponto.className = 'ancora-mod'; ponto.setAttribute('aria-hidden', 'true');
+      secao.insertBefore(ponto, secao.firstChild);
+    });
+  }
+  function irParaAncora(rolagemSuave) {
+    const id = decodeURIComponent((location.hash || '').slice(1));
+    const alvo = id && document.getElementById(id);
+    if (!alvo) return;
+    const html = document.documentElement;
+    if (!rolagemSuave) html.style.scrollBehavior = 'auto';
+    alvo.scrollIntoView({ block: 'start' });
+    if (!rolagemSuave) setTimeout(function () { html.style.scrollBehavior = ''; }, 50);
+  }
   function revelarPagina() {
     if (window.__revelado) return; window.__revelado = true;
     const esperas = [];
@@ -791,11 +815,9 @@
       requestAnimationFrame(function () { setTimeout(function () { hero.classList.add('loaded'); }, 60); });
       const sk = document.getElementById('sk');
       if (sk) { sk.classList.add('sai'); setTimeout(function () { sk.remove(); }, 400); }
-      if (window.__previa) {
-        const alvo = document.getElementById((location.hash || '').slice(1));
-        if (alvo) { document.documentElement.style.scrollBehavior = 'auto'; alvo.scrollIntoView({ block: 'start' }); }
-        window.parent.postMessage({ tipo: 'previa-renderizada' }, location.origin);
-      }
+      // o site só aparece depois do carregamento: por isso a rolagem até a âncora do endereço é feita aqui
+      criarAncoras(); irParaAncora(false);
+      if (window.__previa) window.parent.postMessage({ tipo: 'previa-renderizada' }, location.origin);
     });
   }
   function mostrarErroEvento(dados) {
@@ -807,6 +829,8 @@
     document.getElementById('erroEvento').classList.add('mostra');
     const sk = document.getElementById('sk'); if (sk) sk.remove();
   }
+
+  window.addEventListener('hashchange', function () { if (window.__revelado) irParaAncora(true); });
 
   (window.__conteudo || fetch(api('conteudo')).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; })).then(function (dados) {
     if (!dados || dados.erro) { mostrarErroEvento(dados); return 'erro'; }
@@ -1167,7 +1191,7 @@
         const el = document.getElementById(MAPA_MODULO_ID[k]);
         if (!el || el.style.display === 'none') return;
         const a = document.createElement('a');
-        a.href = '#' + el.id;
+        a.href = '#' + ((window.ANCORAS_MODULOS && window.ANCORAS_MODULOS.de(el.id)) || el.id);
         a.textContent = ROTULOS_MODULO[k] || k;
         menuLinks.appendChild(a);
       });
