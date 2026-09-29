@@ -535,6 +535,7 @@
   .rico-btn.html{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700;}
   .rico-dial{display:inline-flex;gap:5px;align-items:center;padding:0 8px 0 2px;}
   .rico-amostra{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;} .rico-amostra:hover{transform:scale(1.15);} .rico-amostra:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .lugar-link input.travado{background:var(--surface-2,#F1F4F8);color:var(--ink-soft);cursor:default;text-overflow:ellipsis;}
   .rico-amostra.on{box-shadow:0 0 0 2px var(--navy);}
   .cl-linha{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;}
   .cl-atual{min-width:124px;height:36px;border-radius:9px;border:1px solid var(--line);display:inline-grid;place-items:center;padding:0 10px;font-size:12px;font-weight:700;font-family:var(--mono);}
@@ -3653,7 +3654,7 @@
       const hId = oculto('mapa.place_id'), hLat = oculto('mapa.lat'), hLng = oculto('mapa.lng'), hUrl = oculto('mapa.maps_url');
       fs.append(hId, hLat, hLng, hUrl);
       const novaSessao = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 's' + Math.random().toString(36).slice(2) + Date.now().toString(36));
-      let sessao = novaSessao(), semChave = false, sugestoes = [], ativo = -1, agenda = null, buscaSeq = 0;
+      let trocando = false, sessao = novaSessao(), semChave = false, sugestoes = [], ativo = -1, agenda = null, buscaSeq = 0;
 
       const busca = h('input', { type: 'text', id: 'lugar-busca', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': 'lugar-lista', placeholder: 'Digite o nome do local ou o endereço (ex.: Copacabana Palace)' });
       const lista = h('ul', { class: 'lugar-lista', id: 'lugar-lista', role: 'listbox', hidden: true });
@@ -3707,14 +3708,19 @@
       };
       const pintar = () => {
         painel.innerHTML = '';
+        // com o link definido, a caixa mostra o link escolhido, sem edição; "Trocar o local" a libera
+        const travado = !!hUrl.value && !trocando;
+        linkIn.readOnly = travado; linkIn.classList.toggle('travado', travado); linkBtn.hidden = travado;
+        if (travado) { linkIn.value = hUrl.value; linkStatus.textContent = ''; } else if (!hUrl.value && linkIn.dataset.preenchido) linkIn.value = '';
+        linkIn.dataset.preenchido = travado ? '1' : '';
         if (hId.value || hLat.value || hUrl.value) {
           painel.appendChild(h('div', { class: 'lugar-ok' },
             h('div', { class: 't', text: hId.value ? '✓ Local confirmado no Google Maps' : '✓ Local definido pelo link do Google Maps' }),
             h('div', { class: 'n', text: (campoNome() && campoNome().value) || '' }), h('div', { class: 'a', text: (campoEnd() && campoEnd().value) || '' }),
             h('div', { class: 'acoes' },
               hUrl.value ? h('a', { class: 'btn sm', href: hUrl.value, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir no Google Maps' }) : null,
-              btn('Trocar o local', () => { linkIn.focus(); }, 'sm'),
-              btn('Remover confirmação', () => { [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
+              btn('Trocar o local', () => { trocando = true; pintar(); linkIn.value = ''; linkIn.focus(); }, 'sm'),
+              btn('Remover confirmação', () => { trocando = false; [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
         } else if ((campoEnd() && campoEnd().value.trim()) || (campoNome() && campoNome().value.trim())) {
           painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Cole acima o link do local no Google Maps para garantir que está certo.' }));
         }
@@ -3748,6 +3754,7 @@
         status.textContent = '';
         if (d.erro) { painel.prepend(h('div', { class: 'lugar-aviso', text: d.erro })); return; }
         sessao = novaSessao(); busca.value = '';
+        trocando = false;
         hId.value = d.id || sg.id; hLat.value = d.lat != null ? String(d.lat) : ''; hLng.value = d.lng != null ? String(d.lng) : ''; hUrl.value = d.url || '';
         if (campoNome()) { campoNome().value = d.nome || sg.principal || ''; emitir(campoNome()); }
         if (campoEnd()) { campoEnd().value = d.endereco || sg.secundario || ''; emitir(campoEnd()); }
@@ -3774,7 +3781,7 @@
         if (info.nome && campoNome()) { campoNome().value = info.nome; emitir(campoNome()); }
         if (info.endereco && campoEnd()) { campoEnd().value = info.endereco; emitir(campoEnd()); }
         [hId, hLat, hLng, hUrl].forEach(emitir);
-        linkIn.value = '';
+        trocando = false;
         pintar(); atualizarMapa();
         toast(info.lat !== null ? 'Local definido pelo link. Confira o pin no mapa e salve.' : 'Link lido, mas sem coordenadas: o mapa usará o nome e o endereço. Confira o pin.');
         if (info.lat !== null && !info.endereco) status.textContent = 'O link não trouxe o endereço por escrito: preencha o campo "Endereço" abaixo, se quiser mostrá-lo no site.';
