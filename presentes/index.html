@@ -94,6 +94,8 @@
 
   body{margin:0;background:var(--cream);}
   .pag{max-width:760px;margin:0 auto;padding:28px var(--gutter) 64px;min-height:100vh;}
+  .vazio{display:none !important;}
+  [hidden]{display:none !important;}
   .voltar{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--wine-soft);padding:8px 0;min-height:44px;}
   .voltar:hover{text-decoration:underline;text-underline-offset:3px;}
   .pag-topo{text-align:center;padding:10px 0 22px;}
@@ -195,7 +197,9 @@
 <script>
   const $ = (id) => document.getElementById(id);
   let conteudo = {};
-  function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
+  // Campo em branco fica em branco: o texto padrão só vale quando a chave nunca foi gravada
+  function t(chave, def) { const v = conteudo[chave]; return (v !== undefined && v !== null) ? v : def; }
+  function definir(el, valor) { el.textContent = valor; el.classList.toggle('vazio', valor === ''); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   const FONTES = {
     classico: { link: null, display: "'Cormorant Garamond',serif", body: "'Inter',sans-serif" },
@@ -289,14 +293,14 @@
     if (!itens.length) { indisponivel('A lista ainda está sendo preparada', 'Volte em breve para escolher um presente.'); return; }
 
     $('pgEyebrow').textContent = nome || 'Lista de presentes';
-    $('pgTitulo').textContent = t('presentes.lista_titulo', 'Lista de presentes');
+    definir($('pgTitulo'), t('presentes.lista_titulo', 'Lista de presentes'));
     const texto = t('presentes.lista_texto', '');
     $('pgTexto').textContent = texto; $('pgTexto').hidden = !texto;
     $('pgFiltro').hidden = itens.length < 5;
     const pix = t('presentes.chave_pix', ''), qr = t('presentes.pix_qrcode_url', '');
     if ((pix || qr) && t('presentes.mostrar_pix', '0') !== '0') {
       $('pgPix').hidden = false;
-      $('pgPixTitulo').textContent = t('presentes.pix_titulo', 'Prefere enviar um PIX?');
+      definir($('pgPixTitulo'), t('presentes.pix_titulo', 'Prefere enviar um PIX?'));
       const tx = t('presentes.pix_texto', ''); $('pgPixTexto').textContent = tx; $('pgPixTexto').hidden = !tx;
       $('pgPixQr').hidden = !qr; if (qr) $('pgPixQr').src = qr;
       $('pgPixLinha').hidden = !pix; $('pgPixChave').textContent = pix;

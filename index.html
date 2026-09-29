@@ -82,6 +82,7 @@
   }
   *{box-sizing:border-box;}
   [hidden]{display:none !important;}
+  .vazio{display:none !important;}
   html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
   body{margin:0;background:linear-gradient(180deg,var(--cream-2),var(--blush));color:var(--ink);font-family:var(--font-body);font-weight:400;-webkit-font-smoothing:antialiased;}
   .frame{max-width:460px;margin:0 auto;background:var(--cream);position:relative;overflow:hidden;box-shadow:0 0 60px color-mix(in srgb, var(--ink) 10%, transparent);min-height:100vh;}
@@ -188,12 +189,12 @@
   .f-marca .pill.solid:hover,.tem-foto .pill.solid:hover{background:var(--gold);color:color-mix(in srgb, var(--gold) 12%, black);}
   /* pequeno: uma faixa discreta */
   .l-pequeno{padding:18px var(--gutter);}
-  .l-pequeno .gift-box{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;}
+  .l-pequeno .gift-box{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;text-align:left;padding:14px 16px;}
   .l-pequeno .gift-box-icon{width:38px;height:38px;}
-  .l-pequeno .gift-box-corpo{flex:1;min-width:0;}
-  .l-pequeno .gift-box-title{font-size:16px;line-height:1.25;}
-  .l-pequeno .gift-box-text{font-size:12px;line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
-  .l-pequeno .pill{width:auto;max-width:44%;min-height:40px;padding:8px 14px;font-size:13.5px;line-height:1.2;flex-shrink:0;}
+  .l-pequeno .gift-box-corpo{flex:1 1 0;min-width:0;}
+  .l-pequeno .gift-box-title{font-size:17px;line-height:1.25;}
+  .l-pequeno .gift-box-text{font-size:12.5px;line-height:1.45;margin-top:3px;}
+  .l-pequeno .pill{flex:1 0 100%;width:100%;min-height:36px;padding:6px 14px;font-size:14px;}
   /* médio: cartão centralizado */
   .l-medio{padding:40px var(--gutter);}
   .l-medio .gift-box{padding:28px 24px;}
@@ -722,13 +723,18 @@
 
   // ======= CONTEÚDO DO SITE — vem do banco (editável pelo painel do evento) =======
   let conteudo = {};
-  function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
+  // Campo que o anfitrião deixou em branco fica em branco: o texto padrão só vale quando a chave nunca foi gravada
+  function t(chave, def) { const v = conteudo[chave]; return (v !== undefined && v !== null) ? v : def; }
+  // Igual a t(), mas em branco vale o padrão (datas e valores que o site não consegue funcionar sem)
+  function tOu(chave, def) { return t(chave, '') || def; }
+  // Escreve um texto e esconde o elemento inteiro quando o texto é vazio (sem buracos nem botões vazios)
+  function definir(el, valor) { if (!el) return; el.textContent = valor; el.classList.toggle('vazio', valor === ''); }
   // Prazo de confirmação como aparece no site: a data e, se preenchido no painel, o horário limite ("01 de maio às 23h59")
   function prazoCompleto() {
     const hora = t('hero.prazo_horario_display', '').trim();
     return t('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
   }
-  function aplicar(id, chave) { const el = document.getElementById(id); if (el) el.textContent = t(chave, el.textContent); }
+  function aplicar(id, chave) { const el = document.getElementById(id); if (el) definir(el, t(chave, el.textContent)); }
   // O tipo do evento (casamento, aniversário...) define quais módulos existem; os demais ficam sempre ocultos.
   function modulosDoTipo() {
     try { const m = JSON.parse(conteudo._modulos || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; }
@@ -799,7 +805,7 @@
   }
   // Link do Google Agenda com data, duração de 5h e endereço
   function linkAgenda() {
-    const inicio = new Date(t('hero.data_iso', '2027-06-12T15:00:00-03:00'));
+    const inicio = new Date(tOu('hero.data_iso', '2027-06-12T15:00:00-03:00'));
     if (isNaN(inicio)) return '';
     const fim = new Date(inicio.getTime() + 5 * 3600000);
     const f = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -913,8 +919,8 @@
       document.getElementById('nomeNoivo').style.display = 'none';
       if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); idade.textContent = t('hero.idade', ''); idade.hidden = false; }
     }
-    document.getElementById('deadlineChip').textContent = 'confirme até ' + prazoCompleto();
-    document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', prazoCompleto());
+    definir(document.getElementById('deadlineChip'), prazoCompleto() ? 'confirme até ' + prazoCompleto() : '');
+    definir(document.getElementById('stickyPrazo'), prazoCompleto() ? t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', prazoCompleto()) : '');
     montarMidiaCapa();
     aplicarTextosCapa();
 
@@ -1026,9 +1032,9 @@
     const textos = document.querySelectorAll('#track .node-text');
     for (let i = 0; i < 9; i++) {
       const n = i + 1;
-      if (anos[i]) anos[i].textContent = t('timeline.node' + n + '.ano', anos[i].textContent);
-      if (titulos[i]) titulos[i].textContent = t('timeline.node' + n + '.titulo', titulos[i].textContent);
-      if (textos[i]) textos[i].textContent = t('timeline.node' + n + '.texto', textos[i].textContent);
+      if (anos[i]) definir(anos[i], t('timeline.node' + n + '.ano', anos[i].textContent));
+      if (titulos[i]) definir(titulos[i], t('timeline.node' + n + '.titulo', titulos[i].textContent));
+      if (textos[i]) definir(textos[i], t('timeline.node' + n + '.texto', textos[i].textContent));
     }
     escondeSeInativa('timeline', 'secTimeline');
 
@@ -1074,7 +1080,7 @@
     aplicar('rsvpTexto', 'rsvp.texto');
     aplicar('rsvpSemCodigoTexto', 'rsvp.sem_codigo_texto');
     aplicar('rsvpSucessoTexto', 'rsvp.sucesso_texto');
-    aplicar('rsvpSubmitBtn', 'rsvp.cta_label');
+    definir($('rsvpSubmitBtn'), tOu('rsvp.cta_label', $('rsvpSubmitBtn').textContent)); // sem o botão não há como confirmar: em branco vale o texto padrão
     rsvpTextoSucesso = $('rsvpSucessoTexto').textContent;
 
     aplicar('presentesEyebrow', 'presentes.eyebrow');
@@ -1089,8 +1095,8 @@
     escondeSeInativa('recados', 'secRecados');
     carregarRecados();
 
-    const target = new Date(t('hero.data_iso', '2027-06-12T15:00:00-03:00')).getTime();
-    const rsvpDeadline = new Date(t('hero.prazo_iso', '2027-05-01T23:59:59-03:00')).getTime();
+    const target = new Date(tOu('hero.data_iso', '2027-06-12T15:00:00-03:00')).getTime();
+    const rsvpDeadline = new Date(tOu('hero.prazo_iso', '2027-05-01T23:59:59-03:00')).getTime();
     const secCd = document.getElementById('secCountdown');
     function tick() {
       const now = Date.now();
@@ -1127,10 +1133,10 @@
       document.getElementById('sticky').style.display = 'none';
       document.querySelector('footer .flinks').style.display = 'none';
       document.querySelector('.frame').style.paddingBottom = ''; // no Save the Date não há barra fixa
-      document.getElementById('heroEyebrow').textContent = t('savethedate.titulo', 'Guarde a data!');
+      definir(document.getElementById('heroEyebrow'), t('savethedate.titulo', 'Guarde a data!'));
       document.getElementById('heroCta').style.display = 'none';
       document.getElementById('heroConvite').hidden = true;
-      document.getElementById('deadlineChip').textContent = t('savethedate.texto', '');
+      definir(document.getElementById('deadlineChip'), t('savethedate.texto', ''));
       document.getElementById('heroCtaWrap').style.display = ''; // a mensagem do Save the Date vive nesse bloco
       modoSaveTheDate = true;
     }
@@ -1297,14 +1303,14 @@
     if (!optLista.hidden) {
       const livres = itens.filter(function (it) { return !it.reservado; }).length;
       $('presentesListaTexto').textContent = itens.length + (itens.length === 1 ? ' presente' : ' presentes') + ' para escolher' + (livres < itens.length ? ' · ' + livres + (livres === 1 ? ' disponível' : ' disponíveis') : '') + '. Marque o que você vai dar, para ninguém repetir.';
-      const a = $('presentesListaCta'); a.href = urlListaPresentes(); a.textContent = t('presentes.lista_cta_label', 'Ver lista de presentes →');
+      const a = $('presentesListaCta'); a.href = urlListaPresentes(); definir(a, t('presentes.lista_cta_label', 'Ver lista de presentes →'));
     }
 
     // 2) lista em outra loja
     const urlExt = urlExterna(t('presentes.cta_url', ''));
     const optExt = $('presentesOptExterna');
     optExt.hidden = !(ligado('externa') && urlExt);
-    if (!optExt.hidden) { const a = $('presentesCta'); a.href = urlExt; a.textContent = t('presentes.cta_label', 'Abrir lista de presentes →'); }
+    if (!optExt.hidden) { const a = $('presentesCta'); a.href = urlExt; definir(a, t('presentes.cta_label', 'Abrir lista de presentes →')); }
 
     // 3) dicas e informações (tamanho de roupa, brinquedos de interesse...)
     let infos = [];
@@ -1328,7 +1334,7 @@
     const pixBox = $('presentesPix');
     pixBox.hidden = !((pix || qr) && ligado('pix'));
     if (!pixBox.hidden) {
-      $('presentesPixTitulo').textContent = t('presentes.pix_titulo', 'Prefere enviar um PIX?');
+      definir($('presentesPixTitulo'), t('presentes.pix_titulo', 'Prefere enviar um PIX?'));
       const tx = t('presentes.pix_texto', ''); $('presentesPixTexto').textContent = tx; $('presentesPixTexto').hidden = !tx;
       const img = $('presentesPixQr'); img.hidden = !qr; if (qr) img.src = qr;
       $('presentesPixLinha').hidden = !pix;

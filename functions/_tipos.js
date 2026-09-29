@@ -98,6 +98,8 @@ export function padroesIniciais(tipoId, agora = new Date()) {
     'presentes.eyebrow': 'Lista de presentes',
     'presentes.cta_label': 'Abrir lista de presentes →',
     'presentes.itens': '[]',
+    'presentes.lista_cta_label': 'Ver lista de presentes →',
+    'presentes.pix_titulo': 'Prefere enviar um PIX?',
     'presentes.mostrar_lista': '0',
     'presentes.mostrar_externa': '0',
     'presentes.mostrar_infos': '0',

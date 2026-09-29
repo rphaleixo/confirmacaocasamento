@@ -84,6 +84,18 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '004-presentes-textos',
+    // Campos em branco agora ficam em branco no site: os textos que antes tinham padrão embutido passam a ser gravados
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos')) || !(await tabelaExiste(db, 'conteudo'))) return null;
+      const ins = (chave, texto) => `INSERT OR IGNORE INTO conteudo (evento_id, chave, valor) SELECT e.id, '${chave}', '${texto}' FROM eventos e`;
+      return [
+        ins('presentes.lista_cta_label', 'Ver lista de presentes →'),
+        ins('presentes.pix_titulo', 'Prefere enviar um PIX?'),
+      ];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker
