@@ -434,6 +434,8 @@
   .lugar-ok .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .lugar-aviso{border:1px solid #F2DDB0;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:13px;font-weight:500;}
   .lugar-link{margin-top:14px;} .lugar-link label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;} .lugar-link input{flex:1;min-width:0;}
+  .lugar-ajuda{margin:12px 0 4px;border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--ink-soft);}
+  .lugar-ajuda b{display:block;color:var(--ink);margin-bottom:6px;font-size:13px;} .lugar-ajuda ol{margin:0 0 10px;padding-left:18px;line-height:1.5;}
   .lugar-info{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);color:var(--ink-soft);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:12.5px;}
   .lugar-mapa{width:100%;height:230px;border:1px solid var(--line);border-radius:12px;margin-top:12px;background:#EEF1F6;}
   .lugar-campos{margin-top:14px;padding-top:6px;border-top:1px dashed var(--line);}
@@ -2818,20 +2820,30 @@
       const mapa = h('iframe', { class: 'lugar-mapa', title: 'Mapa do local', loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
       const camposBox = h('div', { class: 'lugar-campos' });
 
-      // alternativa sem chave: colar o link do Google Maps
+      // principal: colar o link do Google Maps (não depende de chave nenhuma)
       const linkIn = h('input', { type: 'text', id: 'lugar-link', placeholder: 'https://maps.app.goo.gl/...  ou  https://www.google.com/maps/place/...', autocomplete: 'off', spellcheck: 'false' });
       const linkStatus = h('div', { class: 'dica-campo', 'aria-live': 'polite', style: 'min-height:16px;' });
       const linkBtn = btn('Usar este link', () => usarLink(), 'sm');
       const blocoLink = h('div', { class: 'lugar-link' },
-        h('label', { for: 'lugar-link', text: 'Ou cole o link do Google Maps' }),
+        h('label', { for: 'lugar-link', text: 'Link do local no Google Maps' }),
         h('div', { style: 'display:flex;gap:8px;align-items:center;' }, linkIn, linkBtn),
         h('div', { class: 'dica-campo', text: 'No Google Maps, abra o local, toque em Compartilhar e copie o link. Funciona com links curtos (maps.app.goo.gl) e completos.' }),
         linkStatus);
-      fs.append(
-        h('label', { for: 'lugar-busca', text: 'Buscar o local no Google Maps' }),
+      // busca por nome: só aparece quando a plataforma tem a busca do Google ativada
+      const blocoBusca = h('div', { class: 'lugar-link', hidden: true },
+        h('label', { for: 'lugar-busca', text: 'Ou busque o local pelo nome' }),
         h('div', { class: 'lugar-busca' }, busca, lista),
-        status, blocoLink, painel,
-        h('div', { class: 'dica-campo', style: 'margin:12px 0 4px;', text: 'Confira se o pin do mapa está no lugar certo:' }), mapa, camposBox);
+        status);
+      const avisoPin = h('div', { class: 'dica-campo', style: 'margin:12px 0 4px;', text: 'Confira se o pin do mapa está no lugar certo:' });
+      // ajuda quando o pin cai no lugar errado
+      const linkProcurar = h('a', { class: 'btn sm', href: '#', target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Procurar no Google Maps' });
+      const ajudaPin = h('div', { class: 'lugar-ajuda', hidden: true },
+        h('b', { text: 'O pin está no lugar errado?' }),
+        h('ol', {}, h('li', { text: 'Abra o Google Maps e encontre o local exato (você pode mover o mapa e tocar no ponto certo).' }), h('li', { text: 'Toque em Compartilhar e copie o link.' }), h('li', { text: 'Cole o link no campo "Link do local no Google Maps", no alto desta página.' })),
+        linkProcurar);
+      fs.append(
+        blocoLink, blocoBusca, painel,
+        avisoPin, mapa, ajudaPin, camposBox);
 
       // nome e endereço que aparecem no site (editáveis); vêm preenchidos com o que o Google devolver
       [{ chave: 'mapa.local_nome', label: 'Nome do local (como aparece no site)' }, { chave: 'mapa.local_endereco', label: 'Endereço (como aparece no site)' }].forEach((c) => {
@@ -2847,6 +2859,9 @@
         const alvo = q ? 'https://www.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed' : '';
         if (mapa.dataset.q !== alvo) { mapa.dataset.q = alvo; if (alvo) mapa.src = alvo; else mapa.removeAttribute('src'); }
         mapa.style.display = alvo ? '' : 'none';
+        ajudaPin.hidden = !alvo; avisoPin.hidden = !alvo;
+        const consulta = [campoNome() && campoNome().value, campoEnd() && campoEnd().value].filter(Boolean).join(', ');
+        linkProcurar.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(consulta || q);
       };
       const pintar = () => {
         painel.innerHTML = '';
@@ -2856,12 +2871,10 @@
             h('div', { class: 'n', text: (campoNome() && campoNome().value) || '' }), h('div', { class: 'a', text: (campoEnd() && campoEnd().value) || '' }),
             h('div', { class: 'acoes' },
               hUrl.value ? h('a', { class: 'btn sm', href: hUrl.value, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir no Google Maps' }) : null,
-              btn('Buscar outro local', () => { busca.focus(); busca.select(); }, 'sm'),
+              btn('Trocar o local', () => { linkIn.focus(); }, 'sm'),
               btn('Remover confirmação', () => { [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
-        } else if (semChave) {
-          painel.appendChild(h('div', { class: 'lugar-info', text: 'A busca automática do Google Maps ainda não está ativada neste sistema. Cole o link do local do Google Maps acima (é o jeito mais seguro) ou digite o endereço abaixo e confira o pin no mapa.' }));
         } else if ((campoEnd() && campoEnd().value.trim()) || (campoNome() && campoNome().value.trim())) {
-          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Busque o local ou cole o link do Google Maps acima para garantir que está certo.' }));
+          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Cole acima o link do local no Google Maps para garantir que está certo.' }));
         }
       };
       const fechar = () => { lista.hidden = true; busca.setAttribute('aria-expanded', 'false'); ativo = -1; };
@@ -2943,7 +2956,7 @@
       });
       pintar(); atualizarMapa();
       // descobre cedo se a busca está ativada, para avisar antes de a pessoa digitar
-      api('/api/admin/lugar').then((d) => { if (d && d.semChave) { semChave = true; pintar(); } });
+      api('/api/admin/lugar').then((d) => { if (d && !d.erro && !d.semChave) blocoBusca.hidden = false; else semChave = true; });
       return;
     }
     if (campo.tipo === 'bloco_texto') {
