@@ -116,8 +116,11 @@
   .gift-item.reservado{opacity:.72;}
   .gift-item.reservado button{background:transparent;color:var(--wine);border-color:var(--border);}
   .gift-item.reservado .gift-item-nome{text-decoration:line-through;text-decoration-thickness:1px;}
-  .gift-pix{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;text-align:left;font-size:13px;color:var(--ink-soft);margin:0 0 18px;padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:#fff;}
-  .gift-pix .rot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+  .gift-pix{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:13px;color:var(--ink-soft);margin:0 0 18px;padding:22px 18px;border-radius:14px;border:1px solid var(--border);background:#fff;}
+  .gift-pix .rot{font-family:var(--font-display);font-style:var(--display-style);font-size:21px;color:var(--wine);}
+  .gift-pix-texto{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink-soft);white-space:pre-line;max-width:420px;}
+  .gift-pix-qr{width:176px;height:176px;object-fit:contain;background:#fff;border-radius:12px;padding:8px;border:1px solid var(--border);}
+  .gift-pix-linha{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
   .gift-pix b{color:var(--ink);font-weight:600;overflow-wrap:anywhere;font-size:14px;}
   .gift-pix button{font-size:12.5px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--wine);background:var(--wine);color:var(--on-wine);font-weight:500;}
   .vazio-msg{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 10px;grid-column:1/-1;}
@@ -168,7 +171,12 @@
       <button type="button" data-filtro="livres" aria-pressed="false">Disponíveis</button>
     </div>
     <div class="gift-itens" id="pgLista"></div>
-    <div class="gift-pix" id="pgPix" hidden><div><span class="rot">Prefere enviar um PIX?</span><b id="pgPixChave"></b></div><button type="button" id="pgPixCopiar">Copiar chave</button></div>
+    <div class="gift-pix" id="pgPix" hidden>
+      <div class="rot" id="pgPixTitulo">Prefere enviar um PIX?</div>
+      <p class="gift-pix-texto" id="pgPixTexto" hidden></p>
+      <img class="gift-pix-qr" id="pgPixQr" alt="QR Code do PIX" hidden>
+      <div class="gift-pix-linha" id="pgPixLinha"><b id="pgPixChave"></b><button type="button" id="pgPixCopiar">Copiar chave</button></div>
+    </div>
   </div>
   <div class="indisponivel" id="pgIndisponivel" hidden>
     <h2 id="indTitulo">Lista de presentes indisponível</h2>
@@ -285,9 +293,13 @@
     const texto = t('presentes.lista_texto', '');
     $('pgTexto').textContent = texto; $('pgTexto').hidden = !texto;
     $('pgFiltro').hidden = itens.length < 5;
-    const pix = t('presentes.chave_pix', '');
-    if (pix && t('presentes.mostrar_pix', '0') !== '0') {
-      $('pgPix').hidden = false; $('pgPixChave').textContent = pix;
+    const pix = t('presentes.chave_pix', ''), qr = t('presentes.pix_qrcode_url', '');
+    if ((pix || qr) && t('presentes.mostrar_pix', '0') !== '0') {
+      $('pgPix').hidden = false;
+      $('pgPixTitulo').textContent = t('presentes.pix_titulo', 'Prefere enviar um PIX?');
+      const tx = t('presentes.pix_texto', ''); $('pgPixTexto').textContent = tx; $('pgPixTexto').hidden = !tx;
+      $('pgPixQr').hidden = !qr; if (qr) $('pgPixQr').src = qr;
+      $('pgPixLinha').hidden = !pix; $('pgPixChave').textContent = pix;
       $('pgPixCopiar').onclick = function () { copiar(pix, 'Chave PIX copiada'); };
     }
     $('conteudo').hidden = false;
@@ -355,8 +367,9 @@
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('sheet').hidden) fecharSheet(); });
 
   function chavePix() { return t('presentes.mostrar_pix', '0') !== '0' ? t('presentes.chave_pix', '') : ''; }
+  function qrPix() { return t('presentes.mostrar_pix', '0') !== '0' ? t('presentes.pix_qrcode_url', '') : ''; }
   function abrirSheetPresente(item) {
-    const pix = chavePix();
+    const pix = chavePix(), qr = qrPix();
     const resumo = '<div class="item-resumo">' + (item.foto ? '<img src="' + esc(item.foto) + '" alt="">' : '') +
       '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, item.valor].filter(Boolean).join(' · ')) + '</span></div></div>';
     if (item.reservado) {
@@ -372,10 +385,10 @@
       '<div class="acoes"><button type="button" class="pill solid small" data-acao="sim">Sim, vou dar este presente</button><button type="button" class="pill outline small" data-acao="fechar">Voltar</button></div>',
       function (corpo) {
         corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) { reservar(item, true, ev.currentTarget, pix); });
+        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) { reservar(item, true, ev.currentTarget, pix, qr); });
       });
   }
-  function reservar(item, reservado, btn, pix) {
+  function reservar(item, reservado, btn, pix, qr) {
     btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
     fetch(api('presentes/reservar'), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
       .then(function (r) { return r.json(); })
@@ -384,8 +397,8 @@
         item.reservado = reservado;
         desenhar();
         if (!reservado) { fecharSheet(); avisar('Escolha desfeita. O presente voltou para a lista.'); return; }
-        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + (pix ? ' Se quiser enviar o valor por PIX, a chave está aqui:' : '') + '</p>' +
-          (pix ? '<div class="pix-box"><small>Chave PIX</small><b>' + esc(pix) + '</b><button type="button" class="pill solid small" data-acao="pix">Copiar chave PIX</button></div>' : '') +
+        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + ((pix || qr) ? ' Se quiser enviar o valor por PIX, é por aqui:' : '') + '</p>' +
+          ((pix || qr) ? '<div class="pix-box">' + (qr ? '<img src="' + esc(qr) + '" alt="QR Code do PIX" style="width:170px;height:170px;object-fit:contain;background:#fff;border-radius:10px;margin:0 auto 8px;display:block;">' : '') + (pix ? '<small>Chave PIX</small><b>' + esc(pix) + '</b><button type="button" class="pill solid small" data-acao="pix">Copiar chave PIX</button>' : '') + '</div>' : '') +
           '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Fechar</button></div>',
           function (corpo) {
             corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);

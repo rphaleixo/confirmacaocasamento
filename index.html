@@ -357,8 +357,11 @@
   .gift-opcao h3{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:21px;color:var(--wine);margin:0 0 6px;}
   .gift-opcao p{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0 0 16px;}
   .gift-opcao .pill{width:100%;}
-  .gift-pix{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;text-align:left;font-size:13px;color:var(--wine-pale);margin:0;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);}
-  .gift-pix .rot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+  .gift-pix{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;font-size:13px;color:var(--wine-pale);margin:0;padding:22px 18px;border-radius:16px;border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);}
+  .gift-pix .rot{font-family:var(--font-display);font-style:var(--display-style);font-size:21px;letter-spacing:0;text-transform:none;color:var(--cream);}
+  .gift-pix-texto{margin:0;font-size:13.5px;line-height:1.55;color:var(--wine-pale);white-space:pre-line;}
+  .gift-pix-qr{width:176px;height:176px;object-fit:contain;background:#fff;border-radius:12px;padding:8px;}
+  .gift-pix-linha{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
   .gift-pix b{color:var(--cream);font-weight:600;overflow-wrap:anywhere;font-size:14px;}
   .gift-pix button{font-size:12.5px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--cream);background:var(--cream);color:var(--wine);font-weight:500;}
 
@@ -629,7 +632,12 @@
       </div>
       <div class="gift-como-tit" id="presentesInfosTit" hidden>Dicas para presentear</div>
       <div class="gift-infos" id="presentesInfos" hidden></div>
-      <div class="gift-pix" id="presentesPix" hidden><div><span class="rot">Prefere enviar um PIX?</span><b id="presentesPixChave"></b></div><button type="button" id="presentesPixCopiar">Copiar chave</button></div>
+      <div class="gift-pix" id="presentesPix" hidden>
+        <div class="rot" id="presentesPixTitulo">Prefere enviar um PIX?</div>
+        <p class="gift-pix-texto" id="presentesPixTexto" hidden></p>
+        <img class="gift-pix-qr" id="presentesPixQr" alt="QR Code do PIX" hidden>
+        <div class="gift-pix-linha" id="presentesPixLinha"><b id="presentesPixChave"></b><button type="button" id="presentesPixCopiar">Copiar chave</button></div>
+      </div>
     </div>
   </section>
 
@@ -1314,11 +1322,16 @@
     boxInfos.hidden = !(infos.length && ligado('infos'));
     $('presentesInfosTit').hidden = boxInfos.hidden;
 
-    // 4) PIX
+    // 4) PIX: título e texto configuráveis; chave (com botão de copiar) e/ou QR Code
     const pix = t('presentes.chave_pix', '');
+    const qr = t('presentes.pix_qrcode_url', '');
     const pixBox = $('presentesPix');
-    pixBox.hidden = !(pix && ligado('pix'));
+    pixBox.hidden = !((pix || qr) && ligado('pix'));
     if (!pixBox.hidden) {
+      $('presentesPixTitulo').textContent = t('presentes.pix_titulo', 'Prefere enviar um PIX?');
+      const tx = t('presentes.pix_texto', ''); $('presentesPixTexto').textContent = tx; $('presentesPixTexto').hidden = !tx;
+      const img = $('presentesPixQr'); img.hidden = !qr; if (qr) img.src = qr;
+      $('presentesPixLinha').hidden = !pix;
       $('presentesPixChave').textContent = pix;
       $('presentesPixCopiar').onclick = function () { copiar(pix, 'Chave PIX copiada'); };
     }

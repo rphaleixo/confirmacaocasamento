@@ -2482,8 +2482,11 @@
       { etapa: 'como', chave: '__bloco_infos__', tipo: 'bloco_texto', liga: 'presentes.mostrar_infos', padrao: '0', recolhe: true, label: 'Dicas e informações', sub: 'Ideal para aniversários sem lista: tamanho de roupa, brinquedos de interesse, cores e personagens favoritos.', campos: [
         { chave: 'presentes.infos', label: 'Dicas e informações', tipo: 'lista_infos' },
       ]},
-      { etapa: 'como', chave: '__bloco_pix__', tipo: 'bloco_texto', liga: 'presentes.mostrar_pix', padrao: '0', recolhe: true, label: 'PIX', sub: 'Mostra a chave com um botão "Copiar". Não processamos pagamento: é só para facilitar o PIX.', campos: [
-        { chave: 'presentes.chave_pix', label: 'Chave PIX' },
+      { etapa: 'como', chave: '__bloco_pix__', tipo: 'bloco_texto', liga: 'presentes.mostrar_pix', padrao: '0', recolhe: true, label: 'PIX', sub: 'Mostra a chave com botão "Copiar" e/ou o QR Code. Não processamos pagamento: é só para facilitar o PIX.', campos: [
+        { chave: 'presentes.pix_titulo', label: 'Título', placeholder: 'Prefere enviar um PIX?' },
+        { chave: 'presentes.pix_texto', label: 'Texto de apoio (opcional)', tipo: 'textarea', dica: 'Ex.: "Se preferir, envie o valor por PIX. Nome do favorecido: Ana Souza."' },
+        { chave: 'presentes.chave_pix', label: 'Chave PIX', dica: 'Aparece com o botão "Copiar". Pode deixar em branco se quiser mostrar só o QR Code.' },
+        { chave: 'presentes.pix_qrcode_url', label: 'QR Code do PIX', tipo: 'imagem_direta', dica: 'Envie a imagem do QR Code gerada no aplicativo do seu banco (um print serve). Ela é mostrada como veio, sem recorte, para continuar legível.' },
       ]},
       { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
@@ -3291,6 +3294,38 @@
       return;
     }
 
+    if (campo.tipo === 'imagem_direta') {
+      // envia a imagem exatamente como veio (sem recorte nem recompressão): ideal para QR Code
+      const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave }); hidden.value = ctDados[campo.chave] || '';
+      const arquivo = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+      const aviso = h('div', { class: 'dica-campo', style: 'min-height:16px;', 'aria-live': 'polite' });
+      const caixa = h('div', { class: 'campo-foto' });
+      const desenhar = () => {
+        caixa.innerHTML = '';
+        const url = hidden.value;
+        caixa.appendChild(url ? h('img', { src: url, alt: 'QR Code', style: 'object-fit:contain;background:#fff;' }) : h('div', { class: 'sem-foto', text: 'sem imagem' }));
+        const acoes = h('div', { class: 'acoes' }, btn(url ? 'Trocar imagem' : 'Escolher imagem', () => arquivo.click(), 'sm'));
+        if (url) acoes.appendChild(btn('Remover', () => { hidden.value = ''; hidden.dispatchEvent(new Event('input', { bubbles: true })); desenhar(); }, 'sm fantasma'));
+        caixa.append(acoes, arquivo);
+      };
+      arquivo.addEventListener('change', async () => {
+        const f = arquivo.files[0]; arquivo.value = '';
+        if (!f) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(f.type)) { aviso.textContent = 'Escolha uma imagem PNG, JPG ou WebP.'; return; }
+        aviso.textContent = 'Enviando…';
+        try {
+          const r = await fetch('/api/admin/upload?nome=' + encodeURIComponent(f.name), { method: 'POST', headers: { 'Content-Type': f.type }, body: f });
+          const d = await r.json();
+          if (d.erro || !d.url) { aviso.textContent = d.erro || 'Não consegui enviar a imagem.'; return; }
+          hidden.value = d.url; hidden.dispatchEvent(new Event('input', { bubbles: true })); aviso.textContent = ''; desenhar();
+        } catch (e) { aviso.textContent = 'Não consegui enviar a imagem. Confira sua internet.'; }
+      });
+      desenhar();
+      fs.append(h('label', { class: 'rot-campo', text: campo.label }), caixa, hidden, aviso);
+      if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
+      return;
+    }
+
     if (campo.tipo === 'escolha_visual') {
       // opções em cartões com um desenho: grava o valor escolhido num campo escondido
       const oculto = h('input', { type: 'hidden', 'data-chave': campo.chave });
@@ -3613,7 +3648,7 @@
     tela.appendChild(carregando);
     const el_ = h('div', { class: 'previa-mod' }, h('div', { class: 'rot', text: 'Prévia no celular' }), aviso, tela,
       h('div', { class: 'dica-campo', style: 'margin:10px 0 0;', text: 'É o site de verdade, com o que você está editando, mesmo antes de salvar. Role dentro do celular para ver mais.' }));
-    let frameAtual = null, aguardando = null, agenda = null, montado = true;
+    let frameAtual = null, aguardando = null, agenda = null, montado = true, rolagem = null;
 
     const rascunho = () => {
       const d = Object.assign({}, ctDados);
@@ -3633,6 +3668,8 @@
     const carregar = () => {
       if (!el_.isConnected && frameAtual) { montado = false; return; }
       avisoDesligado();
+      // guarda onde o convidado (o anfitrião) estava rolando: o site novo volta exatamente para lá, sem pular para o início do módulo
+      try { rolagem = frameAtual && frameAtual.contentWindow ? frameAtual.contentWindow.scrollY : rolagem; } catch (e) { /* mantém */ }
       const f = h('iframe', { src: urlSite() + '?previa=1#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
       aguardando = f;
       tela.appendChild(f);
@@ -3644,6 +3681,7 @@
       if (novo && ev.source === novo.contentWindow) {
         if (ev.data.tipo === 'previa-pronta') novo.contentWindow.postMessage({ tipo: 'previa-conteudo', conteudo: rascunho() }, location.origin);
         if (ev.data.tipo === 'previa-renderizada') {
+          if (rolagem !== null) { try { novo.contentWindow.scrollTo({ top: rolagem, left: 0, behavior: 'instant' }); } catch (e) { /* segue */ } }
           novo.style.visibility = 'visible';
           if (frameAtual) frameAtual.remove();
           frameAtual = novo; aguardando = null; carregando.remove();
