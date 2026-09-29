@@ -535,6 +535,12 @@
   .rico-btn.html{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700;}
   .rico-dial{display:inline-flex;gap:5px;align-items:center;padding:0 8px 0 2px;}
   .rico-amostra{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;} .rico-amostra:hover{transform:scale(1.15);} .rico-amostra:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+  .rico-amostra.on{box-shadow:0 0 0 2px var(--navy);}
+  .cl-linha{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;}
+  .cl-atual{min-width:124px;height:36px;border-radius:9px;border:1px solid var(--line);display:inline-grid;place-items:center;padding:0 10px;font-size:12px;font-weight:700;font-family:var(--mono);}
+  .cl-dial{display:inline-flex;gap:7px;align-items:center;} .cl-dial .rico-amostra{width:28px;height:28px;}
+  .cl-livre{width:40px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;}
+  .fl-amostra{margin-top:8px;padding:9px 12px;border:1px dashed var(--line);border-radius:9px;font-size:20px;color:var(--ink);background:var(--surface-2,#F6F8FB);}
   .rico-cor{width:34px;height:34px;padding:3px;border:none;background:none;cursor:pointer;}
   .rico-area{min-height:44px;padding:9px 11px;line-height:1.5;outline:none;overflow-wrap:anywhere;}
   .rico-area.multi{min-height:96px;}
@@ -3063,6 +3069,8 @@
     ['destaque', 'Só os dias', 'Número gigante'], ['faixa', 'Faixa', 'Uma linha, compacta'], ['cartao', 'Cartão único', 'Um quadro com divisórias'],
   ].map(([valor, label, desc]) => ({ valor, label, desc, desenho: () => desenhoContagem(valor) }));
 
+  const CORES_DA_PALETA = [['aparencia.cor_primaria', 'Primária', '#0B2545'], ['aparencia.cor_secundaria', 'Secundária', '#2F5D9A'], ['aparencia.cor_destaque', 'Destaque', '#C9A227'], ['aparencia.cor_fundo', 'Fundo', '#EAF1FB'], ['aparencia.cor_texto', 'Texto', '#14213D']];
+
   const GRUPOS_CONTEUDO = [
     { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem e posição do texto' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
       { etapa: 'midia', chave: '__sep_imagem__', tipo: 'separador', label: '1. Imagem ou vídeo de fundo' },
@@ -3109,7 +3117,7 @@
       { chave: 'savethedate.texto', label: 'Mensagem', tipo: 'textarea', dica: 'Aparece abaixo da data, na capa. Ex.: "Em breve enviaremos o convite oficial."' },
       { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'É a mesma opção de "Rodapé e barra fixa": vale para o Save the Date e para o site normal.' },
     ]},
-    { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'estilo', titulo: 'Estilo' }], campos: [
+    { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'estilo', titulo: 'Estilo' }, { id: 'cores', titulo: 'Cores e fontes' }], campos: [
       { etapa: 'textos', chave: 'countdown.eyebrow', label: 'Texto pequeno' },
       { etapa: 'textos', chave: 'countdown.titulo', label: 'Título' },
       { etapa: 'estilo', chave: 'countdown.layout', tipo: 'escolha_visual', label: 'Como a contagem aparece', padrao: 'caixas', colunas: 3, legado: { '1': 'caixas', '2': 'circulos', '3': 'frase' }, opcoes: ESTILOS_CONTAGEM },
@@ -3118,6 +3126,16 @@
         { valor: 'suave', label: 'Suave', desc: 'Cor de fundo do site', desenho: DESENHO_FUNDO.suave },
         { valor: 'marca', label: 'Destaque', desc: 'Cor primária', desenho: DESENHO_FUNDO.marca },
       ], dica: 'O estilo "Faixa" já vem com fundo de destaque se você não escolher outro.' },
+      { etapa: 'cores', chave: '__nota_cores_cd__', tipo: 'nota', label: 'Tudo aqui é opcional. Em "Padrão do estilo", a contagem usa as cores e as fontes do estilo e da paleta do site. As bolinhas são as cores da paleta escolhida.' },
+      { etapa: 'cores', chave: '__sep_cd_cores__', tipo: 'separador', label: 'Cores' },
+      { etapa: 'cores', chave: 'countdown.cor_fundo', tipo: 'cor_livre', label: 'Fundo da seção', dica: 'Substitui o fundo escolhido em Estilo.' },
+      { etapa: 'cores', chave: 'countdown.cor_blocos', tipo: 'cor_livre', label: 'Blocos (caixas, círculos, placar, anéis, cartão)' },
+      { etapa: 'cores', chave: 'countdown.cor_numeros', tipo: 'cor_livre', label: 'Números' },
+      { etapa: 'cores', chave: 'countdown.cor_rotulos', tipo: 'cor_livre', label: 'Rótulos (dias, horas, min, seg)' },
+      { etapa: 'cores', chave: 'countdown.cor_titulo', tipo: 'cor_livre', label: 'Título e texto pequeno' },
+      { etapa: 'cores', chave: '__sep_cd_fontes__', tipo: 'separador', label: 'Fontes' },
+      { etapa: 'cores', chave: 'countdown.fonte_numeros', tipo: 'fonte_livre', label: 'Fonte dos números' },
+      { etapa: 'cores', chave: 'countdown.fonte_textos', tipo: 'fonte_livre', label: 'Fonte do título, dos rótulos e da frase' },
       { etapa: 'estilo', chave: 'countdown.mostrar_segundos', tipo: 'liga', label: 'Mostrar os segundos', sub: 'Desligado, a contagem mostra só dias, horas e minutos (mais calma para quem olha por muito tempo).' },
       { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
@@ -4417,6 +4435,51 @@
     const idCampo = 'ct-' + campo.chave.replace(/[^a-z0-9]/gi, '-');
     const label = h('label', { for: idCampo, text: campo.label });
     fs.appendChild(label);
+
+    if (campo.tipo === 'cor_livre') {
+      // cor opcional: cores da paleta do site em acesso rápido, cor livre e "padrão do estilo" (em branco)
+      const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave, id: idCampo }); hidden.value = /^#[0-9a-f]{3,8}$/i.test(ctDados[campo.chave] || '') ? ctDados[campo.chave] : '';
+      const atual = h('span', { class: 'cl-atual' });
+      const dial = h('div', { class: 'cl-dial', role: 'group', 'aria-label': 'Cores da paleta do site' });
+      const livre = h('input', { type: 'color', class: 'cl-livre', title: 'Outra cor', 'aria-label': 'Outra cor para ' + campo.label, value: hidden.value || '#C9A227' });
+      const definir_ = (v) => { hidden.value = v; pintar(); hidden.dispatchEvent(new Event('input', { bubbles: true })); };
+      const amostras = CORES_DA_PALETA.map(([k, nome, pad]) => {
+        const c = ctDados[k] || pad;
+        const b = h('button', { type: 'button', class: 'rico-amostra', title: nome + ' da paleta (' + c.toUpperCase() + ')', 'aria-label': 'Usar a cor ' + nome.toLowerCase() + ' da paleta', style: 'background:' + c + ';' });
+        b.addEventListener('click', () => definir_(c)); dial.appendChild(b); return [c, b];
+      });
+      livre.addEventListener('input', () => definir_(livre.value));
+      const pintar = () => {
+        const v = hidden.value;
+        atual.style.background = v || 'repeating-linear-gradient(45deg,#fff,#fff 4px,#E9EDF3 4px,#E9EDF3 8px)';
+        atual.textContent = v ? v.toUpperCase() : 'Padrão do estilo';
+        atual.style.color = v ? (luminancia(v) > 0.45 ? '#111' : '#fff') : 'var(--ink-soft)';
+        amostras.forEach(([c, b]) => b.classList.toggle('on', c.toLowerCase() === v.toLowerCase()));
+      };
+      pintar();
+      fs.append(h('div', { class: 'cl-linha' }, atual, dial, livre, btn('Padrão', () => definir_(''), 'sm fantasma')), hidden);
+      if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
+      return;
+    }
+
+    if (campo.tipo === 'fonte_livre') {
+      // fonte opcional do catálogo do site; em branco vale a fonte do estilo/site
+      const CAT = window.FONTES_CATALOGO;
+      const sel = h('select', { 'data-chave': campo.chave, id: idCampo });
+      sel.appendChild(new Option('Igual ao site', ''));
+      Object.keys(CAT.categorias).forEach((cat) => {
+        const g = h('optgroup', { label: CAT.categorias[cat] });
+        CAT.lista.filter((f) => f.categoria === cat).forEach((f) => g.appendChild(new Option(f.nome, f.id)));
+        if (g.children.length) sel.appendChild(g);
+      });
+      sel.value = CAT.porId[ctDados[campo.chave]] ? ctDados[campo.chave] : '';
+      const amostra = h('div', { class: 'fl-amostra', 'aria-live': 'polite' });
+      const pintar = () => { const f = CAT.porId[sel.value]; if (f) { CAT.carregar(f); amostra.style.fontFamily = CAT.familia(f); amostra.textContent = '256 dias · Faltam apenas'; } else { amostra.style.fontFamily = ''; amostra.textContent = 'Usa a fonte escolhida em Tipografia'; } };
+      sel.addEventListener('change', pintar); pintar();
+      fs.append(sel, amostra);
+      if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
+      return;
+    }
 
     if (campo.tipo === 'foto') {
       const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave, id: idCampo }); hidden.value = ctDados[campo.chave] || '';

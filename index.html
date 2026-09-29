@@ -308,7 +308,7 @@
   .countdown.sem-seg .cd-cell:last-child{display:none;}
   /* círculos */
   .countdown.layout-circulos .cd-row{gap:10px;justify-content:center;}
-  .countdown.layout-circulos .cd-cell{flex:0 0 68px;background:none;border:none;border-radius:50%;width:68px;height:68px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px color-mix(in srgb, var(--cd-fg) 55%, transparent) inset;}
+  .countdown.layout-circulos .cd-cell{flex:0 0 68px;background:none;border:none;border-radius:50%;width:68px;height:68px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px var(--cd-outline, color-mix(in srgb, var(--cd-fg) 55%, transparent)) inset;}
   .countdown.layout-circulos .cd-num{font-size:26px;}
   /* frase única */
   .countdown.layout-frase .cd-row{display:none;}
@@ -319,7 +319,7 @@
   .countdown.layout-relogio .cd-cell + .cd-cell::before{content:':';position:absolute;left:-4px;top:0;font-family:var(--font-display);font-size:42px;line-height:1.05;color:var(--cd-muted);}
   .countdown.layout-relogio .cd-num{font-size:46px;font-weight:400;}
   /* placar: cartões cheios com um vinco no meio, como um relógio de virar */
-  .countdown.layout-placar .cd-cell{position:relative;background:var(--cd-fg);border:none;border-radius:10px;padding:16px 0 12px;box-shadow:0 10px 20px -10px rgba(0,0,0,.45);}
+  .countdown.layout-placar .cd-cell{position:relative;background:var(--cd-cell, var(--cd-fg));border:none;border-radius:10px;padding:16px 0 12px;box-shadow:0 10px 20px -10px rgba(0,0,0,.45);}
   .countdown.layout-placar .cd-cell::after{content:'';position:absolute;left:0;right:0;top:calc(50% - 8px);height:1px;background:color-mix(in srgb, var(--cd-inv) 28%, transparent);}
   .countdown.layout-placar .cd-num{color:var(--cd-inv);font-size:34px;}
   .countdown.layout-placar .cd-label{color:color-mix(in srgb, var(--cd-inv) 72%, transparent);}
@@ -1182,8 +1182,23 @@
       if (['claro', 'suave', 'marca'].indexOf(fundoCd) === -1) fundoCd = 'suave';
       cdEl.classList.add('layout-' + estilo, 'f-' + fundoCd);
       if (t('countdown.mostrar_segundos', '1') === '0') cdEl.classList.add('sem-seg');
-      cdEl.dataset.bgTop = fundoCd === 'marca' ? 'var(--wine)' : fundoCd === 'claro' ? 'var(--cream)' : 'var(--blush)';
-      cdEl.dataset.bgBottom = fundoCd === 'marca' ? 'var(--wine-deep)' : cdEl.dataset.bgTop;
+      // cores e fontes próprias da contagem (Contagem regressiva › Cores e fontes); em branco vale o estilo escolhido
+      const corCd = function (k) { const v = String(t('countdown.' + k, '')).trim(); return /^#[0-9a-f]{3,8}$/i.test(v) ? v : ''; };
+      const cFundo = corCd('cor_fundo'), cBlocos = corCd('cor_blocos'), cNum = corCd('cor_numeros'), cRot = corCd('cor_rotulos'), cTit = corCd('cor_titulo');
+      if (cFundo) { cdEl.style.background = cFundo; cdEl.style.setProperty('--cd-solid', cFundo); }
+      if (cBlocos) { ['--cd-bg', '--cd-cell', '--cd-line', '--cd-outline'].forEach(function (v) { cdEl.style.setProperty(v, cBlocos); }); }
+      const CATcd = window.FONTES_CATALOGO;
+      const fNum = CATcd && CATcd.porId[t('countdown.fonte_numeros', '')], fTxt = CATcd && CATcd.porId[t('countdown.fonte_textos', '')];
+      if (fNum) CATcd.carregar(fNum);
+      if (fTxt) CATcd.carregar(fTxt);
+      const estilaCd = function (sel, fn) { cdEl.querySelectorAll(sel).forEach(fn); };
+      if (cNum) estilaCd('.cd-num', function (e) { e.style.color = cNum; });
+      if (cRot) estilaCd('.cd-label,.cd-resto', function (e) { e.style.color = cRot; });
+      if (cTit) estilaCd('#countdownTitulo,#countdownEyebrow,#cd-sentence', function (e) { e.style.color = cTit; });
+      if (fNum) estilaCd('.cd-num', function (e) { e.style.fontFamily = CATcd.familia(fNum); });
+      if (fTxt) estilaCd('#countdownTitulo,#countdownEyebrow,#cd-sentence,.cd-label,.cd-resto', function (e) { e.style.fontFamily = CATcd.familia(fTxt); if (e.id === 'countdownTitulo' || e.id === 'cd-sentence') e.style.fontStyle = fTxt.estiloTitulo; });
+      cdEl.dataset.bgTop = cFundo || (fundoCd === 'marca' ? 'var(--wine)' : fundoCd === 'claro' ? 'var(--cream)' : 'var(--blush)');
+      cdEl.dataset.bgBottom = cFundo || (fundoCd === 'marca' ? 'var(--wine-deep)' : cdEl.dataset.bgTop);
     }
     escondeSeInativa('countdown', 'secCountdown');
 
