@@ -485,6 +485,12 @@
   .ev-op:hover{border-color:var(--navy);} .ev-op.on{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 18%,transparent);background:var(--surface-2,#F6F8FB);}
   .ev-desenho{width:100%;height:var(--ev-altura,58px);display:flex;align-items:center;justify-content:center;} .ev-desenho svg{width:100%;height:100%;}
   .previa-data{margin:2px 0 12px;padding:9px 12px;border-radius:10px;background:var(--surface-2,#F6F8FB);border:1px solid var(--line);font-size:13px;color:var(--ink-soft);} .previa-data b{color:var(--ink);}
+  .ajuste-fino{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:14px 16px;margin:0 0 6px;}
+  .af-linha{margin:0 0 12px;} .af-linha > label{display:block;font-size:12.5px;font-weight:700;margin:0 0 5px;}
+  .af-seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);width:fit-content;max-width:100%;}
+  .af-seg button{border:none;border-left:1px solid var(--line);background:none;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;} .af-seg button:first-child{border-left:none;}
+  .af-seg button.on{background:var(--navy);color:#fff;}
+  .af-slider{display:flex;align-items:center;gap:10px;flex-wrap:wrap;} .af-slider small{font-size:11.5px;color:var(--ink-faint);white-space:nowrap;} .af-slider input[type=range]{flex:1;min-width:120px;accent-color:var(--navy);} .af-slider output{min-width:56px;text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;}
   .rot-campo{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;}
   .atalho-lista{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:12px 14px;}
   .atalho-lista b{display:block;font-size:13.5px;} .atalho-lista span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:420px;}
@@ -2739,10 +2745,37 @@
     { valor: 'impacto', label: 'Impacto', desc: 'Nomes enormes, data em etiqueta' },
   ].map((o) => ({ ...o, desenho: () => desenhoCapa(o.valor) }));
 
+  // Miniaturas dos estilos da contagem regressiva
+  const desenhoContagem = (e) => {
+    const fundo = '<rect width="100" height="58" rx="6" fill="#EAF1FB"/>';
+    const tx = (x, y, w, o, h) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + (h || 2.6) + '" rx="1.3" fill="#1F3A5F" fill-opacity="' + (o || .7) + '"/>';
+    const cx = (i) => 18 + i * 21.3;
+    let c = '';
+    if (e === 'caixas') for (let i = 0; i < 4; i++) c += '<rect x="' + (cx(i) - 9) + '" y="17" width="18" height="24" rx="4" fill="#fff" stroke="#B9C3D3"/>' + tx(cx(i) - 5, 24, 10, .9, 5) + tx(cx(i) - 4, 33, 8, .4);
+    else if (e === 'circulos') for (let i = 0; i < 4; i++) c += '<circle cx="' + cx(i) + '" cy="29" r="10" fill="none" stroke="#1F3A5F" stroke-opacity=".55" stroke-width="1.2"/>' + tx(cx(i) - 4, 27, 8, .9, 4);
+    else if (e === 'frase') c = tx(14, 25, 72, .9, 5) + tx(30, 34, 40, .4);
+    else if (e === 'relogio') for (let i = 0; i < 4; i++) c += tx(cx(i) - 7, 20, 14, .9, 12) + (i ? '<circle cx="' + (cx(i) - 10.6) + '" cy="24" r="1" fill="#1F3A5F"/><circle cx="' + (cx(i) - 10.6) + '" cy="30" r="1" fill="#1F3A5F"/>' : '') + tx(cx(i) - 5, 36, 10, .4);
+    else if (e === 'placar') for (let i = 0; i < 4; i++) c += '<rect x="' + (cx(i) - 9) + '" y="16" width="18" height="26" rx="3" fill="#1F3A5F"/><rect x="' + (cx(i) - 9) + '" y="28.5" width="18" height="0.8" fill="#fff" fill-opacity=".35"/>' + '<rect x="' + (cx(i) - 5) + '" y="21" width="10" height="5" rx="1.5" fill="#fff"/>';
+    else if (e === 'aneis') for (let i = 0; i < 4; i++) c += '<circle cx="' + cx(i) + '" cy="29" r="10" fill="none" stroke="#B9C3D3" stroke-width="2.4"/><circle cx="' + cx(i) + '" cy="29" r="10" fill="none" stroke="#C9A227" stroke-width="2.4" stroke-dasharray="' + (14 + i * 11) + ' 70" transform="rotate(-90 ' + cx(i) + ' 29)"/>' + tx(cx(i) - 4, 27, 8, .9, 4);
+    else if (e === 'destaque') c = tx(28, 12, 44, .95, 22) + tx(36, 38, 28, .4, 2.6) + tx(30, 44, 40, .3, 2.6);
+    else if (e === 'faixa') return '<svg viewBox="0 0 100 58"><rect width="100" height="58" rx="6" fill="#EAF1FB"/><rect x="0" y="19" width="100" height="22" fill="#1F3A5F"/>' + [0, 1, 2, 3].map((i) => '<rect x="' + (12 + i * 21) + '" y="27" width="10" height="6" rx="1.5" fill="#fff"/><rect x="' + (23 + i * 21) + '" y="30" width="6" height="2.4" rx="1" fill="#fff" fill-opacity=".6"/>').join('') + '</svg>';
+    else if (e === 'cartao') c = '<rect x="7" y="15" width="86" height="28" rx="7" fill="#fff" stroke="#B9C3D3"/>' + [1, 2, 3].map((i) => '<rect x="' + (7 + i * 21.5) + '" y="20" width=".8" height="18" fill="#B9C3D3"/>').join('') + [0, 1, 2, 3].map((i) => tx(cx(i) - 5, 24, 10, .9, 5) + tx(cx(i) - 4, 33, 8, .4)).join('');
+    return '<svg viewBox="0 0 100 58">' + fundo + c + '</svg>';
+  };
+  const ESTILOS_CONTAGEM = [
+    ['caixas', 'Caixas', 'Quatro quadros'], ['circulos', 'Círculos', 'Contorno redondo'], ['frase', 'Frase', 'Uma frase corrida'],
+    ['relogio', 'Relógio', 'Números grandes com ":"'], ['placar', 'Placar', 'Cartões escuros com vinco'], ['aneis', 'Anéis', 'Anéis que se completam'],
+    ['destaque', 'Só os dias', 'Número gigante'], ['faixa', 'Faixa', 'Uma linha, compacta'], ['cartao', 'Cartão único', 'Um quadro com divisórias'],
+  ].map(([valor, label, desc]) => ({ valor, label, desc, desenho: () => desenhoContagem(valor) }));
+
   const GRUPOS_CONTEUDO = [
-    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem ou vídeo' }, { id: 'layout', titulo: 'Posição dos textos' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
+    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem e posição do texto' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
+      { etapa: 'midia', chave: '__sep_imagem__', tipo: 'separador', label: '1. Imagem ou vídeo de fundo' },
       { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
-      { etapa: 'layout', chave: 'hero.layout', tipo: 'escolha_visual', label: 'Como os textos aparecem na capa', padrao: 'classico', altura: 118, opcoes: OPCOES_LAYOUT, dica: 'Vale para o convite. O Save the Date pode ter outra posição (menu Save the Date). A saudação com o nome de quem foi convidado aparece em todas as posições; a prévia mostra um exemplo.' },
+      { etapa: 'midia', chave: '__sep_layout__', tipo: 'separador', label: '2. Posição dos textos' },
+      { etapa: 'midia', chave: 'hero.layout', tipo: 'escolha_visual', label: 'Escolha um modelo', padrao: 'classico', altura: 96, colunas: 4, opcoes: OPCOES_LAYOUT, dica: 'Vale para o convite. O Save the Date pode ter outra posição (menu Save the Date). A saudação com o nome de quem foi convidado aparece em todos os modelos; a prévia mostra um exemplo.' },
+      { etapa: 'midia', chave: '__sep_ajuste__', tipo: 'separador', label: '3. Ajuste fino (opcional)' },
+      { etapa: 'midia', chave: '__ajuste_fino__', tipo: 'ajuste_fino' },
       { etapa: 'textos', chave: '__nota_textos__', tipo: 'nota', label: 'Cada texto tem o seu interruptor: desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
       { etapa: 'textos', chave: '__bloco_eyebrow__', tipo: 'bloco_texto', liga: 'hero.mostrar_eyebrow', label: 'Texto pequeno acima do nome', campos: [
         { chave: 'hero.eyebrow', label: 'Texto', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".', avisoSTD: true },
@@ -2758,6 +2791,7 @@
       { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
         { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes.' },
       ]},
+      { etapa: 'data', chave: '__sep_data_evento__', tipo: 'separador', label: 'Data do evento' },
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
       { etapa: 'data', chave: '__bloco_data__', tipo: 'bloco_texto', liga: 'hero.mostrar_data', label: 'Data na capa', campos: [
         { chave: 'hero.data_formato', label: 'Formato da data', tipo: 'select', opcoes: window.FORMATOS_DATA },
@@ -2768,25 +2802,29 @@
       { etapa: 'data', chave: '__bloco_horario__', tipo: 'bloco_texto', liga: 'hero.mostrar_horario', label: 'Horário na capa', campos: [
         { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
       ]},
+      { etapa: 'data', chave: '__sep_prazo__', tipo: 'separador', label: 'Prazo para confirmar' },
       { etapa: 'data', chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Até essa data e hora o convidado pode responder e mudar a resposta. Depois disso o site só mostra as respostas registradas e não aceita mais alterações. Em branco: sem prazo.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
       { etapa: 'data', chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
       { etapa: 'data', chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data. O prazo só aparece no site quando o botão de confirmar está ligado.' },
       { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
-      { chave: 'hero.layout_std', tipo: 'escolha_visual', label: 'Posição dos textos no Save the Date', padrao: 'igual', altura: 118, opcoes: [{ valor: 'igual', label: 'Igual ao convite', desc: 'Usa a posição escolhida na Capa', desenho: () => desenhoCapa('igual') }, ...OPCOES_LAYOUT] },
+      { chave: 'hero.layout_std', tipo: 'escolha_visual', label: 'Posição dos textos no Save the Date', padrao: 'igual', altura: 96, colunas: 4, opcoes: [{ valor: 'igual', label: 'Igual ao convite', desc: 'Usa a posição escolhida na Capa', desenho: () => desenhoCapa('igual') }, ...OPCOES_LAYOUT] },
       { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
       { chave: 'savethedate.texto', label: 'Mensagem', tipo: 'textarea', dica: 'Aparece abaixo da data, na capa. Ex.: "Em breve enviaremos o convite oficial."' },
       { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'É a mesma opção de "Rodapé e barra fixa": vale para o Save the Date e para o site normal.' },
     ]},
-    { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', campos: [
-      { chave: 'countdown.eyebrow', label: 'Texto pequeno' },
-      { chave: 'countdown.titulo', label: 'Título' },
-      { chave: 'countdown.layout', label: 'Estilo', tipo: 'select', opcoes: [
-        { valor: '1', label: 'Caixas (padrão)' },
-        { valor: '2', label: 'Círculos' },
-        { valor: '3', label: 'Frase única' },
-      ]},
+    { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'estilo', titulo: 'Estilo' }], campos: [
+      { etapa: 'textos', chave: 'countdown.eyebrow', label: 'Texto pequeno' },
+      { etapa: 'textos', chave: 'countdown.titulo', label: 'Título' },
+      { etapa: 'estilo', chave: 'countdown.layout', tipo: 'escolha_visual', label: 'Como a contagem aparece', padrao: 'caixas', colunas: 3, legado: { '1': 'caixas', '2': 'circulos', '3': 'frase' }, opcoes: ESTILOS_CONTAGEM },
+      { etapa: 'estilo', chave: 'countdown.fundo', tipo: 'escolha_visual', label: 'Fundo do bloco', padrao: 'suave', colunas: 3, opcoes: [
+        { valor: 'claro', label: 'Claro', desc: 'Branco', desenho: DESENHO_FUNDO.claro },
+        { valor: 'suave', label: 'Suave', desc: 'Cor de fundo do site', desenho: DESENHO_FUNDO.suave },
+        { valor: 'marca', label: 'Destaque', desc: 'Cor primária', desenho: DESENHO_FUNDO.marca },
+      ], dica: 'O estilo "Faixa" já vem com fundo de destaque se você não escolher outro.' },
+      { etapa: 'estilo', chave: 'countdown.mostrar_segundos', tipo: 'liga', label: 'Mostrar os segundos', sub: 'Desligado, a contagem mostra só dias, horas e minutos (mais calma para quem olha por muito tempo).' },
+      { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Presentes (chamada)', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', etapas: [{ id: 'conteudo', titulo: 'Texto e destino' }, { id: 'visual', titulo: 'Aparência' }], campos: [
       { etapa: 'conteudo', chave: '__aviso_chamada__', tipo: 'aviso_chamada' },
@@ -2956,6 +2994,7 @@
           marcarSujo(null);
           ctDados = await api('/api/conteudo');
         }
+        Object.keys(rolagemPrevias).forEach((k) => delete rolagemPrevias[k]);
         ctGrupoAtivo = i; renderConteudoGrupo();
       });
       subnav.appendChild(b);
@@ -3735,12 +3774,42 @@
       return;
     }
 
+    if (campo.tipo === 'ajuste_fino') {
+      // refina o modelo escolhido: alinhamento, subir/descer, tamanho e cor dos textos
+      const oculto = (k, pad) => { const i = h('input', { type: 'hidden', 'data-chave': k }); i.value = ctDados[k] !== undefined && ctDados[k] !== '' ? ctDados[k] : pad; fs.appendChild(i); return i; };
+      const hAlin = oculto('hero.texto_alinhamento', 'padrao'), hCor = oculto('hero.texto_cor', 'claro');
+      const hDy = oculto('hero.texto_dy', '0'), hEsc = oculto('hero.texto_escala', '100');
+      const emitir = (i) => i.dispatchEvent(new Event('input', { bubbles: true }));
+      const segmento = (rotulo, oc, opcoes) => {
+        const wrap = h('div', { class: 'af-seg', role: 'radiogroup', 'aria-label': rotulo });
+        const bs = opcoes.map(([v, r]) => { const b = h('button', { type: 'button', role: 'radio', text: r }); b.addEventListener('click', () => { oc.value = v; pintar(); emitir(oc); }); wrap.appendChild(b); return [v, b]; });
+        const pintar = () => bs.forEach(([v, b]) => { b.classList.toggle('on', oc.value === v); b.setAttribute('aria-checked', String(oc.value === v)); });
+        pintar();
+        return { el: h('div', { class: 'af-linha' }, h('label', { text: rotulo }), wrap), pintar };
+      };
+      const deslizante = (rotulo, oc, min, max, passo, fmt, pad, dicaMin, dicaMax) => {
+        const r = h('input', { type: 'range', min, max, step: passo, 'aria-label': rotulo }); r.value = oc.value;
+        const v = h('output', { text: fmt(oc.value) });
+        const zerar = btn('Padrão', () => { r.value = pad; oc.value = String(pad); v.textContent = fmt(pad); emitir(oc); }, 'sm fantasma');
+        r.addEventListener('input', () => { oc.value = r.value; v.textContent = fmt(r.value); emitir(oc); });
+        return { el: h('div', { class: 'af-linha' }, h('label', { text: rotulo }), h('div', { class: 'af-slider' }, h('small', { text: dicaMin }), r, h('small', { text: dicaMax }), v, zerar)), atualizar: () => { r.value = oc.value; v.textContent = fmt(oc.value); } };
+      };
+      const alin = segmento('Alinhamento', hAlin, [['padrao', 'Do modelo'], ['esquerda', 'Esquerda'], ['centro', 'Centro'], ['direita', 'Direita']]);
+      const dy = deslizante('Subir ou descer', hDy, -200, 200, 5, (x) => (Number(x) > 0 ? '+' : '') + Number(x) + ' px', 0, '↑ Mais alto', 'Mais baixo ↓');
+      const esc = deslizante('Tamanho dos textos', hEsc, 70, 150, 5, (x) => Number(x) + '%', 100, 'Menor', 'Maior');
+      const cor = segmento('Cor dos textos', hCor, [['claro', 'Clara (fundos escuros)'], ['escuro', 'Escura (fundos claros)']]);
+      const restaurar = btn('Restaurar tudo', () => { hAlin.value = 'padrao'; hCor.value = 'claro'; hDy.value = '0'; hEsc.value = '100'; alin.pintar(); cor.pintar(); dy.atualizar(); esc.atualizar(); [hAlin, hCor, hDy, hEsc].forEach(emitir); }, 'sm fantasma');
+      fs.appendChild(h('div', { class: 'ajuste-fino' }, h('p', { class: 'dica-campo', style: 'margin:0 0 10px;', text: 'Depois de escolher o modelo, mude só o que precisar. Vale para o convite e para o Save the Date, e você vê o resultado na prévia ao lado.' }), alin.el, dy.el, esc.el, cor.el, h('div', { style: 'margin-top:8px;' }, restaurar)));
+      return;
+    }
+
     if (campo.tipo === 'escolha_visual') {
       // opções em cartões com um desenho: grava o valor escolhido num campo escondido
       const oculto = h('input', { type: 'hidden', 'data-chave': campo.chave });
-      oculto.value = ctDados[campo.chave] || campo.padrao || campo.opcoes[0].valor;
+      oculto.value = (campo.legado || {})[ctDados[campo.chave]] || ctDados[campo.chave] || campo.padrao || campo.opcoes[0].valor;
       const grade = h('div', { class: 'escolha-visual', role: 'radiogroup', 'aria-label': campo.label });
       if (campo.altura) grade.style.setProperty('--ev-altura', campo.altura + 'px');
+      if (campo.colunas) grade.style.gridTemplateColumns = 'repeat(' + campo.colunas + ',1fr)';
       const botoes = campo.opcoes.map((op) => {
         const b = h('button', { type: 'button', role: 'radio', class: 'ev-op' }, h('div', { class: 'ev-desenho', html: op.desenho ? op.desenho(ctDados) : '' }), h('b', { text: op.label }), op.desc ? h('span', { text: op.desc }) : null);
         b.addEventListener('click', () => { oculto.value = op.valor; pintar(); oculto.dispatchEvent(new Event('input', { bubbles: true })); });
@@ -4050,6 +4119,8 @@
 
   // Prévia de um módulo: o próprio site aberto num "celular", já rolado até o módulo, com o que está sendo editado
   // (inclusive o que ainda não foi salvo). Nada é gravado: o site recebe o conteúdo por mensagem, só neste painel.
+  const rolagemPrevias = {}; // onde cada prévia estava rolada: sobrevive a recarregamentos e a redesenhos do formulário
+  let capturarRolagemPrevia = null;
   function criarPreviaModulo(grupo, form) {
     const LARG = 360, ALT = 640, ESC = 0.8;
     const tela = h('div', { class: 'mock-cel previa-tela', style: 'width:' + Math.round(LARG * ESC + 12) + 'px;height:' + Math.round(ALT * ESC + 12) + 'px;' });
@@ -4058,7 +4129,10 @@
     tela.appendChild(carregando);
     const el_ = h('div', { class: 'previa-mod' }, h('div', { class: 'rot', text: 'Prévia no celular' }), aviso, tela,
       h('div', { class: 'dica-campo', style: 'margin:10px 0 0;', text: 'É o site de verdade, com o que você está editando, mesmo antes de salvar. Role dentro do celular para ver mais.' }));
-    let frameAtual = null, aguardando = null, agenda = null, montado = true, rolagem = null;
+    let frameAtual = null, aguardando = null, agenda = null, montado = true;
+    let rolagem = rolagemPrevias[grupo.titulo] !== undefined ? rolagemPrevias[grupo.titulo] : null;
+    const lerRolagem = () => { try { if (frameAtual && frameAtual.contentWindow) { rolagem = frameAtual.contentWindow.scrollY; rolagemPrevias[grupo.titulo] = rolagem; } } catch (e) { /* mantém */ } };
+    capturarRolagemPrevia = lerRolagem;
 
     const rascunho = () => {
       const d = Object.assign({}, ctDados);
@@ -4079,7 +4153,7 @@
       if (!el_.isConnected && frameAtual) { montado = false; return; }
       avisoDesligado();
       // guarda onde o convidado (o anfitrião) estava rolando: o site novo volta exatamente para lá, sem pular para o início do módulo
-      try { rolagem = frameAtual && frameAtual.contentWindow ? frameAtual.contentWindow.scrollY : rolagem; } catch (e) { /* mantém */ }
+      lerRolagem();
       const f = h('iframe', { src: urlSite() + '?previa=1#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
       aguardando = f;
       tela.appendChild(f);
@@ -4091,7 +4165,10 @@
       if (novo && ev.source === novo.contentWindow) {
         if (ev.data.tipo === 'previa-pronta') novo.contentWindow.postMessage({ tipo: 'previa-conteudo', conteudo: rascunho() }, location.origin);
         if (ev.data.tipo === 'previa-renderizada') {
-          if (rolagem !== null) { try { novo.contentWindow.scrollTo({ top: rolagem, left: 0, behavior: 'instant' }); } catch (e) { /* segue */ } }
+          if (rolagem !== null) {
+            const ir = () => { try { novo.contentWindow.scrollTo({ top: rolagem, left: 0, behavior: 'instant' }); } catch (e) { /* segue */ } };
+            ir(); setTimeout(ir, 350); setTimeout(ir, 1200); // imagens e fontes que chegam depois mudam a altura da página
+          }
           novo.style.visibility = 'visible';
           if (frameAtual) frameAtual.remove();
           frameAtual = novo; aguardando = null; carregando.remove();
@@ -4256,6 +4333,7 @@
     opcoes = opcoes || {};
     grupoEmEdicao = { grupo, form };
     rerenderAtual = () => {
+      if (capturarRolagemPrevia) capturarRolagemPrevia();
       // mantém no formulário o que ainda não foi salvo
       form.querySelectorAll('[data-chave]').forEach((e) => { ctDados[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
       renderGrupoEm(grupo, form, opcoes);

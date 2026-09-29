@@ -156,6 +156,7 @@
   }
   .hero-content{position:relative;padding:0 28px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;}
   .hero-content > *{max-width:100%;}
+  .hero-content{transform:translateY(var(--hero-dy,0px));zoom:var(--hero-escala,1);} /* ajuste fino feito no painel */
   .hero-cta-wrap{width:100%;}
   .hero .eyebrow{color:var(--wine-pale);animation:riseIn .9s .2s ease both;}
   .hero h1{font-size:clamp(46px,14vw,60px);font-weight:400;margin:10px 0 14px;line-height:.98;animation:riseIn 1s .35s ease both;overflow-wrap:anywhere;}
@@ -207,6 +208,29 @@
   .hero.hl-impacto h1{order:-2;font-size:clamp(50px,17vw,78px);text-transform:uppercase;font-weight:700;line-height:.92;letter-spacing:.01em;margin:6px 0 16px;}
   .hero.hl-impacto .amp{font-size:.42em;letter-spacing:.3em;margin:8px 0;}
   .hero.hl-impacto .hero-idade{order:-1;}
+  /* ----- ajuste fino: alinhamento e cor dos textos (por cima do modelo escolhido) ----- */
+  .hero.al-esquerda .hero-content{align-items:flex-start;text-align:left;}
+  .hero.al-esquerda .hero-convite{margin-left:0;}
+  .hero.al-esquerda .hero-date{justify-content:flex-start;} .hero.al-esquerda .hero-date .ln:first-child{display:none;} .hero.al-esquerda .hero-date .ln:last-child{display:block;}
+  .hero.al-esquerda .deadline-chip{text-align:left;}
+  .hero.al-esquerda .hero-cta-wrap{width:auto;} .hero.al-esquerda .hero-cta-wrap .pill{width:auto;}
+  .hero.al-direita .hero-content{align-items:flex-end;text-align:right;}
+  .hero.al-direita .hero-convite{margin-right:0;}
+  .hero.al-direita .hero-date{justify-content:flex-end;} .hero.al-direita .hero-date .ln:last-child{display:none;} .hero.al-direita .hero-date .ln:first-child{display:block;}
+  .hero.al-direita .deadline-chip{text-align:right;}
+  .hero.al-direita .hero-cta-wrap{width:auto;} .hero.al-direita .hero-cta-wrap .pill{width:auto;}
+  .hero.al-centro .hero-content{align-items:center;text-align:center;}
+  .hero.al-centro .hero-convite{margin-left:auto;margin-right:auto;}
+  .hero.al-centro .hero-date{justify-content:center;} .hero.al-centro:not(.hl-impacto) .hero-date .ln{display:block;}
+  .hero.al-centro .deadline-chip{text-align:center;}
+  .hero.al-centro .hero-cta-wrap{width:100%;} .hero.al-centro .hero-cta-wrap .pill{width:100%;align-self:auto;}
+  .hero.txt-escuro{color:color-mix(in srgb, var(--ink) 94%, black);}
+  .hero.txt-escuro .eyebrow,.hero.txt-escuro .hero-date,.hero.txt-escuro .hero-time,.hero.txt-escuro .deadline-chip,.hero.txt-escuro h1{color:color-mix(in srgb, var(--ink) 94%, black);}
+  .hero.txt-escuro .hero-convite{color:var(--ink);background:color-mix(in srgb, white 55%, transparent);border-color:color-mix(in srgb, var(--ink) 25%, transparent);}
+  .hero.txt-escuro .pill.on-dark{background:var(--wine);color:var(--on-wine);}
+  .hero.txt-escuro .hero-date{border-color:color-mix(in srgb, var(--ink) 40%, transparent);background:color-mix(in srgb, white 45%, transparent);}
+  .hero.txt-escuro:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, white 45%, transparent), color-mix(in srgb, white 62%, transparent)), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
+  .hero.txt-escuro.hl-cartao .hero-content{background:color-mix(in srgb, white 55%, transparent);border-color:color-mix(in srgb, var(--ink) 20%, transparent);}
   @keyframes riseIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
   .hero-convite{display:inline-flex;align-items:center;gap:8px;margin:0 auto 14px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb, var(--cream) 14%, transparent);border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);font-size:12.5px;color:var(--cream);backdrop-filter:blur(6px);}
   .deadline-chip{text-align:center;font-size:12px;color:var(--wine-pale);margin-top:12px;letter-spacing:.02em;}
@@ -258,19 +282,62 @@
   .gift-box-icon[hidden],.gift-box .pill[hidden]{display:none;}
 
   /* ---------- CONTAGEM ---------- */
-  .countdown{background:var(--blush);padding:44px var(--gutter);text-align:center;position:relative;}
-  .countdown h2{font-size:28px;font-weight:500;margin:8px 0 24px;color:var(--wine);}
+  /* estilo e fundo vêm do painel (Contagem regressiva › Estilo); as cores do bloco ficam nestas variáveis */
+  .countdown{--cd-fg:var(--wine);--cd-muted:var(--ink-soft);--cd-bg:color-mix(in srgb, var(--cream) 55%, transparent);--cd-line:color-mix(in srgb, var(--wine-soft) 18%, transparent);--cd-solid:var(--blush);--cd-inv:var(--cream);
+    background:var(--blush);padding:44px var(--gutter);text-align:center;position:relative;}
+  .countdown.f-claro{background:var(--cream);--cd-solid:var(--cream);}
+  .countdown.f-marca{background:linear-gradient(165deg, var(--wine) 0%, var(--wine-deep) 100%);--cd-fg:var(--cream);--cd-muted:var(--wine-pale);--cd-bg:color-mix(in srgb, var(--cream) 10%, transparent);--cd-line:color-mix(in srgb, var(--cream) 30%, transparent);--cd-solid:var(--wine);--cd-inv:var(--wine);}
+  .countdown.f-marca .eyebrow{color:var(--wine-pale);}
+  .countdown h2{font-size:28px;font-weight:500;margin:8px 0 24px;color:var(--cd-fg);}
   .cd-row{display:flex;gap:8px;}
-  .cd-cell{flex:1;padding:16px 0;background:color-mix(in srgb, var(--cream) 55%, transparent);border:1px solid color-mix(in srgb, var(--wine-soft) 18%, transparent);border-radius:12px;}
-  .cd-num{font-family:var(--font-display);font-size:32px;font-weight:500;color:var(--wine);font-variant-numeric:tabular-nums;line-height:1.1;}
-  .cd-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px;}
-  .cd-sentence{display:none;font-family:var(--font-display);font-style:var(--display-style);font-size:22px;color:var(--wine);padding:10px 0;}
-  .countdown.layout-2 .cd-row{gap:10px;justify-content:center;}
-  .countdown.layout-2 .cd-cell{flex:0 0 68px;background:none;border:none;border-radius:50%;width:68px;height:68px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px var(--wine-soft) inset;}
-  .countdown.layout-2 .cd-num{font-size:26px;}
-  .countdown.layout-3 .cd-row{display:none;}
-  .countdown.layout-3 .cd-sentence{display:block;}
-  .countdown.chegou .cd-row{display:none;}
+  .cd-cell{flex:1;padding:16px 0;background:var(--cd-bg);border:1px solid var(--cd-line);border-radius:12px;}
+  .cd-num{font-family:var(--font-display);font-size:32px;font-weight:500;color:var(--cd-fg);font-variant-numeric:tabular-nums;line-height:1.1;}
+  .cd-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cd-muted);margin-top:4px;padding-left:.14em;}
+  .cd-sentence{display:none;font-family:var(--font-display);font-style:var(--display-style);font-size:22px;color:var(--cd-fg);padding:10px 0;}
+  .cd-resto{display:none;font-size:14px;color:var(--cd-muted);margin-top:6px;}
+  .countdown.sem-seg .cd-cell:last-child{display:none;}
+  /* círculos */
+  .countdown.layout-circulos .cd-row{gap:10px;justify-content:center;}
+  .countdown.layout-circulos .cd-cell{flex:0 0 68px;background:none;border:none;border-radius:50%;width:68px;height:68px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 1.5px color-mix(in srgb, var(--cd-fg) 55%, transparent) inset;}
+  .countdown.layout-circulos .cd-num{font-size:26px;}
+  /* frase única */
+  .countdown.layout-frase .cd-row{display:none;}
+  .countdown.layout-frase .cd-sentence{display:block;}
+  /* relógio: números grandes separados por dois-pontos */
+  .countdown.layout-relogio .cd-row{justify-content:center;gap:0;}
+  .countdown.layout-relogio .cd-cell{flex:0 0 auto;background:none;border:none;padding:0 12px;position:relative;min-width:64px;}
+  .countdown.layout-relogio .cd-cell + .cd-cell::before{content:':';position:absolute;left:-4px;top:0;font-family:var(--font-display);font-size:42px;line-height:1.05;color:var(--cd-muted);}
+  .countdown.layout-relogio .cd-num{font-size:46px;font-weight:400;}
+  /* placar: cartões cheios com um vinco no meio, como um relógio de virar */
+  .countdown.layout-placar .cd-cell{position:relative;background:var(--cd-fg);border:none;border-radius:10px;padding:16px 0 12px;box-shadow:0 10px 20px -10px rgba(0,0,0,.45);}
+  .countdown.layout-placar .cd-cell::after{content:'';position:absolute;left:0;right:0;top:calc(50% - 8px);height:1px;background:color-mix(in srgb, var(--cd-inv) 28%, transparent);}
+  .countdown.layout-placar .cd-num{color:var(--cd-inv);font-size:34px;}
+  .countdown.layout-placar .cd-label{color:color-mix(in srgb, var(--cd-inv) 72%, transparent);}
+  /* anéis de progresso */
+  .countdown.layout-aneis .cd-row{gap:10px;justify-content:center;}
+  .countdown.layout-aneis .cd-cell{flex:0 0 70px;width:70px;height:70px;padding:0;border:none;border-radius:50%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:conic-gradient(var(--gold) calc(var(--p, 0) * 1%), var(--cd-line) 0);}
+  .countdown.layout-aneis .cd-cell::before{content:'';position:absolute;inset:5px;border-radius:50%;background:var(--cd-solid);}
+  .countdown.layout-aneis .cd-num,.countdown.layout-aneis .cd-label{position:relative;z-index:1;}
+  .countdown.layout-aneis .cd-num{font-size:23px;} .countdown.layout-aneis .cd-label{font-size:8.5px;margin-top:1px;}
+  /* destaque: só os dias, gigantes */
+  .countdown.layout-destaque .cd-cell:not(:first-child){display:none;}
+  .countdown.layout-destaque .cd-row{justify-content:center;}
+  .countdown.layout-destaque .cd-cell{flex:0 1 auto;background:none;border:none;padding:0 10px;}
+  .countdown.layout-destaque .cd-num{font-size:104px;font-weight:400;line-height:.95;}
+  .countdown.layout-destaque .cd-label{font-size:13px;letter-spacing:.32em;margin-top:8px;}
+  .countdown.layout-destaque .cd-resto{display:block;}
+  /* faixa: uma linha só, compacta */
+  .countdown.layout-faixa{padding:26px var(--gutter);}
+  .countdown.layout-faixa .eyebrow{display:none;}
+  .countdown.layout-faixa h2{font-size:19px;margin:0 0 12px;}
+  .countdown.layout-faixa .cd-row{justify-content:center;gap:14px;flex-wrap:wrap;}
+  .countdown.layout-faixa .cd-cell{flex:0 0 auto;background:none;border:none;padding:0;display:flex;align-items:baseline;gap:5px;}
+  .countdown.layout-faixa .cd-num{font-size:28px;} .countdown.layout-faixa .cd-label{margin:0;font-size:10px;}
+  /* cartão único: quatro números num só quadro, com divisórias */
+  .countdown.layout-cartao .cd-row{gap:0;background:var(--cd-bg);border:1px solid var(--cd-line);border-radius:18px;padding:20px 0;}
+  .countdown.layout-cartao .cd-cell{background:none;border:none;border-radius:0;padding:0;}
+  .countdown.layout-cartao .cd-cell + .cd-cell{border-left:1px solid var(--cd-line);}
+  .countdown.chegou .cd-row,.countdown.chegou .cd-resto{display:none;}
   .countdown.chegou .cd-sentence{display:block;}
 
   /* ---------- SEÇÕES ---------- */
@@ -516,6 +583,7 @@
       <div class="cd-cell"><div class="cd-num" id="cd-m">00</div><div class="cd-label">min</div></div>
       <div class="cd-cell"><div class="cd-num" id="cd-s">00</div><div class="cd-label">seg</div></div>
     </div>
+    <div class="cd-resto" id="cd-resto"></div>
     <div class="cd-sentence" id="cd-sentence"></div>
   </section>
 
@@ -902,10 +970,9 @@
     const id = decodeURIComponent((location.hash || '').slice(1));
     const alvo = id && document.getElementById(id);
     if (!alvo) return;
-    const html = document.documentElement;
-    if (!rolagemSuave) html.style.scrollBehavior = 'auto';
-    alvo.scrollIntoView({ block: 'start' });
-    if (!rolagemSuave) setTimeout(function () { html.style.scrollBehavior = ''; }, 50);
+    // rola só esta página: scrollIntoView também rolaria a página que contém a prévia (o painel), dentro de um iframe
+    const topo = alvo.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({ top: topo, left: 0, behavior: rolagemSuave ? 'smooth' : 'instant' });
   }
   function revelarPagina() {
     if (window.__revelado) return; window.__revelado = true;
@@ -1084,7 +1151,19 @@
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
     aplicar('countdownTitulo', 'countdown.titulo');
-    document.getElementById('secCountdown').classList.add('layout-' + t('countdown.layout', '1'));
+    {
+      // estilo (os valores antigos 1, 2 e 3 continuam valendo), fundo e segundos
+      const cdEl = document.getElementById('secCountdown');
+      const ESTILOS_CD = ['caixas', 'circulos', 'frase', 'relogio', 'placar', 'aneis', 'destaque', 'faixa', 'cartao'];
+      let estilo = ({ '1': 'caixas', '2': 'circulos', '3': 'frase' })[t('countdown.layout', 'caixas')] || t('countdown.layout', 'caixas');
+      if (ESTILOS_CD.indexOf(estilo) === -1) estilo = 'caixas';
+      let fundoCd = t('countdown.fundo', estilo === 'faixa' ? 'marca' : 'suave');
+      if (['claro', 'suave', 'marca'].indexOf(fundoCd) === -1) fundoCd = 'suave';
+      cdEl.classList.add('layout-' + estilo, 'f-' + fundoCd);
+      if (t('countdown.mostrar_segundos', '1') === '0') cdEl.classList.add('sem-seg');
+      cdEl.dataset.bgTop = fundoCd === 'marca' ? 'var(--wine)' : fundoCd === 'claro' ? 'var(--cream)' : 'var(--blush)';
+      cdEl.dataset.bgBottom = fundoCd === 'marca' ? 'var(--wine-deep)' : cdEl.dataset.bgTop;
+    }
     escondeSeInativa('countdown', 'secCountdown');
 
     aplicarChamadaPresentes();
@@ -1171,6 +1250,11 @@
       document.getElementById('cd-h').textContent = String(horas).padStart(2, '0');
       document.getElementById('cd-m').textContent = String(min).padStart(2, '0');
       document.getElementById('cd-s').textContent = String(seg).padStart(2, '0');
+      if (secCd.classList.contains('layout-aneis')) {
+        const cels = secCd.querySelectorAll('.cd-cell');
+        [Math.min(dias, 365) / 365, horas / 24, min / 60, seg / 60].forEach(function (f, i) { if (cels[i]) cels[i].style.setProperty('--p', String(Math.round(f * 100))); });
+      }
+      document.getElementById('cd-resto').textContent = diff > 0 ? 'e mais ' + horas + (horas === 1 ? ' hora' : ' horas') + ' e ' + min + (min === 1 ? ' minuto' : ' minutos') : '';
       if (diff <= 0) {
         secCd.classList.add('chegou');
         document.getElementById('cd-sentence').textContent = ehAniversario() ? 'Chegou o dia da festa!' : 'Chegou o grande dia!';
@@ -1179,7 +1263,7 @@
       }
       const restam = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
       const prazoEl = document.getElementById('rsvpPrazo');
-      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo terminou em ' + esc(prazoCompleto()) + ', mas ainda dá para responder.'
+      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo para confirmar terminou' + (prazoCompleto() ? ' em ' + prazoCompleto() : '') + '.'
         : restam === 1 ? 'Hoje é o último dia para confirmar'
         : 'restam <b id="rsvp-days">' + restam + '</b> dias para confirmar';
       if (prazoEl.innerHTML !== textoPrazo) prazoEl.innerHTML = textoPrazo;
@@ -1209,6 +1293,13 @@
     let layoutCapa = t('hero.layout', 'classico');
     if (modoSaveTheDate) { const ls = t('hero.layout_std', 'igual'); if (LAYOUTS_CAPA.indexOf(ls) !== -1) layoutCapa = ls; }
     hero.classList.add('hl-' + (LAYOUTS_CAPA.indexOf(layoutCapa) !== -1 ? layoutCapa : 'classico'));
+    // ajuste fino sobre o modelo: alinhamento, subir/descer, tamanho e cor dos textos
+    const alinCapa = t('hero.texto_alinhamento', 'padrao');
+    if (['esquerda', 'centro', 'direita'].indexOf(alinCapa) !== -1) hero.classList.add('al-' + alinCapa);
+    if (t('hero.texto_cor', 'claro') === 'escuro') hero.classList.add('txt-escuro');
+    const limita = function (v, min, max, pad) { v = parseFloat(v); return isFinite(v) ? Math.min(max, Math.max(min, v)) : pad; };
+    hero.style.setProperty('--hero-dy', limita(t('hero.texto_dy', '0'), -220, 220, 0) + 'px');
+    hero.style.setProperty('--hero-escala', String(limita(t('hero.texto_escala', '100'), 70, 150, 100) / 100));
 
     // ---- Ordem dos módulos (definida em Site › Ordem dos módulos) ----
     const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'padrinhos', 'madrinhas_pais', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
