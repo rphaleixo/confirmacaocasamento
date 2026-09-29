@@ -643,6 +643,11 @@
   // ======= CONTEÚDO DO SITE — vem do banco (editável pelo painel do evento) =======
   let conteudo = {};
   function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
+  // Prazo de confirmação como aparece no site: a data e, se preenchido no painel, o horário limite ("01 de maio às 23h59")
+  function prazoCompleto() {
+    const hora = t('hero.prazo_horario_display', '').trim();
+    return t('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
+  }
   function aplicar(id, chave) { const el = document.getElementById(id); if (el) el.textContent = t(chave, el.textContent); }
   // O tipo do evento (casamento, aniversário...) define quais módulos existem; os demais ficam sempre ocultos.
   function modulosDoTipo() {
@@ -759,8 +764,8 @@
       document.getElementById('nomeNoivo').style.display = 'none';
       if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); idade.textContent = t('hero.idade', ''); idade.hidden = false; }
     }
-    document.getElementById('deadlineChip').textContent = 'confirme até ' + t('hero.prazo_display', '01 de maio');
-    document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', t('hero.prazo_display', '01 de maio'));
+    document.getElementById('deadlineChip').textContent = 'confirme até ' + prazoCompleto();
+    document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', prazoCompleto());
     montarMidiaCapa();
     aplicarTextosCapa();
 
@@ -954,7 +959,7 @@
       }
       const restam = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
       const prazoEl = document.getElementById('rsvpPrazo');
-      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo terminou em ' + esc(t('hero.prazo_display', '01 de maio')) + ', mas ainda dá para responder.'
+      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo terminou em ' + esc(prazoCompleto()) + ', mas ainda dá para responder.'
         : restam === 1 ? 'Hoje é o último dia para confirmar'
         : 'restam <b id="rsvp-days">' + restam + '</b> dias para confirmar';
       if (prazoEl.innerHTML !== textoPrazo) prazoEl.innerHTML = textoPrazo;

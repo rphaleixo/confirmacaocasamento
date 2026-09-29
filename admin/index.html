@@ -2309,8 +2309,9 @@
       { chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
       { chave: 'hero.data_display', label: 'Data como aparece no site' },
       { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
-      { chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Depois dessa data o site avisa que o prazo terminou, mas ainda aceita respostas.', sugere: { 'hero.prazo_display': 'curto' } },
+      { chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Depois dessa data e hora o site avisa que o prazo terminou, mas ainda aceita respostas.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
       { chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
+      { chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data.' },
       { chave: '__sep_capa__', tipo: 'separador', label: 'Botão' },
       { chave: 'hero.cta_label', label: 'Texto do botão principal' },
     ]},
@@ -2903,7 +2904,7 @@
           eyebrow: ler('hero.eyebrow', aniv ? 'Você é nosso convidado' : 'Nosso casamento'),
           nomes: aniv ? ler('hero.noiva', 'Nome') : ler('hero.noiva', 'Noiva') + ' & ' + ler('hero.noivo', 'Noivo'),
           data: ler('hero.data_display', '12 de junho de 2027'), horario: ler('hero.horario_display', 'às 15h00'),
-          cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio'),
+          cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio') + (ler('hero.prazo_horario_display', '') ? ' ' + ler('hero.prazo_horario_display', '') : ''),
           mostrar: { eyebrow: ler('hero.mostrar_eyebrow', '1') !== '0', nomes: ler('hero.mostrar_nomes', '1') !== '0', data: ler('hero.mostrar_data', '1') !== '0', horario: ler('hero.mostrar_horario', '1') !== '0', botao: ler('hero.mostrar_botao', '1') !== '0' },
         };
         cel.atualizar(estado); colD.atualizar(estado);
@@ -3182,7 +3183,7 @@
     } else if (campo.tipo === 'data_hora') {
       const { data, hora } = isoParaDataHora(ctDados[campo.chave]);
       const inputData = h('input', { type: 'date', id: idCampo, 'aria-label': campo.label + ' (dia)' }); inputData.value = data;
-      const inputHora = h('input', { type: 'time', 'aria-label': campo.label + ' (hora)' }); inputHora.value = hora || '15:00';
+      const inputHora = h('input', { type: 'time', 'aria-label': campo.label + ' (hora)' }); inputHora.value = hora || campo.horaPadrao || '15:00';
       const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave });
       const sugestoes = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;' });
       function atualizar() {
