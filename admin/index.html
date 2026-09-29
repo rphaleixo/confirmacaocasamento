@@ -326,13 +326,16 @@
   .lb-card .acoes{margin-top:auto;padding-top:8px;display:flex;gap:8px;}
   .lb-filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
   .lb-filtros .busca{flex:1 1 220px;max-width:320px;}
-  .lb-bulk{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--info-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 14px;margin-bottom:12px;}
-  .lb-bulk select{width:auto;min-width:150px;}
+  .lb-bulk{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 14px;margin-bottom:12px;}
+  .lb-bulk.ativo{background:var(--info-bg);} .lb-bulk select{width:auto;min-width:150px;}
   .lb-tab td{vertical-align:top;} .lb-tab th.sel,.lb-tab td.sel{width:34px;padding-right:0;}
-  .lb-cel{display:flex;flex-direction:column;gap:4px;align-items:flex-start;background:none;border:1px dashed transparent;border-radius:10px;padding:4px 6px;margin:-4px -6px;cursor:pointer;text-align:left;color:inherit;font:inherit;min-width:110px;}
-  .lb-cel:hover{background:var(--muted-bg);border-color:var(--line);}
-  .lb-cel.auto .chip{outline:1px dashed color-mix(in srgb, currentColor 45%, transparent);outline-offset:1px;}
-  .lb-cel .inf{font-size:12.5px;font-weight:600;} .lb-cel .nota{font-size:11.5px;color:var(--ink-soft);max-width:180px;overflow-wrap:anywhere;}
+  .lb-sel{width:auto;min-width:170px;max-width:100%;font-size:12.5px;font-weight:600;padding:6px 28px 6px 10px;min-height:34px;border-radius:999px;border:1px solid var(--line);background-color:var(--muted-bg);color:var(--ink-soft);cursor:pointer;}
+  .lb-sel.auto{border-style:dashed;}
+  .lb-sel.s-planejada{background-color:var(--info-bg);color:var(--info);border-color:transparent;} .lb-sel.s-separada{background-color:var(--warn-bg);color:var(--warn);border-color:transparent;} .lb-sel.s-entregue{background-color:var(--ok-bg);color:var(--ok);border-color:transparent;}
+  .lb-sel.auto.s-planejada{border:1px dashed var(--info);}
+  .lb-cel{display:flex;flex-direction:column;gap:5px;align-items:flex-start;min-width:170px;}
+  .lb-det{background:none;border:none;padding:0;cursor:pointer;color:var(--ink-faint);font:inherit;font-size:12px;text-align:left;display:flex;flex-direction:column;gap:3px;align-items:flex-start;} .lb-det:hover{color:var(--navy);text-decoration:underline;}
+  .lb-det .inf{font-size:12.5px;font-weight:600;color:var(--ink);} .lb-det .nota{font-size:11.5px;color:var(--ink-soft);max-width:200px;overflow-wrap:anywhere;}
   .lb-seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
   .lb-seg button{flex:1 1 auto;border:none;border-left:1px solid var(--line);background:none;padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:36px;}
   .lb-seg button:first-child{border-left:none;} .lb-seg button:hover{background:var(--muted-bg);}
@@ -351,6 +354,7 @@
     .lb-tab td.sel{width:auto;}
     .tabela-wrap.lb-wrap{background:none;border:none;overflow:visible;}
     .lb-bulk select{flex:1 1 140px;}
+    .lb-sel{min-width:0;width:100%;}
   }
   /* ---------- compartilhamento (miniatura do link) ---------- */
   .cp-bloco{margin:0 0 18px;} .cp-rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px;}
@@ -5458,8 +5462,23 @@
     LB.itens = new Map(d.itens.map((i) => [i.lembrancaId + ':' + i.convidadoId, i]));
     const vivos = new Set(d.convidados.map((c) => c.id));
     LB.sel = new Set(Array.from(LB.sel).filter((id) => vivos.has(id)));
-    if (!LB.alvoLote || !d.lembrancas.some((l) => l.id === LB.alvoLote)) LB.alvoLote = d.lembrancas[0] ? d.lembrancas[0].id : null;
+    if (LB.alvoLote !== 0 && (!LB.alvoLote || !d.lembrancas.some((l) => l.id === LB.alvoLote))) LB.alvoLote = d.lembrancas[0] ? d.lembrancas[0].id : null;
     desenharLembrancas();
+  }
+
+  // muda a situação na hora (tela atualiza já) e grava em segundo plano; se falhar, recarrega o que está salvo
+  async function lbMudarSituacao(lembrancas, ids, sit) {
+    lembrancas.forEach((l) => ids.forEach((cid) => {
+      const k = l.id + ':' + cid;
+      const it = LB.itens.get(k) || { lembrancaId: l.id, convidadoId: cid, situacao: null, info: null, comentario: null };
+      it.situacao = sit === 'auto' ? null : sit;
+      if (!it.situacao && !it.info && !it.comentario) LB.itens.delete(k); else LB.itens.set(k, it);
+    }));
+    desenharLembrancas();
+    const rs = await Promise.all(lembrancas.map((l) => api('/api/admin/lembrancas/item', 'POST', { lembrancaId: l.id, convidadoIds: ids, situacao: sit })));
+    const falha = rs.find((r) => r.erro);
+    if (falha) { toast(falha.erro, 'err'); carregarLembrancas(); return false; }
+    return true;
   }
 
   function lbLinhaPassaFiltro(c) {
@@ -5532,22 +5551,29 @@
 
     const visiveis = LB.convidados.filter(lbLinhaPassaFiltro);
 
-    // ação em massa
-    if (LB.sel.size) {
+    // ação em massa (sempre à mão: marque as pessoas na lista e escolha a situação)
+    {
+      const n = LB.sel.size;
       const selL = h('select', { 'aria-label': 'Lembrança' });
+      if (LB.lembrancas.length > 1) selL.appendChild(new Option('Todas as lembranças', '0'));
       LB.lembrancas.forEach((l) => selL.appendChild(new Option(l.nome, String(l.id))));
-      selL.value = String(LB.alvoLote); selL.addEventListener('change', () => { LB.alvoLote = Number(selL.value); });
+      selL.value = LB.alvoLote === 0 && LB.lembrancas.length > 1 ? '0' : String(LB.alvoLote && LB.lembrancas.some((l) => l.id === LB.alvoLote) ? LB.alvoLote : LB.lembrancas[0].id);
+      selL.addEventListener('change', () => { LB.alvoLote = Number(selL.value); });
       const selA = h('select', { 'aria-label': 'Situação' });
       LB_ACOES.forEach(([v, r]) => selA.appendChild(new Option(r, v)));
       selA.value = LB.acaoLote; selA.addEventListener('change', () => { LB.acaoLote = selA.value; });
-      corpo.appendChild(h('div', { class: 'lb-bulk' },
-        h('b', { text: plural(LB.sel.size, 'selecionado', 'selecionados') + ':' }), selL, selA,
-        btn('Aplicar', async () => {
-          const d = await api('/api/admin/lembrancas/item', 'POST', { lembrancaId: LB.alvoLote, convidadoIds: Array.from(LB.sel), situacao: LB.acaoLote });
-          if (d.erro) { toast(d.erro, 'err'); return; }
-          toast('Atualizado para ' + plural(d.alterados, 'convidado', 'convidados')); LB.sel.clear(); carregarLembrancas();
-        }, 'prim sm'),
-        btn('Limpar seleção', () => { LB.sel.clear(); desenharLembrancas(); }, 'fantasma sm')));
+      const aplicar = btn('Aplicar', async () => {
+        const alvo = Number(selL.value) === 0 ? LB.lembrancas : LB.lembrancas.filter((l) => l.id === Number(selL.value));
+        const ids = Array.from(LB.sel); aplicar.disabled = true;
+        const ok = await lbMudarSituacao(alvo, ids, selA.value);
+        if (ok) { toast('Atualizado para ' + plural(ids.length, 'convidado', 'convidados')); LB.sel.clear(); desenharLembrancas(); }
+      }, 'prim sm');
+      aplicar.disabled = !n;
+      corpo.appendChild(h('div', { class: 'lb-bulk' + (n ? ' ativo' : '') },
+        h('b', { text: n ? plural(n, 'selecionado', 'selecionados') + ':' : 'Em lote:' }),
+        n ? null : h('span', { class: 'hint', style: 'margin:0;', text: 'marque pessoas na lista' }),
+        selL, selA, aplicar,
+        n ? btn('Limpar seleção', () => { LB.sel.clear(); desenharLembrancas(); }, 'fantasma sm') : null));
     }
 
     if (!visiveis.length) { corpo.appendChild(h('div', { class: 'caixa vazio', text: 'Ninguém encontrado com esse filtro.' })); return; }
@@ -5570,14 +5596,17 @@
         h('td', { 'data-rot': 'Presença' }, lbPresencaChip(c)));
       LB.lembrancas.forEach((l) => {
         const x = lbSituacao(l, c);
-        const m = LB_SIT[x.sit];
-        const cel = h('button', { type: 'button', class: 'lb-cel' + (x.auto ? ' auto' : ''), title: (x.auto ? 'Definido pelo critério da lembrança. ' : '') + 'Clique para editar' },
-          h('span', { class: 'chip ' + m[1], text: m[0] }),
+        const seletor = h('select', { class: 'lb-sel s-' + x.sit + (x.auto ? ' auto' : ''), 'aria-label': 'Situação de ' + c.nome + ' em ' + l.nome, title: x.auto ? 'Definido pelo critério da lembrança. Escolha para marcar à mão.' : 'Marcado por você' });
+        seletor.appendChild(new Option('Automático: ' + (lbElegivel(l, c) ? 'vai receber' : 'fora do critério'), 'auto'));
+        [['planejada', 'Vai receber'], ['separada', 'Separada'], ['entregue', 'Entregue'], ['nao_recebe', 'Não recebe']].forEach(([v, r]) => seletor.appendChild(new Option(r, v)));
+        seletor.value = x.auto ? 'auto' : x.sit;
+        seletor.addEventListener('change', () => lbMudarSituacao([l], [c.id], seletor.value));
+        const detalhes = h('button', { type: 'button', class: 'lb-det', title: 'Anotar ' + (l.infoRotulo ? l.infoRotulo.toLowerCase() + ' e ' : '') + 'comentário' }, x.info || x.comentario || x.faltaInfo ? null : (l.infoRotulo ? l.infoRotulo + ' e comentário' : 'Comentário'),
           x.info ? h('span', { class: 'inf', text: (l.infoRotulo ? l.infoRotulo + ': ' : '') + x.info }) : null,
           x.faltaInfo ? h('span', { class: 'chip err', text: 'Falta ' + l.infoRotulo.toLowerCase() }) : null,
           x.comentario ? h('span', { class: 'nota', text: x.comentario }) : null);
-        cel.addEventListener('click', () => abrirLembrancasDoConvidado(c, l.id));
-        tr.appendChild(h('td', { 'data-rot': l.nome }, cel));
+        detalhes.addEventListener('click', () => abrirLembrancasDoConvidado(c, l.id));
+        tr.appendChild(h('td', { 'data-rot': l.nome }, h('div', { class: 'lb-cel' }, seletor, detalhes)));
       });
       corpoTab.appendChild(tr);
     });
