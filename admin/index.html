@@ -610,8 +610,6 @@
   .ap-previa{position:sticky;top:122px;}
   .ap-sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:16px;}
   .ap-sec h4{margin:0 0 2px;font-size:15px;} .ap-sec .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
-  .ap-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;color:#fff;background:linear-gradient(120deg,var(--navy-deep),var(--navy-2));}
-  .ap-banner h3{margin:0;font-size:18px;} .ap-banner p{margin:3px 0 0;font-size:13px;opacity:.85;}
   .papeis{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px;}
   .papel{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;}
   .papel.sel{border-color:var(--ink);box-shadow:0 4px 14px rgba(15,23,42,.18);}
@@ -952,9 +950,7 @@
   </section>
 
   <section id="tab-aparencia" class="tab">
-    <div class="ap-banner" id="ap-banner">
-      <div><h3 id="ap-banner-tit"></h3><p id="ap-banner-sub"></p></div>
-    </div>
+    <div class="pag-head"><div><h2 id="ap-banner-tit"></h2><p id="ap-banner-sub"></p></div></div>
     <div class="ap-layout">
       <div id="ap-form" style="min-width:0;"><div class="carregando">Carregando...</div></div>
       <aside class="ap-previa" id="ap-previa"></aside>
