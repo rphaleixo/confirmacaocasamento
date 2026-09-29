@@ -768,6 +768,8 @@
   function linkComoChegar() {
     const c = coordenadasLocal(), id = t('mapa.place_id', '');
     if (c) return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(c) + (id ? '&destination_place_id=' + encodeURIComponent(id) : '');
+    const link = t('mapa.maps_url', '');
+    if (/^https:\/\/([a-z0-9-]+\.)*(google\.[a-z.]+|goo\.gl)\//i.test(link)) return link; // link do local colado no painel
     return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localCompleto());
   }
   function tituloEvento() {

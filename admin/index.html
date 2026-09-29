@@ -433,6 +433,7 @@
   .lugar-ok .t{font-weight:700;color:var(--ok);margin-bottom:4px;} .lugar-ok .n{font-weight:700;color:var(--ink);} .lugar-ok .a{color:var(--ink-soft);}
   .lugar-ok .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .lugar-aviso{border:1px solid #F2DDB0;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:13px;font-weight:500;}
+  .lugar-link{margin-top:14px;} .lugar-link label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;} .lugar-link input{flex:1;min-width:0;}
   .lugar-info{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);color:var(--ink-soft);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:12.5px;}
   .lugar-mapa{width:100%;height:230px;border:1px solid var(--line);border-radius:12px;margin-top:12px;background:#EEF1F6;}
   .lugar-campos{margin-top:14px;padding-top:6px;border-top:1px dashed var(--line);}
@@ -2817,10 +2818,19 @@
       const mapa = h('iframe', { class: 'lugar-mapa', title: 'Mapa do local', loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
       const camposBox = h('div', { class: 'lugar-campos' });
 
+      // alternativa sem chave: colar o link do Google Maps
+      const linkIn = h('input', { type: 'text', id: 'lugar-link', placeholder: 'https://maps.app.goo.gl/...  ou  https://www.google.com/maps/place/...', autocomplete: 'off', spellcheck: 'false' });
+      const linkStatus = h('div', { class: 'dica-campo', 'aria-live': 'polite', style: 'min-height:16px;' });
+      const linkBtn = btn('Usar este link', () => usarLink(), 'sm');
+      const blocoLink = h('div', { class: 'lugar-link' },
+        h('label', { for: 'lugar-link', text: 'Ou cole o link do Google Maps' }),
+        h('div', { style: 'display:flex;gap:8px;align-items:center;' }, linkIn, linkBtn),
+        h('div', { class: 'dica-campo', text: 'No Google Maps, abra o local, toque em Compartilhar e copie o link. Funciona com links curtos (maps.app.goo.gl) e completos.' }),
+        linkStatus);
       fs.append(
         h('label', { for: 'lugar-busca', text: 'Buscar o local no Google Maps' }),
         h('div', { class: 'lugar-busca' }, busca, lista),
-        status, painel,
+        status, blocoLink, painel,
         h('div', { class: 'dica-campo', style: 'margin:12px 0 4px;', text: 'Confira se o pin do mapa está no lugar certo:' }), mapa, camposBox);
 
       // nome e endereço que aparecem no site (editáveis); vêm preenchidos com o que o Google devolver
@@ -2840,18 +2850,18 @@
       };
       const pintar = () => {
         painel.innerHTML = '';
-        if (hId.value) {
+        if (hId.value || hLat.value || hUrl.value) {
           painel.appendChild(h('div', { class: 'lugar-ok' },
-            h('div', { class: 't', text: '✓ Local confirmado no Google Maps' }),
+            h('div', { class: 't', text: hId.value ? '✓ Local confirmado no Google Maps' : '✓ Local definido pelo link do Google Maps' }),
             h('div', { class: 'n', text: (campoNome() && campoNome().value) || '' }), h('div', { class: 'a', text: (campoEnd() && campoEnd().value) || '' }),
             h('div', { class: 'acoes' },
               hUrl.value ? h('a', { class: 'btn sm', href: hUrl.value, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir no Google Maps' }) : null,
               btn('Buscar outro local', () => { busca.focus(); busca.select(); }, 'sm'),
               btn('Remover confirmação', () => { [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
         } else if (semChave) {
-          painel.appendChild(h('div', { class: 'lugar-info', text: 'A busca automática do Google Maps ainda não está ativada neste sistema. Digite o nome e o endereço abaixo e confira o pin no mapa. Para ativar a busca, o administrador da plataforma precisa configurar a chave do Google Maps.' }));
+          painel.appendChild(h('div', { class: 'lugar-info', text: 'A busca automática do Google Maps ainda não está ativada neste sistema. Cole o link do local do Google Maps acima (é o jeito mais seguro) ou digite o endereço abaixo e confira o pin no mapa.' }));
         } else if ((campoEnd() && campoEnd().value.trim()) || (campoNome() && campoNome().value.trim())) {
-          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Busque o local acima e escolha uma das opções para garantir que está certo.' }));
+          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Busque o local ou cole o link do Google Maps acima para garantir que está certo.' }));
         }
       };
       const fechar = () => { lista.hidden = true; busca.setAttribute('aria-expanded', 'false'); ativo = -1; };
@@ -2890,6 +2900,32 @@
         pintar(); atualizarMapa();
         toast('Local confirmado. Salve para publicar no site.');
       }
+      // link colado: resolve links curtos no servidor e lê o endereço completo
+      async function usarLink() {
+        const bruto = linkIn.value.trim();
+        if (!bruto) { linkStatus.textContent = 'Cole o link do local no campo acima.'; return; }
+        linkStatus.textContent = 'Lendo o link…'; linkBtn.disabled = true;
+        let alvo = bruto;
+        if (/goo\.gl/i.test(bruto)) {
+          const d = await api('/api/admin/lugar-url?url=' + encodeURIComponent(bruto));
+          if (d.erro) { linkStatus.textContent = d.erro; linkBtn.disabled = false; return; }
+          alvo = d.url;
+        }
+        linkBtn.disabled = false;
+        const info = interpretarLinkMaps(alvo);
+        if (!info) { linkStatus.textContent = 'Não consegui achar o local nesse link. Abra o local no Google Maps, use Compartilhar e cole o link copiado.'; return; }
+        linkStatus.textContent = '';
+        hId.value = info.placeId || ''; hLat.value = info.lat !== null ? String(info.lat) : ''; hLng.value = info.lng !== null ? String(info.lng) : ''; hUrl.value = info.url;
+        if (info.nome && campoNome()) { campoNome().value = info.nome; emitir(campoNome()); }
+        if (info.endereco && campoEnd()) { campoEnd().value = info.endereco; emitir(campoEnd()); }
+        [hId, hLat, hLng, hUrl].forEach(emitir);
+        linkIn.value = '';
+        pintar(); atualizarMapa();
+        toast(info.lat !== null ? 'Local definido pelo link. Confira o pin no mapa e salve.' : 'Link lido, mas sem coordenadas: o mapa usará o nome e o endereço. Confira o pin.');
+        if (info.lat !== null && !info.endereco) status.textContent = 'O link não trouxe o endereço por escrito: preencha o campo "Endereço" abaixo, se quiser mostrá-lo no site.';
+      }
+      linkIn.addEventListener('paste', () => setTimeout(usarLink, 50));
+      linkIn.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); usarLink(); } });
       busca.addEventListener('input', () => { clearTimeout(agenda); agenda = setTimeout(buscar, 320); });
       busca.addEventListener('focus', () => { if (sugestoes.length && busca.value.trim().length >= 3) desenhar(); });
       busca.addEventListener('blur', () => setTimeout(fechar, 120));
@@ -2902,7 +2938,7 @@
       });
       let agendaMapa = null;
       fs.addEventListener('input', (ev) => {
-        if (ev.target === busca) return;
+        if (ev.target === busca || ev.target === linkIn) return;
         clearTimeout(agendaMapa); agendaMapa = setTimeout(() => { atualizarMapa(); if (!hId.value) pintar(); else pintar(); }, 500);
       });
       pintar(); atualizarMapa();
@@ -3531,6 +3567,36 @@
       topo: grupo.especial === 'savethedate' ? cartaoSaveTheDate : null,
       aoAlternar: (ligado) => ctItens[ctGrupoAtivo].classList.toggle('off', !ligado),
     });
+  }
+
+  // Lê um link do Google Maps (completo) e tira dele o que der: nome, endereço, coordenadas e id do lugar.
+  function interpretarLinkMaps(texto) {
+    let url;
+    try { url = new URL(String(texto || '').trim()); } catch (e) { return null; }
+    if (!/(^|\.)google\.[a-z.]+$/i.test(url.hostname) && !/goo\.gl$/i.test(url.hostname)) return null;
+    const cru = url.pathname + url.search + url.hash;
+    let decod = cru; try { decod = decodeURIComponent(cru); } catch (e) { /* mantém */ }
+    const r = { nome: '', endereco: '', lat: null, lng: null, placeId: '', url: url.href };
+    const lugar = url.pathname.match(/\/maps\/place\/([^/]+)/);
+    if (lugar) {
+      let t = lugar[1]; try { t = decodeURIComponent(t.replace(/\+/g, ' ')); } catch (e) { t = t.replace(/\+/g, ' '); }
+      const partes = t.split(',').map((x) => x.trim()).filter(Boolean);
+      if (partes.length && !/^-?\d+\.\d+$/.test(partes[0])) { r.nome = partes.shift(); r.endereco = partes.join(', '); }
+    }
+    const d3 = decod.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);           // coordenadas do próprio lugar (mais exatas)
+    const arroba = decod.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (d3) { r.lat = parseFloat(d3[1]); r.lng = parseFloat(d3[2]); }
+    else if (arroba) { r.lat = parseFloat(arroba[1]); r.lng = parseFloat(arroba[2]); }
+    ['q', 'query', 'll', 'destination', 'daddr'].forEach((k) => {
+      const v = url.searchParams.get(k);
+      if (!v) return;
+      const c = v.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/);
+      if (c && r.lat === null) { r.lat = parseFloat(c[1]); r.lng = parseFloat(c[2]); }
+      else if (!c && !r.nome && (k === 'q' || k === 'query')) { const partes = v.split(',').map((x) => x.trim()); r.nome = partes.shift(); r.endereco = partes.join(', '); }
+    });
+    r.placeId = url.searchParams.get('query_place_id') || url.searchParams.get('destination_place_id') || '';
+    if (r.lat === null && !r.nome) return null; // nada aproveitável no link
+    return r;
   }
 
   // Cartão de ativação do Save the Date: estado bem visível, o que muda no site, prévia e um botão grande com confirmação.
