@@ -114,3 +114,31 @@ export async function resolverEvento(db, request) {
 export function eventoNaoEncontrado() {
   return jsonResponse({ erro: 'Evento não encontrado.' }, 404);
 }
+
+// Texto formatado dos campos de exibição: só algumas tags passam (mesma lista do site). É uma segunda barreira; o site também limpa ao exibir.
+const CHAVE_RICA = /(^|\.)(eyebrow|titulo|texto|sucesso_texto|sem_codigo_texto|infos_titulo|externa_titulo|externa_texto|lista_opcao_titulo|lista_opcao_texto|pix_titulo|pix_texto|lista_texto)$|^timeline\.node\d+\.(ano|titulo|texto)$/;
+const TAGS_OK = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'strike', 'br', 'a', 'span', 'small', 'mark', 'sub', 'sup', 'font', 'div', 'p']);
+export function ehChaveRica(chave) { return CHAVE_RICA.test(String(chave || '')); }
+export function limparHtml(valor) {
+  return String(valor == null ? '' : valor)
+    .replace(/<(script|style|iframe|object|embed|noscript|template|svg|math)\b[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<\/?([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
+      tag = tag.toLowerCase();
+      if (!TAGS_OK.has(tag)) return '';
+      if (m.startsWith('</')) return '</' + tag + '>';
+      let out = '<' + tag;
+      if (tag === 'a') {
+        const h = /href\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+        const href = h ? (h[1] !== undefined ? h[1] : h[2]) : '';
+        if (/^\s*(https?:|mailto:|tel:|\/|#)/i.test(href)) out += ' href="' + href.replace(/"/g, '&quot;') + '"';
+      } else if (tag === 'span') {
+        const st = /style\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
+        const cor = st ? /color\s*:\s*(#[0-9a-f]{3,8}|rgba?\([\d\s,.]*\))/i.exec(st[1] !== undefined ? st[1] : st[2]) : null;
+        if (cor) out += ' style="color: ' + cor[1] + '"';
+      } else if (tag === 'font') {
+        const c = /color\s*=\s*"?(#[0-9a-f]{3,8})/i.exec(attrs);
+        if (c) out += ' color="' + c[1] + '"';
+      }
+      return out + '>';
+    });
+}

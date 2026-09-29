@@ -55,6 +55,7 @@
 <script src="/fontes.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
+<script src="/html-seguro.js"></script>
 <style>
   :root{
     /* ===== paleta editável pela aba Site › Cores do painel — os 5 tokens abaixo ===== */
@@ -875,7 +876,18 @@
     const hora = t('hero.prazo_horario_display', '').trim();
     return t('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
   }
-  function aplicar(id, chave) { const el = document.getElementById(id); if (el) definir(el, t(chave, el.textContent)); }
+  // Texto formatado (negrito, cor, link...): passa pela limpeza antes de entrar na página
+  function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function definirRico(el, valor) {
+    if (!el) return;
+    const limpo = window.HTML_SEGURO.limpar(valor);
+    el.innerHTML = limpo;
+    el.classList.toggle('vazio', window.HTML_SEGURO.texto(limpo).trim() === '');
+  }
+  function aplicar(id, chave) {
+    const el = document.getElementById(id); if (!el) return;
+    if (window.HTML_SEGURO.ehRico(chave)) definirRico(el, t(chave, el.textContent)); else definir(el, t(chave, el.textContent));
+  }
   // O tipo do evento (casamento, aniversário...) define quais módulos existem; os demais ficam sempre ocultos.
   function modulosDoTipo() {
     try { const m = JSON.parse(conteudo._modulos || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; }
@@ -1184,9 +1196,9 @@
     const textos = document.querySelectorAll('#track .node-text');
     for (let i = 0; i < 9; i++) {
       const n = i + 1;
-      if (anos[i]) definir(anos[i], t('timeline.node' + n + '.ano', anos[i].textContent));
-      if (titulos[i]) definir(titulos[i], t('timeline.node' + n + '.titulo', titulos[i].textContent));
-      if (textos[i]) definir(textos[i], t('timeline.node' + n + '.texto', textos[i].textContent));
+      if (anos[i]) definirRico(anos[i], t('timeline.node' + n + '.ano', anos[i].textContent));
+      if (titulos[i]) definirRico(titulos[i], t('timeline.node' + n + '.titulo', titulos[i].textContent));
+      if (textos[i]) definirRico(textos[i], t('timeline.node' + n + '.texto', textos[i].textContent));
     }
     escondeSeInativa('timeline', 'secTimeline');
 
@@ -1233,7 +1245,7 @@
     aplicar('rsvpSemCodigoTexto', 'rsvp.sem_codigo_texto');
     aplicar('rsvpSucessoTexto', 'rsvp.sucesso_texto');
     definir($('rsvpSubmitBtn'), tOu('rsvp.cta_label', $('rsvpSubmitBtn').textContent)); // sem o botão não há como confirmar: em branco vale o texto padrão
-    rsvpTextoSucesso = $('rsvpSucessoTexto').textContent;
+    rsvpTextoSucesso = $('rsvpSucessoTexto').innerHTML;
 
     aplicar('presentesEyebrow', 'presentes.eyebrow');
     aplicar('presentesTitulo', 'presentes.titulo');
@@ -1272,7 +1284,7 @@
       }
       const restam = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
       const prazoEl = document.getElementById('rsvpPrazo');
-      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo para confirmar terminou' + (prazoCompleto() ? ' em ' + prazoCompleto() : '') + '.'
+      const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo para confirmar terminou' + (prazoCompleto() ? ' em ' + escHtml(prazoCompleto()) : '') + '.'
         : restam === 1 ? 'Hoje é o último dia para confirmar'
         : 'restam <b id="rsvp-days">' + restam + '</b> dias para confirmar';
       if (prazoEl.innerHTML !== textoPrazo) prazoEl.innerHTML = textoPrazo;
@@ -1290,9 +1302,9 @@
       document.getElementById('sticky').style.display = 'none';
       document.querySelector('footer .flinks').style.display = 'none';
       document.querySelector('.frame').style.paddingBottom = ''; // no Save the Date não há barra fixa
-      definir(document.getElementById('heroEyebrow'), t('savethedate.titulo', 'Guarde a data!'));
+      definirRico(document.getElementById('heroEyebrow'), t('savethedate.titulo', 'Guarde a data!'));
       document.getElementById('heroCta').style.display = 'none';
-      definir(document.getElementById('deadlineChip'), t('savethedate.texto', ''));
+      definirRico(document.getElementById('deadlineChip'), t('savethedate.texto', ''));
       document.getElementById('heroCtaWrap').style.display = ''; // a mensagem do Save the Date vive nesse bloco
       modoSaveTheDate = true;
     }
@@ -1387,7 +1399,7 @@
     // ---- Menu de navegação por âncoras (opcional, liga/desliga em Rodapé e barra fixa) ----
     if (t('config.mostrar_menu', '0') === '1' && modulosVisiveis.length) {
       const ROTULOS_MODULO = {
-        countdown: 'Contagem', presente_teaser: 'Presentes', timeline: t('timeline.titulo', 'Nossa História'),
+        countdown: 'Contagem', presente_teaser: 'Presentes', timeline: window.HTML_SEGURO.texto(t('timeline.titulo', 'Nossa História')),
         mapa: 'Local', galeria: 'Galeria', rsvp: 'Confirmar presença', presentes: 'Lista de presentes',
         padrinhos: 'Padrinhos', madrinhas_pais: 'Pais e Daminhas', recados: 'Recados',
       };
@@ -1493,8 +1505,8 @@
     const optLista = $('presentesOptLista');
     optLista.hidden = !(ligado('lista') && itens.length);
     if (!optLista.hidden) {
-      definir($('presentesListaTitulo'), t('presentes.lista_opcao_titulo', 'Escolha na nossa lista'));
-      definir($('presentesListaTexto'), t('presentes.lista_opcao_texto', 'Veja os presentes e marque o que você vai dar, para ninguém repetir.'));
+      definirRico($('presentesListaTitulo'), t('presentes.lista_opcao_titulo', 'Escolha na nossa lista'));
+      definirRico($('presentesListaTexto'), t('presentes.lista_opcao_texto', 'Veja os presentes e marque o que você vai dar, para ninguém repetir.'));
       const a = $('presentesListaCta'); a.href = urlListaPresentes(); definir(a, t('presentes.lista_cta_label', 'Ver lista de presentes →'));
     }
 
@@ -1502,7 +1514,7 @@
     const urlExt = urlExterna(t('presentes.cta_url', ''));
     const optExt = $('presentesOptExterna');
     optExt.hidden = !(ligado('externa') && urlExt);
-    if (!optExt.hidden) { definir($('presentesExternaTitulo'), t('presentes.externa_titulo', 'Lista em outra loja')); definir($('presentesExternaTexto'), t('presentes.externa_texto', 'Nossa lista está em outro site. Você será levado até lá.')); const a = $('presentesCta'); a.href = urlExt; definir(a, t('presentes.cta_label', 'Abrir lista de presentes →')); }
+    if (!optExt.hidden) { definirRico($('presentesExternaTitulo'), t('presentes.externa_titulo', 'Lista em outra loja')); definirRico($('presentesExternaTexto'), t('presentes.externa_texto', 'Nossa lista está em outro site. Você será levado até lá.')); const a = $('presentesCta'); a.href = urlExt; definir(a, t('presentes.cta_label', 'Abrir lista de presentes →')); }
 
     // 3) dicas e informações (tamanho de roupa, brinquedos de interesse...)
     let infos = [];
@@ -1518,7 +1530,7 @@
       boxInfos.appendChild(card);
     });
     boxInfos.hidden = !(infos.length && ligado('infos'));
-    definir($('presentesInfosTit'), t('presentes.infos_titulo', 'Dicas para presentear'));
+    definirRico($('presentesInfosTit'), t('presentes.infos_titulo', 'Dicas para presentear'));
     $('presentesInfosTit').hidden = boxInfos.hidden;
 
     // 4) PIX: título e texto configuráveis; chave (com botão de copiar) e/ou QR Code
@@ -1527,8 +1539,8 @@
     const pixBox = $('presentesPix');
     pixBox.hidden = !((pix || qr) && ligado('pix'));
     if (!pixBox.hidden) {
-      definir($('presentesPixTitulo'), t('presentes.pix_titulo', 'Prefere enviar um PIX?'));
-      const tx = t('presentes.pix_texto', ''); $('presentesPixTexto').textContent = tx; $('presentesPixTexto').hidden = !tx;
+      definirRico($('presentesPixTitulo'), t('presentes.pix_titulo', 'Prefere enviar um PIX?'));
+      const tx = t('presentes.pix_texto', ''); definirRico($('presentesPixTexto'), tx); $('presentesPixTexto').hidden = !window.HTML_SEGURO.texto(tx).trim();
       const img = $('presentesPixQr'); img.hidden = !qr; if (qr) img.src = qr;
       $('presentesPixLinha').hidden = !pix;
       $('presentesPixChave').textContent = pix;
@@ -1698,8 +1710,8 @@
       form.hidden = true;
       $('rsvpPrazo').hidden = true;
       $('rsvpTexto').hidden = true;
-      $('rsvpSucessoTexto').textContent = vao.length ? rsvpTextoSucesso
-        : talvez.length ? 'Resposta registrada. Quando souber, volte a este link e atualize' + (ateQuando() || ' sua resposta') + '.'
+      if (vao.length) $('rsvpSucessoTexto').innerHTML = rsvpTextoSucesso; // já passou pela limpeza de HTML
+      else $('rsvpSucessoTexto').textContent = talvez.length ? 'Resposta registrada. Quando souber, volte a este link e atualize' + (ateQuando() || ' sua resposta') + '.'
         : 'Resposta enviada. Obrigado por avisar, vamos sentir sua falta 💛';
       const resumo = $('rsvpResumo'); resumo.innerHTML = '';
       pessoas.forEach(function (p) {
@@ -1750,7 +1762,7 @@
       if (!sim.length) {
         const alguemTalvez = pessoas.some(function (p) { return p.resposta === 'nao_sei'; });
         pedirConfirmacao(alguemTalvez
-          ? 'Por enquanto ' + (individual ? 'você ainda não está confirmado(a)' : 'ninguém está confirmado') + ' (há respostas "Não sei"). Tudo bem enviar assim? Dá para mudar' + (ateQuando() || ' depois') + '.'
+          ? 'Por enquanto ' + (individual ? 'você ainda não está confirmado(a)' : 'ninguém está confirmado') + ' (há respostas "Não sei"). Tudo bem enviar assim? Dá para mudar' + (escHtml(ateQuando()) || ' depois') + '.'
           : 'Vamos avisar que ' + (individual ? 'você <b>não poderá ir</b>' : 'o grupo <b>não poderá ir</b>') + '. Está certo?');
         return;
       }

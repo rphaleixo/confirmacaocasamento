@@ -14,6 +14,7 @@
 <script src="/fontes.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
+<script src="/html-seguro.js"></script>
 <style>
   /* Painel: ferramenta de trabalho em azul-marinho neutro. Topo fixo com menu, conteúdo em coluna de até 1120px. */
   :root{
@@ -525,6 +526,21 @@
   .af-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
   .af-chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:36px;}
   .af-chips button.on{background:var(--navy);border-color:var(--navy);color:#fff;} .af-chips button.mod::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:7px;vertical-align:1px;}
+  /* editor de texto formatado (nativo: sem bibliotecas) */
+  .rico{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;}
+  .rico:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px rgba(63,123,208,.15);}
+  .rico-barra{display:flex;gap:2px;flex-wrap:wrap;align-items:center;padding:4px;background:var(--surface-2);border-bottom:1px solid var(--line-soft);}
+  .rico-btn{min-width:34px;height:34px;padding:0 8px;border:none;background:none;border-radius:7px;font-size:14px;color:var(--ink);cursor:pointer;display:inline-grid;place-items:center;font-family:inherit;}
+  .rico-btn:hover{background:var(--muted-bg);} .rico-btn.on{background:var(--info-bg);color:var(--navy);}
+  .rico-btn.html{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700;}
+  .rico-cor{width:34px;height:34px;padding:3px;border:none;background:none;cursor:pointer;}
+  .rico-area{min-height:44px;padding:9px 11px;line-height:1.5;outline:none;overflow-wrap:anywhere;}
+  .rico-area.multi{min-height:96px;}
+  .rico-area:empty::before{content:attr(data-ph);color:var(--ink-faint);pointer-events:none;}
+  .rico-area a{color:var(--info);text-decoration:underline;}
+  .rico-html{display:block;width:100%;min-height:96px;border:none;border-radius:0;font-family:var(--mono);font-size:12.5px;line-height:1.5;padding:10px 11px;resize:vertical;}
+  .rico-html[hidden]{display:none;}
+  .rico-dica{font-size:11.5px;color:var(--ink-faint);padding:0 11px 7px;}
   .ajuste-fino{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:14px 16px;margin:0 0 6px;}
   .af-linha{margin:0 0 12px;} .af-linha > label{display:block;font-size:12.5px;font-weight:700;margin:0 0 5px;}
   .af-seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);width:fit-content;max-width:100%;}
@@ -4391,6 +4407,7 @@
       fs.append(campoFotoUI(hidden.value, campo.aspecto || 1, (url) => { hidden.value = url; hidden.dispatchEvent(new Event('input', { bubbles: true })); }), hidden);
       if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
     } else if (campo.tipo === 'textarea') {
+      if (window.HTML_SEGURO.ehRico(campo.chave)) { const e = criarEditorRico(campo, idCampo, true); fs.append(e.wrap, e.hidden); if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica })); return; }
       const ta = h('textarea', { 'data-chave': campo.chave, id: idCampo, rows: '3' }); ta.value = ctDados[campo.chave] || '';
       fs.appendChild(ta);
       if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
@@ -4429,9 +4446,10 @@
       if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
       fs.appendChild(sugestoes);
     } else {
-      const input = h('input', { type: 'text', 'data-chave': campo.chave, id: idCampo }); input.value = ctDados[campo.chave] || '';
-      if (campo.placeholder) input.placeholder = campo.placeholder;
-      fs.appendChild(input);
+      const rico = window.HTML_SEGURO.ehRico(campo.chave) && !campo.tipo;
+      const ed = rico ? criarEditorRico(campo, idCampo, false) : null;
+      const input = ed ? ed.hidden : h('input', { type: 'text', 'data-chave': campo.chave, id: idCampo });
+      if (!ed) { input.value = ctDados[campo.chave] || ''; if (campo.placeholder) input.placeholder = campo.placeholder; fs.appendChild(input); } else fs.append(ed.wrap, ed.hidden);
       if (campo.avisoSTD && modoSTD()) {
         // com o Save the Date ligado, o site troca este texto pelo título do Save the Date: avisa para não parecer erro
         fs.appendChild(h('div', { class: 'aviso-midia', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;' },
@@ -4446,6 +4464,51 @@
       }
       if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
     }
+  }
+
+  // Caixa de texto com formatação: negrito, itálico, sublinhado, cor, link e edição direta do HTML.
+  // O valor guardado é o HTML (limpo); o campo escondido com data-chave leva esse valor ao "Salvar" e à prévia.
+  function criarEditorRico(campo, id, multilinha) {
+    const HS = window.HTML_SEGURO;
+    const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave, id });
+    hidden.value = HS.limpar(ctDados[campo.chave] || '');
+    const area = h('div', { class: 'rico-area' + (multilinha ? ' multi' : ''), contenteditable: 'true', role: 'textbox', 'aria-multiline': String(!!multilinha), 'aria-label': campo.label, 'data-ph': campo.placeholder || '' });
+    area.innerHTML = hidden.value;
+    const fonte = h('textarea', { class: 'rico-html', hidden: true, spellcheck: 'false', 'aria-label': 'HTML de ' + campo.label });
+    const avisa = () => hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    const gravar = (v) => { if (v !== hidden.value) { hidden.value = v; avisa(); } };
+    const daArea = () => { const v = HS.limpar(area.innerHTML).replace(/(<br>)+$/, ''); gravar(v); fonte.value = v; };
+    area.addEventListener('input', daArea);
+    // colar sempre como texto simples (sem trazer formatação de outros lugares)
+    area.addEventListener('paste', (ev) => { ev.preventDefault(); const t = (ev.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, multilinha ? t : t.replace(/\s*\r?\n\s*/g, ' ')); });
+    if (!multilinha) area.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') ev.preventDefault(); }); // título de uma linha só
+    // a seleção se perde quando se clica na barra ou no seletor de cor: guarda e devolve
+    let sel = null;
+    const guardarSel = () => { const s_ = window.getSelection(); if (s_ && s_.rangeCount && area.contains(s_.anchorNode)) sel = s_.getRangeAt(0).cloneRange(); };
+    const devolverSel = () => { area.focus(); if (sel) { const s_ = window.getSelection(); s_.removeAllRanges(); s_.addRange(sel); } };
+    ['keyup', 'mouseup', 'blur'].forEach((ev) => area.addEventListener(ev, guardarSel));
+    const comando = (c, v) => { devolverSel(); try { document.execCommand('styleWithCSS', false, c === 'foreColor'); } catch (e) { /* segue */ } document.execCommand(c, false, v); daArea(); guardarSel(); };
+    const botao = (rot, titulo, fn, cls) => { const b = h('button', { type: 'button', class: 'rico-btn ' + (cls || ''), title: titulo, 'aria-label': titulo, html: rot }); b.addEventListener('mousedown', (e) => e.preventDefault()); b.addEventListener('click', fn); return b; };
+    const cor = h('input', { type: 'color', class: 'rico-cor', title: 'Cor do trecho selecionado', 'aria-label': 'Cor do trecho selecionado', value: '#C9A227' });
+    cor.addEventListener('mousedown', guardarSel);
+    cor.addEventListener('input', () => comando('foreColor', cor.value));
+    let modoHtml = false;
+    const bHtml = botao('&lt;/&gt;', 'Editar o HTML do texto', () => {
+      modoHtml = !modoHtml;
+      bHtml.classList.toggle('on', modoHtml);
+      area.hidden = modoHtml; fonte.hidden = !modoHtml;
+      if (modoHtml) { fonte.value = hidden.value; fonte.focus(); } else { area.innerHTML = hidden.value; }
+    }, 'html');
+    fonte.addEventListener('input', () => { gravar(HS.limpar(fonte.value)); });
+    fonte.addEventListener('blur', () => { fonte.value = hidden.value; });
+    const barra = h('div', { class: 'rico-barra', role: 'toolbar', 'aria-label': 'Formatação de ' + campo.label },
+      botao('<b>N</b>', 'Negrito (Ctrl+B)', () => comando('bold')), botao('<i>I</i>', 'Itálico (Ctrl+I)', () => comando('italic')),
+      botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')), cor,
+      botao('🔗', 'Colocar link no trecho selecionado', () => { guardarSel(); const url = window.prompt('Endereço do link (comece com https://):', 'https://'); if (url && /^(https?:|mailto:|tel:)/i.test(url.trim())) comando('createLink', url.trim()); }),
+      botao('🔗✕', 'Tirar o link', () => comando('unlink')),
+      botao('⌫', 'Limpar a formatação do trecho', () => { comando('removeFormat'); comando('unlink'); }), bHtml);
+    const wrap = h('div', { class: 'rico' }, barra, area, fonte);
+    return { wrap, hidden };
   }
 
   async function salvarMinhasPaletas(lista) {

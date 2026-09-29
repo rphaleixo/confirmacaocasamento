@@ -1,4 +1,4 @@
-import { jsonResponse, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
+import { jsonResponse, resolverEvento, eventoNaoEncontrado, ehChaveRica, limparHtml } from '../../_lib.js';
 
 // body: { "chave1": "valor1", "chave2": "valor2", ... } — upsert em lote
 export async function onRequestPost({ request, env }) {
@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
   const stmt = env.DB.prepare(
     'INSERT INTO conteudo (evento_id, chave, valor) VALUES (?, ?, ?) ON CONFLICT(evento_id, chave) DO UPDATE SET valor = excluded.valor'
   );
-  await env.DB.batch(entradas.map(([chave, valor]) => stmt.bind(evento.id, chave, String(valor))));
+  await env.DB.batch(entradas.map(([chave, valor]) => stmt.bind(evento.id, chave, ehChaveRica(chave) ? limparHtml(valor) : String(valor))));
 
   return jsonResponse({ ok: true, atualizados: entradas.length });
 }
