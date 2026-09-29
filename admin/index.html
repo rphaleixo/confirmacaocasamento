@@ -612,10 +612,6 @@
   .ap-sec h4{margin:0 0 2px;font-size:15px;} .ap-sec .sub{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;}
   .ap-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;color:#fff;background:linear-gradient(120deg,var(--navy-deep),var(--navy-2));}
   .ap-banner h3{margin:0;font-size:18px;} .ap-banner p{margin:3px 0 0;font-size:13px;opacity:.85;}
-  .ap-passos{display:flex;gap:6px;align-items:center;font-size:12.5px;}
-  .ap-passos button{border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff;border-radius:999px;padding:7px 15px;cursor:pointer;font-size:13px;font-weight:600;}
-  .ap-passos button.atual{background:#fff;color:var(--navy);border-color:#fff;}
-  .ap-nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap;}
   .papeis{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px;}
   .papel{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;}
   .papel.sel{border-color:var(--ink);box-shadow:0 4px 14px rgba(15,23,42,.18);}
@@ -958,7 +954,6 @@
   <section id="tab-aparencia" class="tab">
     <div class="ap-banner" id="ap-banner">
       <div><h3 id="ap-banner-tit"></h3><p id="ap-banner-sub"></p></div>
-      <div class="ap-passos"><button type="button" id="ap-passo-cores">1 · Cores</button><span aria-hidden="true">›</span><button type="button" id="ap-passo-tipo">2 · Tipografia</button></div>
     </div>
     <div class="ap-layout">
       <div id="ap-form" style="min-width:0;"><div class="carregando">Carregando...</div></div>
@@ -4960,10 +4955,10 @@
   // =====================================================================
   //  SITE › CORES E TIPOGRAFIA (cores, fontes e prévia ao vivo)
   // =====================================================================
-  // Alterações ainda não salvas de Cores e Tipografia (valem para as duas etapas, com um único "Salvar")
+  // Cores e Tipografia são telas separadas, cada uma com o seu próprio "Salvar"
   const TEXTOS_APARENCIA = {
-    cores: ['Cores do site', 'Etapa 1 de 2: escolha uma paleta ou ajuste as 5 cores. A prévia ao lado mostra onde cada uma aparece.'],
-    tipografia: ['Tipografia', 'Etapa 2 de 2: escolha as letras do site. As cores ficam como você deixou.'],
+    cores: ['Cores do site', 'Escolha uma paleta ou ajuste as 5 cores. A prévia ao lado mostra onde cada uma aparece.'],
+    tipografia: ['Tipografia', 'Escolha as letras do site. A prévia ao lado mostra onde cada fonte é usada.'],
   };
 
   async function carregarAparencia(modo) {
@@ -4972,10 +4967,6 @@
     const previa = document.getElementById('ap-previa');
     document.getElementById('ap-banner-tit').textContent = TEXTOS_APARENCIA[modo][0];
     document.getElementById('ap-banner-sub').textContent = TEXTOS_APARENCIA[modo][1];
-    document.getElementById('ap-passo-cores').className = modo === 'cores' ? 'atual' : '';
-    document.getElementById('ap-passo-tipo').className = modo === 'tipografia' ? 'atual' : '';
-    document.getElementById('ap-passo-cores').onclick = () => navegar('cores');
-    document.getElementById('ap-passo-tipo').onclick = () => navegar('tipografia');
     const d = await api('/api/conteudo');
     if (d.erro) { form.textContent = 'Não consegui carregar agora. Recarregue a página para tentar de novo.'; return; }
     ctDados = d;
@@ -4983,12 +4974,6 @@
       msgId: 'ap-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia',
       rotuloSalvar: modo === 'cores' ? 'Salvar cores' : 'Salvar tipografia',
       msgSalvo: modo === 'cores' ? 'Cores salvas. O site já está atualizado.' : 'Tipografia salva. O site já está atualizado.',
-      rodape: (container) => {
-        const nav = h('div', { class: 'ap-nav' });
-        if (modo === 'cores') nav.append(h('span'), btn('Próxima etapa: Tipografia →', () => navegar('tipografia'), ''));
-        else nav.appendChild(btn('← Voltar para Cores', () => navegar('cores'), ''));
-        container.appendChild(nav);
-      },
     });
     montarPrevia(form, previa, modo);
   }
