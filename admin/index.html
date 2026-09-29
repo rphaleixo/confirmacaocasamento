@@ -378,6 +378,31 @@
   .switch input:focus-visible + .trilho{outline:2px solid var(--focus);outline-offset:2px;}
   fieldset{border:1px solid var(--line);border-radius:var(--r-lg);margin:0;padding:6px 20px 20px;background:var(--surface);min-width:0;}
   legend{font-weight:700;font-size:14px;padding:0 6px;}
+  /* Save the Date: destaque no menu, cartão de ativação e aviso global */
+  .ct-item.std{background:linear-gradient(90deg,#FFF6E0,#FFFFFF);border:1px solid #F2DDB0;font-weight:600;}
+  .ct-item.std.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .ct-item .pill{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--warn-bg);color:var(--warn);}
+  .ct-item.active .pill{background:#FFE8B0;}
+  .ct-item .pill.off{background:#EEF1F6;color:var(--ink-faint);}
+  .std-bar{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:#FFE8B0;color:#5C3A00;font-size:13.5px;font-weight:600;border-bottom:1px solid #F2C96A;}
+  .std-bar[hidden]{display:none;}
+  .std-bar button{border:1px solid #5C3A00;background:transparent;color:#5C3A00;border-radius:999px;padding:5px 14px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;}
+  .hd-badge.std{background:#FFE8B0;color:#5C3A00;cursor:pointer;border:none;font-family:inherit;}
+  .std-card{display:grid;grid-template-columns:1fr 210px;gap:22px;align-items:center;border-radius:16px;padding:22px;margin-bottom:18px;border:2px solid var(--line, #E0E5EE);background:#fff;}
+  .std-card.on{background:linear-gradient(135deg,#FFF6E0,#FFFFFF);border-color:#F2C96A;}
+  @media (max-width:760px){.std-card{grid-template-columns:1fr;} .std-card .std-fone{margin:0 auto;}}
+  .std-estado{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:99px;background:#EEF1F6;color:var(--ink-soft);}
+  .std-estado i{width:9px;height:9px;border-radius:50%;background:#9AA5B8;display:block;}
+  .std-card.on .std-estado{background:#FFE8B0;color:#5C3A00;} .std-card.on .std-estado i{background:#E08A00;}
+  .std-card h4{margin:12px 0 6px;font-size:20px;color:var(--ink);} .std-card p{margin:0 0 10px;color:var(--ink-soft);font-size:13.5px;line-height:1.5;}
+  .std-card ul{margin:0 0 14px;padding-left:18px;font-size:13px;color:var(--ink-soft);} .std-card li{margin:3px 0;}
+  .std-card .btn.grande{padding:13px 22px;font-size:15px;}
+  .std-fone{width:200px;border-radius:22px;border:6px solid #1B2433;overflow:hidden;box-shadow:0 10px 28px rgba(20,40,66,.25);background:#fff;}
+  .std-fone .capa{padding:34px 14px 30px;text-align:center;color:#fff;min-height:250px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+  .std-fone .eb{font-size:9px;letter-spacing:.14em;text-transform:uppercase;} .std-fone .nm{font-size:26px;line-height:1.1;} .std-fone .dt{font-size:11px;opacity:.9;} .std-fone .tx{font-size:10.5px;opacity:.92;margin-top:8px;line-height:1.4;}
+  .std-passos{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:0;list-style:none;counter-reset:p;}
+  .std-passos li{counter-increment:p;font-size:12.5px;color:var(--ink-soft);display:flex;align-items:center;gap:8px;}
+  .std-passos li::before{content:counter(p);width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;}
   .modulo-off-aviso{padding:10px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:13px;font-weight:500;margin-bottom:12px;}
   .campo-checkbox{display:flex;align-items:center;gap:10px;margin-top:16px;}
   .campo-checkbox label{margin:0;font-weight:500;font-size:13.5px;cursor:pointer;}
@@ -557,6 +582,7 @@
   <nav id="navEvento" class="nav" aria-label="Evento" hidden></nav>
   <div id="subheader" hidden><div class="in" id="subheaderIn"></div></div>
 </div>
+<div class="std-bar" id="stdBar" hidden><span>Modo Save the Date ligado: o site mostra só a capa, sem confirmação de presença.</span><button type="button" id="stdBarBtn">Gerenciar</button></div>
 <main>
 
   <!-- ===== PLATAFORMA ===== -->
@@ -1190,8 +1216,10 @@
       if (d._nome) { document.getElementById('tituloAdmin').textContent = d._nome; document.title = d._nome + ' • Painel'; }
       const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
       sub.appendChild(h('span', { class: 'hd-badge', text: tipos[d._tipo] || d._tipo || '' }));
-      if (d['config.modo_save_the_date'] === '1') sub.appendChild(h('span', { class: 'hd-badge', text: 'Modo Save the Date ligado' }));
+      ctDados = Object.assign(ctDados || {}, { 'config.modo_save_the_date': d['config.modo_save_the_date'] || '0' });
+      atualizarSTD();
     }).catch(() => {});
+    document.getElementById('stdBarBtn').addEventListener('click', abrirSaveTheDate);
     // contador de recados esperando aprovação no menu
     api('/api/admin/recados').then((lista) => { if (Array.isArray(lista)) atualizarContadorRecados(lista.filter((r) => !r.aprovado).length); });
   }
@@ -2257,10 +2285,10 @@
       { chave: '__sep_capa__', tipo: 'separador', label: 'Botão e foto' },
       { chave: 'hero.cta_label', label: 'Texto do botão principal' },
       { chave: 'hero.foto_url', label: 'Foto de capa', tipo: 'foto', aspecto: 3/4, dica: 'Tamanho ideal: 1200×1600px, na vertical. O site é visto no celular, então prefira fotos em pé.' },
-      { chave: '__sep_std__', tipo: 'separador', label: 'Modo "Save the Date"' },
-      { chave: 'config.modo_save_the_date', label: 'Ligar modo Save the Date (o site mostra só a capa, sem confirmação nem outros módulos)', tipo: 'checkbox' },
-      { chave: 'savethedate.titulo', label: 'Título do Save the Date' },
-      { chave: 'savethedate.texto', label: 'Texto do Save the Date', tipo: 'textarea' },
+    ]},
+    { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
+      { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
+      { chave: 'savethedate.texto', label: 'Mensagem', tipo: 'textarea', dica: 'Aparece abaixo da data, na capa. Ex.: "Em breve enviaremos o convite oficial."' },
     ]},
     { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', campos: [
       { chave: 'countdown.eyebrow', label: 'Texto pequeno' },
@@ -2384,10 +2412,11 @@
     ctItens = [];
     let ultimaCategoria = '';
     GRUPOS_ATIVOS.forEach((grupo, i) => {
-      const categoria = grupo.titulo === 'Capa' ? 'Início' : /Rodap/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
+      const categoria = (grupo.titulo === 'Capa' || grupo.especial) ? 'Início' : /Rodap/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
       if (categoria !== ultimaCategoria) { subnav.appendChild(h('div', { class: 'ct-tit', text: categoria })); ultimaCategoria = categoria; }
-      const b = h('button', { type: 'button', class: 'ct-item' }, h('span', { text: iconeDoGrupo(grupo), 'aria-hidden': 'true' }), h('span', { class: 'nm', text: grupo.titulo }));
+      const b = h('button', { type: 'button', class: 'ct-item' + (grupo.especial ? ' std' : '') }, h('span', { text: iconeDoGrupo(grupo), 'aria-hidden': 'true' }), h('span', { class: 'nm', text: grupo.titulo }));
       if (grupo.toggle) b.appendChild(h('span', { class: 'dot' }));
+      if (grupo.especial) b.appendChild(h('span', { class: 'pill', 'data-std-pill': '1' }));
       b.addEventListener('click', async () => {
         if (i === ctGrupoAtivo) return;
         if (sujo && sujo.onde === 'conteudo') {
@@ -2406,14 +2435,31 @@
   }
   function iconeDoGrupo(g) {
     const porToggle = { countdown: '⏳', presente_teaser: '🎁', timeline: '📖', padrinhos: '🤵', madrinhas_pais: '👨‍👩‍👧', mapa: '📍', galeria: '📷', presentes: '🎁', recados: '💬' };
+    if (g.especial === 'savethedate') return '🗓️';
     if (g.toggle) return porToggle[g.toggle] || '▫️';
     if (g.titulo === 'Capa') return '🖼️';
     if (/Confirma/i.test(g.titulo)) return '✅';
     return '🔻';
   }
+  // ---- Save the Date: estado, aviso global e atalhos ----
+  function modoSTD() { return ctDados && ctDados['config.modo_save_the_date'] === '1'; }
+  function atualizarSTD() {
+    const on = modoSTD();
+    document.getElementById('stdBar').hidden = !on;
+    document.querySelectorAll('.hd-badge.std').forEach((e) => e.remove());
+    const sub = document.getElementById('hdSub');
+    if (on && sub) sub.appendChild(h('button', { type: 'button', class: 'hd-badge std', text: 'Save the Date ligado', title: 'Gerenciar o Save the Date', onclick: abrirSaveTheDate }));
+    GRUPOS_ATIVOS.forEach((g, i) => { if (g.especial) atualizarEstadoItem(i); });
+  }
+  async function abrirSaveTheDate() {
+    ctGrupoAtivo = Math.max(0, GRUPOS_CONTEUDO.findIndex((g) => g.especial === 'savethedate'));
+    await navegar('conteudo');
+    if (abaAtual === 'conteudo' && GRUPOS_ATIVOS[ctGrupoAtivo] && !GRUPOS_ATIVOS[ctGrupoAtivo].especial) { ctGrupoAtivo = GRUPOS_ATIVOS.findIndex((g) => g.especial); renderConteudoGrupo(); }
+  }
   function moduloLigado(g) { return !g.toggle || ctDados['secao.' + g.toggle + '.ativa'] !== '0'; }
   function atualizarEstadoItem(i) {
     const g = GRUPOS_ATIVOS[i]; const b = ctItens[i];
+    if (b && g.especial) { const pl = b.querySelector('[data-std-pill]'); const on = modoSTD(); pl.textContent = on ? 'Ligado' : 'Desligado'; pl.classList.toggle('off', !on); return; }
     if (!b || !g.toggle) return;
     const ligado = moduloLigado(g);
     b.classList.toggle('off', !ligado);
@@ -2852,8 +2898,70 @@
     const grupo = GRUPOS_ATIVOS[ctGrupoAtivo];
     renderGrupoEm(grupo, document.getElementById('ct-form'), {
       msgId: 'ct-msg', onde: 'conteudo',
+      topo: grupo.especial === 'savethedate' ? cartaoSaveTheDate : null,
       aoAlternar: (ligado) => ctItens[ctGrupoAtivo].classList.toggle('off', !ligado),
     });
+  }
+
+  // Cartão de ativação do Save the Date: estado bem visível, o que muda no site, prévia e um botão grande com confirmação.
+  function cartaoSaveTheDate(form) {
+    const on = modoSTD();
+    const cor = (k, p) => ctDados[k] || p;
+    const fone = h('div', { class: 'std-fone' });
+    const capa = h('div', { class: 'capa' });
+    const eb = h('div', { class: 'eb' }), nm = h('div', { class: 'nm' }), dt = h('div', { class: 'dt' }), tx = h('div', { class: 'tx' });
+    capa.append(eb, nm, dt, tx); fone.appendChild(capa);
+    const pintar = () => {
+      const lerCampo = (k, p) => { const e = form.querySelector('[data-chave="' + k + '"]'); return e ? e.value : (ctDados[k] || p); };
+      const CAT = window.FONTES_CATALOGO;
+      const leg = CAT.legado[ctDados['aparencia.fontes']] || CAT.legado.classico;
+      const ft = CAT.porId[ctDados['aparencia.fonte_titulo']] || CAT.porId[leg.titulo];
+      CAT.carregar(ft);
+      capa.style.background = 'linear-gradient(135deg,' + cor('aparencia.cor_primaria', '#0B2545') + ', color-mix(in srgb,' + cor('aparencia.cor_primaria', '#0B2545') + ' 70%, black 30%))';
+      eb.style.color = cor('aparencia.cor_destaque', '#C9A227');
+      eb.textContent = lerCampo('savethedate.titulo', 'Guarde a data!') || 'Guarde a data!';
+      nm.textContent = ctDados._tipo === 'aniversario' ? (ctDados['hero.noiva'] || 'Nome') : ((ctDados['hero.noiva'] || 'Noiva') + ' & ' + (ctDados['hero.noivo'] || 'Noivo'));
+      nm.style.fontFamily = CAT.familia(ft); nm.style.fontStyle = ft.estiloTitulo;
+      dt.textContent = ctDados['hero.data_display'] || '12 de junho de 2027';
+      tx.textContent = lerCampo('savethedate.texto', '');
+    };
+    setTimeout(pintar, 0);
+    form.addEventListener('input', pintar);
+
+    const lista = on
+      ? ['O site mostra só a capa, com a mensagem abaixo.', 'Confirmação de presença, presentes, recados e demais módulos ficam escondidos.', 'Quem abrir um convite já enviado vê apenas a capa até você desligar.']
+      : ['Ideal para avisar a data antes de o convite oficial estar pronto.', 'O site passa a mostrar só a capa, com título e mensagem.', 'A confirmação de presença fica escondida até você desligar.'];
+    const acao = btn(on ? 'Desligar e abrir as confirmações' : 'Ligar o Save the Date', async () => {
+      const ligar = !on;
+      const ok = await confirmar({
+        titulo: ligar ? 'Ligar o Save the Date?' : 'Desligar o Save the Date?',
+        texto: ligar
+          ? 'O site vai mostrar só a capa. A confirmação de presença e todos os outros módulos ficam escondidos, inclusive para quem já recebeu o link do convite. Você pode desligar a qualquer momento.'
+          : 'O site volta ao normal, com todos os módulos ativos e a confirmação de presença aberta para quem tiver o link do convite.',
+        rotulo: ligar ? 'Ligar agora' : 'Desligar agora',
+      });
+      if (!ok) return;
+      acao.disabled = true;
+      const payload = { 'config.modo_save_the_date': ligar ? '1' : '0' };
+      form.querySelectorAll('[data-chave^="savethedate."]').forEach((e) => { payload[e.dataset.chave] = e.value; });
+      const d = await api('/api/admin/conteudo', 'POST', payload);
+      acao.disabled = false;
+      if (d.erro) { toast(d.erro, 'erro'); return; }
+      Object.assign(ctDados, payload);
+      atualizarSTD();
+      toast(ligar ? 'Save the Date ligado. O site já mostra só a capa.' : 'Save the Date desligado. A confirmação de presença está aberta.');
+      rerenderAtual();
+    }, on ? 'sm' : 'prim grande');
+    if (on) acao.classList.add('grande');
+
+    const esq = h('div', {},
+      h('span', { class: 'std-estado' }, h('i'), on ? 'Ligado agora' : 'Desligado'),
+      h('h4', { text: on ? 'O site está no modo Save the Date' : 'Modo Save the Date' }),
+      h('p', { text: on ? 'Quem abre o site vê só a capa. Quando o convite oficial estiver pronto, desligue para liberar as confirmações.' : 'Use quando quiser avisar a data antes de abrir as confirmações.' }),
+      h('ul', {}, lista.map((t) => h('li', { text: t }))),
+      acao,
+      h('p', { style: 'margin:12px 0 0;font-size:12px;', text: 'Escreva o título e a mensagem abaixo e confira a prévia ao lado. Ligar ou desligar vale na hora, sem precisar salvar.' }));
+    form.appendChild(h('div', { class: 'std-card' + (on ? ' on' : '') }, esq, fone));
   }
 
   // Desenha um grupo de campos (módulo do site, aparência...) dentro de "form", com barra de salvar.
@@ -2889,6 +2997,7 @@
     if (dir.children.length) head.appendChild(dir);
     if (head.children.length) form.appendChild(head);
     if (avisoOff) form.appendChild(avisoOff);
+    if (opcoes.topo) opcoes.topo(form);
     const fs = h('fieldset');
     if (opcoes.semMoldura) { fs.style.border = 'none'; fs.style.padding = '0'; fs.style.background = 'transparent'; }
     grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
@@ -2922,11 +3031,6 @@
       msgDiv.textContent = '';
       ficarSujo(false);
       toast('Salvo. O site já está atualizado.');
-      if (payload['config.modo_save_the_date'] !== undefined) {
-        // atualiza o selo do cabeçalho
-        document.querySelectorAll('.hd-badge').forEach((b) => { if (/Save the Date/.test(b.textContent)) b.remove(); });
-        if (payload['config.modo_save_the_date'] === '1') document.getElementById('hdSub').appendChild(h('span', { class: 'hd-badge', text: 'Modo Save the Date ligado' }));
-      }
     });
     const mexeu = (ev) => {
       const e = ev.target;
