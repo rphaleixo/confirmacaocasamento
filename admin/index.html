@@ -533,6 +533,8 @@
   .rico-btn{min-width:34px;height:34px;padding:0 8px;border:none;background:none;border-radius:7px;font-size:14px;color:var(--ink);cursor:pointer;display:inline-grid;place-items:center;font-family:inherit;}
   .rico-btn:hover{background:var(--muted-bg);} .rico-btn.on{background:var(--info-bg);color:var(--navy);}
   .rico-btn.html{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700;}
+  .rico-dial{display:inline-flex;gap:5px;align-items:center;padding:0 8px 0 2px;}
+  .rico-amostra{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;} .rico-amostra:hover{transform:scale(1.15);} .rico-amostra:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
   .rico-cor{width:34px;height:34px;padding:3px;border:none;background:none;cursor:pointer;}
   .rico-area{min-height:44px;padding:9px 11px;line-height:1.5;outline:none;overflow-wrap:anywhere;}
   .rico-area.multi{min-height:96px;}
@@ -4506,6 +4508,16 @@
     const cor = h('input', { type: 'color', class: 'rico-cor', title: 'Cor do trecho selecionado', 'aria-label': 'Cor do trecho selecionado', value: '#C9A227' });
     cor.addEventListener('mousedown', guardarSel);
     cor.addEventListener('input', () => comando('foreColor', cor.value));
+    // acesso rápido às cores da paleta escolhida para o site (um toque aplica ao trecho selecionado)
+    const CORES_PALETA = [['aparencia.cor_primaria', 'Primária', '#0B2545'], ['aparencia.cor_secundaria', 'Secundária', '#2F5D9A'], ['aparencia.cor_destaque', 'Destaque', '#C9A227'], ['aparencia.cor_fundo', 'Fundo', '#EAF1FB'], ['aparencia.cor_texto', 'Texto', '#14213D']];
+    const dial = h('div', { class: 'rico-dial', role: 'group', 'aria-label': 'Cores da paleta do site' });
+    CORES_PALETA.forEach(([k, nome, pad]) => {
+      const c = ctDados[k] || pad;
+      const b = h('button', { type: 'button', class: 'rico-amostra', title: 'Cor ' + nome.toLowerCase() + ' da paleta (' + c.toUpperCase() + ')', 'aria-label': 'Aplicar a cor ' + nome.toLowerCase() + ' da paleta', style: 'background:' + c + ';' });
+      b.addEventListener('mousedown', (e) => { e.preventDefault(); guardarSel(); });
+      b.addEventListener('click', () => comando('foreColor', c));
+      dial.appendChild(b);
+    });
     let modoHtml = false;
     const bHtml = botao('&lt;/&gt;', 'Editar o HTML do texto', () => {
       modoHtml = !modoHtml;
@@ -4517,7 +4529,7 @@
     fonte.addEventListener('blur', () => { fonte.value = hidden.value; });
     const barra = h('div', { class: 'rico-barra', role: 'toolbar', 'aria-label': 'Formatação de ' + campo.label },
       botao('<b>N</b>', 'Negrito (Ctrl+B)', () => comando('bold')), botao('<i>I</i>', 'Itálico (Ctrl+I)', () => comando('italic')),
-      botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')), cor,
+      botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')), cor, dial,
       botao('🔗', 'Colocar link no trecho selecionado', () => { guardarSel(); const url = window.prompt('Endereço do link (comece com https://):', 'https://'); if (url && /^(https?:|mailto:|tel:)/i.test(url.trim())) comando('createLink', url.trim()); }),
       botao('🔗✕', 'Tirar o link', () => comando('unlink')),
       botao('⌫', 'Limpar a formatação do trecho', () => { comando('removeFormat'); comando('unlink'); }), bHtml);
