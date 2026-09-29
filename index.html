@@ -86,6 +86,7 @@
   /* mídia da capa: imagem ou vídeo (vertical ou horizontal). "preencher" corta as bordas; "inteira" mostra tudo sobre um fundo desfocado */
   .hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;background:transparent;}
   .hero.inteira .hero-media{object-fit:contain;}
+  .hero.tem-video:not(.inteira) .hero-img{transform:none;transition:none;} /* a imagem parada fica exatamente sob o vídeo, sem zoom */
   .hero.inteira .hero-img{filter:blur(26px) brightness(.8);transform:scale(1.18) !important;}
   .hero.sem-veu .hero-veil{background:linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);opacity:1;}
   .hero-ctrl{position:absolute;top:14px;left:14px;z-index:6;display:flex;gap:8px;}
@@ -785,7 +786,8 @@
       if (t('hero.veu', '1') === '0') hero.classList.add('sem-veu');
       const imagemBase = ehVideo ? poster : foto; // usada no fundo desfocado e no cenário
       if (inteira) hero.classList.add('inteira');
-      if (imagemBase && (inteira || !ehVideo)) fundo.style.background = 'center/cover url(' + imagemBase + ')';
+      if (ehVideo) hero.classList.add('tem-video');
+      if (imagemBase) fundo.style.background = 'center/cover url(' + imagemBase + ')'; // imagem parada por trás de tudo: aparece antes do vídeo carregar
 
       let midia = null;
       if (ehVideo) {
@@ -796,6 +798,8 @@
         midia.setAttribute('muted', ''); midia.preload = 'auto'; midia.disablePictureInPicture = true;
         if (poster) midia.poster = poster;
         midia.setAttribute('aria-hidden', 'true');
+        // com imagem de capa (thumb), o vídeo entra por cima dela só quando começa a tocar
+        if (poster) { midia.style.opacity = '0'; midia.style.transition = 'opacity .6s ease'; midia.addEventListener('playing', function () { midia.style.opacity = '1'; }); }
         midia.src = video;
       } else if (foto && inteira) {
         midia = document.createElement('img');

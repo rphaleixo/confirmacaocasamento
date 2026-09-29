@@ -417,6 +417,8 @@
   .video-atual{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
   .video-atual video{width:150px;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:#000;border:1px solid var(--line);}
   .video-info{flex:1;min-width:220px;font-size:13px;color:var(--ink-soft);}
+  .thumb-bloco{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);}
+  .thumb-bloco > img,.thumb-bloco > .sem-foto{width:100px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--surface-2,#F1F4F9);flex-shrink:0;display:grid;place-items:center;font-size:11px;color:var(--ink-faint);}
   .barra-envio{height:8px;border-radius:99px;background:#E4E9F1;overflow:hidden;margin:10px 0 4px;} .barra-envio i{display:block;height:100%;width:0;background:var(--navy);transition:width .15s;}
   .aviso-midia{margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:500;}
   .campo-liga{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);}
@@ -1151,12 +1153,10 @@
 
   async function navegar(tab) {
     if (tab === abaAtual) { abrirHash(true); return; }
-    const mesmaAparencia = sujo && sujo.onde === 'aparencia' && (tab === 'cores' || tab === 'tipografia');
-    if (sujo && !mesmaAparencia) {
+    if (sujo) {
       const ok = await confirmar({ titulo: 'Sair sem salvar?', texto: 'Você fez alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.', rotulo: 'Sair sem salvar', perigo: true });
       if (!ok) return;
       marcarSujo(null);
-      if (typeof rascunhoAparencia === 'object') Object.keys(rascunhoAparencia).forEach((k) => delete rascunhoAparencia[k]);
     }
     if (location.hash !== '#' + tab) location.hash = tab; else abrirHash(true);
   }
@@ -2655,6 +2655,45 @@
   }
   const LIMITE_VIDEO_MB = 40;
 
+  // Captura o quadro que o <video> está mostrando agora e devolve um JPEG (Blob).
+  function capturarQuadroDe(v) {
+    return new Promise((resolve) => {
+      try {
+        const esc = Math.min(1, 720 / (v.videoWidth || 720));
+        const c = document.createElement('canvas'); c.width = Math.round(v.videoWidth * esc); c.height = Math.round(v.videoHeight * esc);
+        c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+        c.toBlob((b) => resolve(b), 'image/jpeg', 0.85);
+      } catch (e) { resolve(null); }
+    });
+  }
+  // Janela para escolher, com uma barra deslizante, o momento do vídeo que vira a imagem de capa.
+  function abrirEscolhaQuadro(urlVideo, aoEscolher) {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const v = h('video', { src: urlVideo, muted: true, playsinline: true, preload: 'auto', style: 'width:100%;max-height:52vh;object-fit:contain;background:#000;border-radius:12px;display:block;' });
+    v.muted = true;
+    const faixa = h('input', { type: 'range', min: '0', max: '1', step: '0.05', value: '0', 'aria-label': 'Momento do vídeo', style: 'width:100%;margin-top:14px;' });
+    const rot = h('div', { style: 'font-size:12.5px;color:var(--ink-soft);margin-top:6px;', text: 'Arraste para escolher o momento do vídeo.' });
+    const erro = h('div', { class: 'erro-campo' });
+    v.addEventListener('loadedmetadata', () => { faixa.max = String(v.duration || 1); });
+    faixa.addEventListener('input', () => { try { v.currentTime = Number(faixa.value); } catch (e) {} rot.textContent = 'Momento escolhido: ' + Number(faixa.value).toFixed(1) + ' s'; });
+    corpo.append(v, faixa, rot, erro);
+    abrirDialogo({ titulo: 'Escolher um quadro do vídeo', sub: 'A imagem escolhida aparece antes de o vídeo carregar.', largura: '520px' });
+    montarRodape([
+      { rotulo: 'Cancelar', fn: fecharDialogo, fantasma: true, esquerda: true },
+      { rotulo: 'Usar este quadro', prim: true, fn: async () => {
+        erro.textContent = '';
+        if (!v.videoWidth) { erro.textContent = 'O vídeo ainda está carregando. Tente de novo em instantes.'; return; }
+        const blob = await capturarQuadroDe(v);
+        if (!blob) { erro.textContent = 'Não consegui capturar este quadro. Tente outro momento.'; return; }
+        const d = await enviarImagem(blob);
+        if (d.erro) { erro.textContent = d.erro; return; }
+        fecharDialogo(); aoEscolher(d.url);
+      } },
+    ]);
+  }
+
   // Miniatura da capa no tamanho real do site (460×900), reduzida por "escala". Serve para celular e para computador.
   function criarCapaMock(escala) {
     const CAT = window.FONTES_CATALOGO;
@@ -2754,11 +2793,24 @@
           prev.muted = true; if (hPoster.value) prev.poster = hPoster.value;
           const info = h('div', { class: 'video-info' },
             h('div', { style: 'font-weight:700;color:var(--ink);margin-bottom:4px;', text: 'Vídeo enviado' }),
-            h('div', { text: hPoster.value ? 'Quadro de apoio criado automaticamente: aparece enquanto o vídeo carrega e forma o fundo desfocado em telas grandes.' : 'Sem quadro de apoio: em telas grandes o fundo usa a cor primária.' }),
+            h('div', { text: 'Toca sem som e em repetição. O convidado pode pausar ou ativar o som.' }),
             h('div', { class: 'acoes', style: 'margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;' },
               btn('Trocar vídeo', () => arquivo.click(), 'sm'),
               btn('Remover vídeo', () => { hVideo.value = ''; hPoster.value = ''; emitir(hVideo); emitir(hPoster); desenharVideo(); }, 'sm fantasma')));
           painelVid.appendChild(h('div', { class: 'video-atual' }, prev, info));
+
+          // imagem de capa (thumb): a imagem parada exibida antes de o vídeo carregar
+          const temThumb = !!hPoster.value;
+          const thumb = h('div', { class: 'thumb-bloco' },
+            temThumb ? h('img', { src: hPoster.value, alt: 'Imagem de capa do vídeo' }) : h('div', { class: 'sem-foto', text: 'sem imagem' }),
+            h('div', { class: 'video-info' },
+              h('div', { style: 'font-weight:700;color:var(--ink);margin-bottom:4px;', text: 'Imagem de capa do vídeo (thumb)' }),
+              h('div', { text: 'É a imagem parada que aparece enquanto o vídeo carrega, quando ele não puder tocar e como fundo desfocado em telas grandes. Sem ela, o site mostra a cor primária até o vídeo abrir.' }),
+              h('div', { class: 'acoes', style: 'margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;' },
+                btn('Enviar uma imagem', () => arquivoThumb.click(), 'sm', 'subir'),
+                btn('Escolher um quadro do vídeo', () => abrirEscolhaQuadro(hVideo.value, (url) => { hPoster.value = url; emitir(hPoster); desenharVideo(); toast('Imagem de capa definida. Salve para publicar.'); }), 'sm'),
+                temThumb ? btn('Remover imagem', () => { hPoster.value = ''; emitir(hPoster); desenharVideo(); }, 'sm fantasma') : null)));
+          painelVid.appendChild(thumb);
         } else {
           painelVid.appendChild(h('div', { class: 'video-vazio' },
             h('div', { style: 'font-weight:700;color:var(--ink);margin-bottom:10px;', text: 'Nenhum vídeo ainda' }),
@@ -2767,10 +2819,21 @@
               h('li', { text: 'Formato: MP4 (H.264) ou WebM. Vídeos de iPhone (.mov) também servem.' }),
               h('li', { text: 'Ideal na vertical (9:16), como 1080×1920. Em telas grandes ele aparece no meio, com fundo desfocado.' }),
               h('li', { text: 'Até ' + LIMITE_VIDEO_MB + ' MB; o ideal é menos de 12 MB e de 5 a 15 segundos, para abrir rápido no celular.' }),
-              h('li', { text: 'O vídeo toca sem som e em repetição. O convidado pode pausar ou ativar o som.' }))));
+              h('li', { text: 'O vídeo toca sem som e em repetição. O convidado pode pausar ou ativar o som.' }),
+              h('li', { text: 'Depois do envio você define a imagem de capa (thumb): a imagem parada que aparece antes de o vídeo carregar.' }))));
         }
         painelVid.appendChild(avisos);
       };
+      const arquivoThumb = h('input', { type: 'file', accept: 'image/*', hidden: true });
+      arquivoThumb.addEventListener('change', () => {
+        const f = arquivoThumb.files[0]; arquivoThumb.value = '';
+        if (!f) return;
+        abrirCrop(f, 9 / 16, async (blob, ok, falha) => {
+          const d = await enviarImagem(blob);
+          if (d.erro) { falha(d.erro); return; }
+          ok(); hPoster.value = d.url; emitir(hPoster); desenharVideo(); toast('Imagem de capa definida. Salve para publicar.');
+        });
+      });
       const arquivo = h('input', { type: 'file', accept: 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov', hidden: true });
       arquivo.addEventListener('change', async () => {
         const f = arquivo.files[0]; arquivo.value = '';
@@ -2800,7 +2863,7 @@
       desenharVideo();
       mostrar(hTipo.value, false);
 
-      fs.append(abas, painelImg, painelVid, arquivo);
+      fs.append(abas, painelImg, painelVid, arquivo, arquivoThumb);
 
       // ajustes comuns
       const selAjuste = h('select', { 'data-chave': 'hero.enquadramento' });
@@ -3302,7 +3365,7 @@
       Object.assign(ctDados, payload);
       msgDiv.textContent = '';
       ficarSujo(false);
-      toast('Salvo. O site já está atualizado.');
+      toast(opcoes.msgSalvo || 'Salvo. O site já está atualizado.');
     });
     const mexeu = (ev) => {
       const e = ev.target;
@@ -3317,7 +3380,6 @@
   //  SITE › CORES E TIPOGRAFIA (cores, fontes e prévia ao vivo)
   // =====================================================================
   // Alterações ainda não salvas de Cores e Tipografia (valem para as duas etapas, com um único "Salvar")
-  let rascunhoAparencia = {};
   const TEXTOS_APARENCIA = {
     cores: ['Cores do site', 'Etapa 1 de 2: escolha uma paleta ou ajuste as 5 cores. A prévia ao lado mostra onde cada uma aparece.'],
     tipografia: ['Tipografia', 'Etapa 2 de 2: escolha as letras do site. As cores ficam como você deixou.'],
@@ -3336,10 +3398,10 @@
     const d = await api('/api/conteudo');
     if (d.erro) { form.textContent = 'Não consegui carregar agora. Recarregue a página para tentar de novo.'; return; }
     ctDados = d;
-    Object.assign(ctDados, rascunhoAparencia); // mostra o que já foi alterado e ainda não salvo
     renderGrupoEm(modo === 'cores' ? GRUPO_CORES : GRUPO_TIPOGRAFIA, form, {
-      msgId: 'ap-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia', rotuloSalvar: 'Salvar cores e tipografia',
-      rascunho: rascunhoAparencia,
+      msgId: 'ap-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia',
+      rotuloSalvar: modo === 'cores' ? 'Salvar cores' : 'Salvar tipografia',
+      msgSalvo: modo === 'cores' ? 'Cores salvas. O site já está atualizado.' : 'Tipografia salva. O site já está atualizado.',
       rodape: (container) => {
         const nav = h('div', { class: 'ap-nav' });
         if (modo === 'cores') nav.append(h('span'), btn('Próxima etapa: Tipografia →', () => navegar('tipografia'), ''));
