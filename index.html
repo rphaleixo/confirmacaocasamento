@@ -231,6 +231,15 @@
   .hero.txt-escuro .hero-date{border-color:color-mix(in srgb, var(--ink) 40%, transparent);background:color-mix(in srgb, white 45%, transparent);}
   .hero.txt-escuro:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, white 45%, transparent), color-mix(in srgb, white 62%, transparent)), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
   .hero.txt-escuro.hl-cartao .hero-content{background:color-mix(in srgb, white 55%, transparent);border-color:color-mix(in srgb, var(--ink) 20%, transparent);}
+  /* ----- ajuste fino por elemento (Capa › Ajuste fino): alinhamento, tamanho, altura e cor de cada texto ----- */
+  .hero .el-al-esquerda{align-self:flex-start;text-align:left;margin-left:0 !important;margin-right:auto !important;}
+  .hero .el-al-direita{align-self:flex-end;text-align:right;margin-right:0 !important;margin-left:auto !important;}
+  .hero .el-al-centro{align-self:center;text-align:center;}
+  .hero .hero-date.el-al-esquerda{justify-content:flex-start;} .hero .hero-date.el-al-esquerda .ln:first-child{display:none;}
+  .hero .hero-date.el-al-direita{justify-content:flex-end;} .hero .hero-date.el-al-direita .ln:last-child{display:none;}
+  .hero .hero-date.el-al-centro{justify-content:center;}
+  .hero .hero-cta-wrap.el-al-esquerda,.hero .hero-cta-wrap.el-al-direita{width:auto;} .hero .hero-cta-wrap.el-al-esquerda .pill,.hero .hero-cta-wrap.el-al-direita .pill{width:auto;}
+  .hero .hero-cta-wrap.el-al-centro{width:100%;}
   @keyframes riseIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
   .hero-convite{display:inline-flex;align-items:center;gap:8px;margin:0 auto 14px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb, var(--cream) 14%, transparent);border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);font-size:12.5px;color:var(--cream);backdrop-filter:blur(6px);}
   .deadline-chip{text-align:center;font-size:12px;color:var(--wine-pale);margin-top:12px;letter-spacing:.02em;}
@@ -1298,6 +1307,17 @@
     if (['esquerda', 'centro', 'direita'].indexOf(alinCapa) !== -1) hero.classList.add('al-' + alinCapa);
     if (t('hero.texto_cor', 'claro') === 'escuro') hero.classList.add('txt-escuro');
     const limita = function (v, min, max, pad) { v = parseFloat(v); return isFinite(v) ? Math.min(max, Math.max(min, v)) : pad; };
+    // ajuste de cada elemento, por cima do ajuste geral
+    const ELEMENTOS_CAPA = { convite: '#heroConvite', eyebrow: '#heroEyebrow', nomes: '#hero h1', idade: '#heroIdade', data: '#hero .hero-date', horario: '#heroHorario', botao: '#heroCtaWrap' };
+    Object.keys(ELEMENTOS_CAPA).forEach(function (id) {
+      const el = document.querySelector(ELEMENTOS_CAPA[id]); if (!el) return;
+      const k = function (p) { return 'hero.el.' + id + '.' + p; };
+      const al = t(k('al'), 'padrao'); if (['esquerda', 'centro', 'direita'].indexOf(al) !== -1) el.classList.add('el-al-' + al);
+      const dy = limita(t(k('dy'), '0'), -300, 300, 0); if (dy) { el.style.position = 'relative'; el.style.top = dy + 'px'; }
+      const esc = limita(t(k('esc'), '100'), 50, 200, 100); if (esc !== 100) el.style.zoom = String(esc / 100);
+      const cor = t(k('cor'), 'padrao');
+      if (cor === 'claro') el.style.color = 'var(--cream)'; else if (cor === 'escuro') el.style.color = 'color-mix(in srgb, var(--ink) 94%, black)'; else if (cor === 'destaque') el.style.color = 'var(--gold)';
+    });
     hero.style.setProperty('--hero-dy', limita(t('hero.texto_dy', '0'), -220, 220, 0) + 'px');
     hero.style.setProperty('--hero-escala', String(limita(t('hero.texto_escala', '100'), 70, 150, 100) / 100));
 
