@@ -421,9 +421,18 @@
   .thumb-bloco > img,.thumb-bloco > .sem-foto{width:100px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--surface-2,#F1F4F9);flex-shrink:0;display:grid;place-items:center;font-size:11px;color:var(--ink-faint);}
   .barra-envio{height:8px;border-radius:99px;background:#E4E9F1;overflow:hidden;margin:10px 0 4px;} .barra-envio i{display:block;height:100%;width:0;background:var(--navy);transition:width .15s;}
   .aviso-midia{margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:500;}
+  .bloco-texto{border:1px solid var(--line);border-radius:14px;background:var(--surface);margin:0 0 14px;overflow:hidden;}
+  .bloco-cab{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface-2,#F6F8FB);border-bottom:1px solid var(--line);}
+  .bloco-cab .rot{flex:1;font-size:14px;font-weight:700;color:var(--ink);margin:0;} .bloco-cab .rot .sub{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);margin-top:2px;}
+  .bloco-estado{font-size:11.5px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.04em;}
+  .bloco-corpo{padding:4px 16px 14px;transition:opacity .15s;}
+  .bloco-texto.off .bloco-estado{color:var(--ink-faint);} .bloco-texto.off .bloco-corpo{opacity:.5;}
+  .bloco-texto.off .bloco-cab{background:#F1F2F5;}
   .campo-liga{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);}
   .campo-liga:last-of-type{border-bottom:none;} .campo-liga .rot{font-size:13.5px;font-weight:600;color:var(--ink);} .campo-liga .sub{font-size:12px;color:var(--ink-soft);font-weight:400;display:block;}
-  .etapas-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:22px;align-items:start;}
+  .previa-tela{position:relative;} .previa-carregando{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-faint);font-size:12.5px;background:#F2F3F5;}
+  .sem-foto-item{grid-template-columns:1fr auto !important;}
+  .etapas-layout{display:grid;grid-template-columns:minmax(0,1fr) 312px;gap:22px;align-items:start;}
   .etapas-previa{position:sticky;top:132px;}
   @media (max-width:1000px){.etapas-layout{grid-template-columns:1fr;} .etapas-previa{position:static;order:-1;}}
   .etapas-abas{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px;}
@@ -433,7 +442,7 @@
   .etapa-nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap;}
   .etapa-painel[hidden]{display:none;}
   .previas-capa{margin-top:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2,#F8F9FC);}
-  .previas-capa .rot{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+  .previa-mod .rot,.previas-capa .rot{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
   .mock-cel{border-radius:22px;border:6px solid #1B2433;overflow:hidden;box-shadow:0 10px 26px rgba(20,40,66,.25);background:#000;}
   .mock-desk{border-radius:10px;border:1px solid #C9D1DE;overflow:hidden;box-shadow:0 10px 26px rgba(20,40,66,.18);position:relative;background:#EAF1FB;}
   .campo-foto{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap;}
@@ -2299,28 +2308,31 @@
 
   const GRUPOS_CONTEUDO = [
     { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem ou vídeo' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
-      { chave: '__midia__', tipo: 'midia_capa', etapa: 'midia' },
-      { etapa: 'textos', chave: '__nota_textos__', tipo: 'nota', label: 'Desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
-      { etapa: 'textos', chave: 'hero.mostrar_eyebrow', tipo: 'liga', label: 'Texto pequeno acima do nome' },
-      { etapa: 'textos', chave: 'hero.mostrar_nomes', tipo: 'liga', label: 'Nomes (e idade, no aniversário)' },
-      { etapa: 'textos', chave: 'hero.mostrar_data', tipo: 'liga', label: 'Data' },
-      { etapa: 'textos', chave: 'hero.mostrar_horario', tipo: 'liga', label: 'Horário' },
-      { etapa: 'textos', chave: 'hero.mostrar_botao', tipo: 'liga', label: 'Botão de confirmar e prazo', sub: 'Com o botão desligado, o botão fixo de confirmação aparece só depois que a capa sai da tela.' },
+      { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
+      { etapa: 'textos', chave: '__nota_textos__', tipo: 'nota', label: 'Cada texto tem o seu interruptor: desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
+      { etapa: 'textos', chave: '__bloco_eyebrow__', tipo: 'bloco_texto', liga: 'hero.mostrar_eyebrow', label: 'Texto pequeno acima do nome', campos: [
+        { chave: 'hero.eyebrow', label: 'Texto', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".', avisoSTD: true },
+      ]},
+      { etapa: 'textos', chave: '__bloco_nomes__', tipo: 'bloco_texto', liga: 'hero.mostrar_nomes', label: 'Nomes', campos: [
+        { chave: 'hero.noiva', label: 'Nome da noiva' },
+        { chave: 'hero.noivo', label: 'Nome do noivo', tipos: ['casamento'] },
+        { chave: 'hero.idade', label: 'Idade ou destaque (ex.: 30 anos)', tipos: ['aniversario'] },
+      ]},
+      { etapa: 'textos', chave: '__bloco_botao__', tipo: 'bloco_texto', liga: 'hero.mostrar_botao', label: 'Botão de confirmar e prazo', sub: 'Com o botão desligado, o botão fixo de confirmação só aparece depois que a capa sai da tela.', campos: [
+        { chave: 'hero.cta_label', label: 'Texto do botão' },
+      ]},
       { etapa: 'textos', chave: 'hero.mostrar_convite', tipo: 'liga', label: 'Saudação com o nome do grupo', sub: 'Ex.: "Convite para Família Lima". Só aparece em convites individuais.' },
-      { etapa: 'previa', chave: '__previa_capa__', tipo: 'previa_capa' },
-      { etapa: 'textos', chave: '__sep_nomes__', tipo: 'separador', label: 'Escreva os textos' },
-      { etapa: 'textos', chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".', avisoSTD: true },
-      { etapa: 'textos', chave: 'hero.noiva', label: 'Nome da noiva' },
-      { etapa: 'textos', chave: 'hero.noivo', label: 'Nome do noivo', tipos: ['casamento'] },
-      { etapa: 'textos', chave: 'hero.idade', label: 'Idade ou destaque (ex.: 30 anos)', tipos: ['aniversario'] },
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
-      { etapa: 'data', chave: 'hero.data_display', label: 'Data como aparece no site' },
-      { etapa: 'data', chave: 'hero.horario_display', label: 'Horário como aparece no site' },
+      { etapa: 'data', chave: '__bloco_data__', tipo: 'bloco_texto', liga: 'hero.mostrar_data', label: 'Data na capa', campos: [
+        { chave: 'hero.data_display', label: 'Data como aparece no site' },
+      ]},
+      { etapa: 'data', chave: '__bloco_horario__', tipo: 'bloco_texto', liga: 'hero.mostrar_horario', label: 'Horário na capa', campos: [
+        { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
+      ]},
       { etapa: 'data', chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Depois dessa data e hora o site avisa que o prazo terminou, mas ainda aceita respostas.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
       { etapa: 'data', chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
-      { etapa: 'data', chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data.' },
-      { etapa: 'textos', chave: '__sep_capa__', tipo: 'separador', label: 'Botão de confirmar' },
-      { etapa: 'textos', chave: 'hero.cta_label', label: 'Texto do botão principal' },
+      { etapa: 'data', chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data. O prazo só aparece no site quando o botão de confirmar está ligado.' },
+      { etapa: 'previa', chave: '__previa_capa__', tipo: 'previa_capa' },
     ]},
     { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
       { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
@@ -2339,7 +2351,9 @@
     { titulo: 'Presentes (chamada)', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', campos: [
       { chave: 'presente_teaser.titulo', label: 'Título' },
       { chave: 'presente_teaser.texto', label: 'Texto', tipo: 'textarea' },
-      { chave: 'presente_teaser.cta_label', label: 'Texto do botão' },
+      { chave: '__bloco_teaser_botao__', tipo: 'bloco_texto', liga: 'presente_teaser.mostrar_botao', label: 'Botão', sub: 'Leva o convidado até a lista ou as dicas de presente. Desligue se quiser só o texto.', campos: [
+        { chave: 'presente_teaser.cta_label', label: 'Texto do botão' },
+      ]},
     ]},
     { titulo: 'Linha do tempo', toggle: 'timeline', ancora: 'secTimeline', campos: [
       { chave: 'timeline.eyebrow', label: 'Texto pequeno' },
@@ -2383,23 +2397,26 @@
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },
     ]},
-    { titulo: 'Lista de presentes', toggle: 'presentes', ancora: 'presentes', campos: [
-      { chave: 'presentes.eyebrow', label: 'Texto pequeno' },
-      { chave: 'presentes.titulo', label: 'Título' },
-      { chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
-      { chave: '__sep_presentes_itens__', tipo: 'separador', label: 'Itens da lista' },
-      { chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
-      { chave: 'presentes.chave_pix', label: 'Chave PIX (opcional)', dica: 'Aparece no site com um botão "Copiar". Não processamos pagamento: é só para facilitar o PIX.' },
-      { chave: '__sep_presentes_fallback__', tipo: 'separador', label: 'Ou: link para uma lista em outra loja' },
-      { chave: 'presentes.cta_url', label: 'Link da lista de presentes', dica: 'Usado só quando não há nenhum item cadastrado acima.' },
-      { chave: 'presentes.cta_label', label: 'Texto do botão' },
+    { titulo: 'Presentes (lista e dicas)', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'lista', titulo: 'Lista de presentes' }, { id: 'dicas', titulo: 'Dicas e informações' }, { id: 'textos', titulo: 'Textos e PIX' }], campos: [
+      { etapa: 'lista', chave: 'presentes.mostrar_lista', tipo: 'liga', label: 'Mostrar a lista de presentes', sub: 'Desligue se o evento não tem lista, por exemplo quando só há dicas de tamanho de roupa e brinquedos. A lista fica guardada.' },
+      { etapa: 'lista', chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
+      { etapa: 'lista', chave: '__sep_presentes_fallback__', tipo: 'separador', label: 'Ou: link para uma lista em outra loja' },
+      { etapa: 'lista', chave: 'presentes.cta_url', label: 'Link da lista de presentes', dica: 'Usado só quando não há nenhum item cadastrado acima.' },
+      { etapa: 'lista', chave: 'presentes.cta_label', label: 'Texto do botão' },
+      { etapa: 'dicas', chave: 'presentes.mostrar_infos', tipo: 'liga', label: 'Mostrar dicas e informações', sub: 'Ideal para aniversários sem lista: tamanho de roupa, brinquedos de interesse, cores e personagens favoritos.' },
+      { etapa: 'dicas', chave: 'presentes.infos', label: 'Dicas e informações', tipo: 'lista_infos' },
+      { etapa: 'textos', chave: 'presentes.eyebrow', label: 'Texto pequeno' },
+      { etapa: 'textos', chave: 'presentes.titulo', label: 'Título' },
+      { etapa: 'textos', chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
+      { etapa: 'textos', chave: 'presentes.chave_pix', label: 'Chave PIX (opcional)', dica: 'Aparece no site com um botão "Copiar". Não processamos pagamento: é só para facilitar o PIX. Funciona com ou sem lista.' },
+      { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Recados', toggle: 'recados', ancora: 'secRecados', campos: [
       { chave: 'recados.eyebrow', label: 'Texto pequeno' },
       { chave: 'recados.titulo', label: 'Título' },
       { chave: 'recados.texto', label: 'Texto de apoio', tipo: 'textarea' },
     ]},
-    { titulo: 'Rodapé e barra fixa', campos: [
+    { titulo: 'Rodapé e barra fixa', ancora: 'rodape', campos: [
       { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'Desligado, o site termina no último módulo, sem o bloco com nomes, data e texto final. Vale também no modo Save the Date.' },
       { chave: 'config.mostrar_menu', label: 'Mostrar menu de navegação (☰) no site', tipo: 'checkbox' },
       { chave: 'footer.texto', label: 'Texto do rodapé' },
@@ -2420,6 +2437,7 @@
     aniversario: {
       'hero.noiva': 'Nome do aniversariante',
       'hero.data_iso': 'Dia e hora da festa',
+      '__bloco_nomes__': 'Nome e idade do aniversariante',
     },
   };
   function modulosDoTipo(dados) {
@@ -2428,14 +2446,16 @@
   function adaptarAoTipo(dados) {
     const tipo = (dados && dados._tipo) || 'casamento';
     const modulos = modulosDoTipo(dados);
+    const ajustar = (lista) => lista
+      .filter((c) => !c.tipos || c.tipos.includes(tipo))
+      .map((c) => {
+        let novo = ROTULOS_POR_TIPO[tipo] && ROTULOS_POR_TIPO[tipo][c.chave] ? { ...c, label: ROTULOS_POR_TIPO[tipo][c.chave] } : c;
+        if (novo.campos) novo = { ...novo, campos: ajustar(novo.campos) };
+        return novo;
+      });
     GRUPOS_ATIVOS = GRUPOS_CONTEUDO
       .filter((g) => !g.toggle || !modulos || modulos.includes(g.toggle))
-      .map((g) => ({
-        ...g,
-        campos: g.campos
-          .filter((c) => !c.tipos || c.tipos.includes(tipo))
-          .map((c) => (ROTULOS_POR_TIPO[tipo] && ROTULOS_POR_TIPO[tipo][c.chave] ? { ...c, label: ROTULOS_POR_TIPO[tipo][c.chave] } : c)),
-      }));
+      .map((g) => ({ ...g, campos: ajustar(g.campos) }));
   }
 
   async function carregarConteudo() {
@@ -2579,7 +2599,9 @@
   }
 
   // Lista editável (pessoas ou presentes) com reordenar, foto e remover
-  function campoLista(fs, campo, criarVazio, montarCampos, rotuloAdd) {
+  function campoLista(fs, campo, criarVazio, montarCampos, rotuloAdd, opcoesLista) {
+    opcoesLista = opcoesLista || {};
+    const valido = opcoesLista.valido || ((it) => String(it.nome || '').trim());
     fs.appendChild(h('label', { text: campo.label }));
     let itens = [];
     try { itens = JSON.parse(ctDados[campo.chave] || '[]'); } catch (e) { itens = []; }
@@ -2587,13 +2609,13 @@
     const wrap = h('div');
     const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave });
     // itens sem nome não vão para o site (evita cartões vazios)
-    const sync = (avisar) => { hidden.value = JSON.stringify(itens.filter((it) => String(it.nome || '').trim())); if (avisar) hidden.dispatchEvent(new Event('input', { bubbles: true })); };
+    const sync = (avisar) => { hidden.value = JSON.stringify(itens.filter(valido)); if (avisar) hidden.dispatchEvent(new Event('input', { bubbles: true })); };
     sync();
     const renderLista = () => {
       wrap.innerHTML = '';
       if (!itens.length) wrap.appendChild(h('div', { class: 'hint', style: 'margin:0 0 8px;', text: 'Nenhum item ainda.' }));
       itens.forEach((item, i) => {
-        const foto = campoFotoUI(item.foto, 1, (url) => { item.foto = url; sync(true); });
+        const foto = opcoesLista.semFoto ? null : campoFotoUI(item.foto, 1, (url) => { item.foto = url; sync(true); });
         const campos = h('div', { class: 'campos' });
         montarCampos(item, campos, () => sync(true));
         const lado = h('div', { class: 'lado' });
@@ -2604,12 +2626,17 @@
         descer.addEventListener('click', () => { itens.splice(i + 1, 0, itens.splice(i, 1)[0]); sync(true); renderLista(); });
         remover.addEventListener('click', () => { itens.splice(i, 1); sync(true); renderLista(); toast('Item removido. Salve para confirmar.'); });
         lado.append(subir, descer, remover);
-        wrap.appendChild(h('div', { class: 'item-lista' }, foto, campos, lado));
+        wrap.appendChild(h('div', { class: 'item-lista' + (opcoesLista.semFoto ? ' sem-foto-item' : '') }, foto, campos, lado));
       });
     };
     renderLista();
     const add = btn(rotuloAdd, () => { itens.push(criarVazio()); sync(true); renderLista(); const ult = wrap.lastChild && wrap.lastChild.querySelector('input[type=text]'); if (ult) ult.focus(); }, '', 'mais');
     fs.append(wrap, add, hidden);
+    if (opcoesLista.sugestoes) {
+      const chips = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center;' }, h('span', { class: 'dica-campo', style: 'margin:0;', text: 'Sugestões:' }));
+      opcoesLista.sugestoes.forEach((sg) => chips.appendChild(btn(sg, () => { itens.push(criarVazio(sg)); sync(true); renderLista(); const ult = wrap.lastChild && wrap.lastChild.querySelectorAll('input[type=text],textarea')[1]; if (ult) ult.focus(); }, 'sm fantasma', 'mais')));
+      fs.appendChild(chips);
+    }
   }
   function inputLigado(valor, placeholder, aoMudar) {
     const i = h('input', { type: 'text', placeholder }); i.value = valor || '';
@@ -2761,6 +2788,29 @@
   function renderCampoConteudo(fs, campo) {
     if (campo.tipo === 'separador') { fs.appendChild(h('div', { class: 'separador-campo', text: campo.label })); return; }
     if (campo.tipo === 'nota') { fs.appendChild(h('div', { class: 'dica-campo', style: 'margin:0 0 6px;', text: campo.label })); return; }
+    if (campo.tipo === 'bloco_texto') {
+      // texto + interruptor num bloco só: o interruptor liga/desliga o que aparece no site; o texto fica logo abaixo
+      const idLiga = 'liga-' + campo.liga.replace(/\W/g, '-');
+      const chk = h('input', { type: 'checkbox', 'data-chave': campo.liga, id: idLiga });
+      chk.checked = ctDados[campo.liga] !== '0';
+      const estado = h('span', { class: 'bloco-estado' });
+      const corpo = h('div', { class: 'bloco-corpo' });
+      const cab = h('div', { class: 'bloco-cab' },
+        h('label', { class: 'rot', for: idLiga }, campo.label, campo.sub ? h('span', { class: 'sub', text: campo.sub }) : null),
+        estado,
+        h('label', { class: 'switch', for: idLiga, 'aria-label': 'Mostrar ' + campo.label + ' no site' }, chk, h('span', { class: 'trilho' })));
+      const caixa = h('div', { class: 'bloco-texto' }, cab, corpo);
+      const pintar = () => { caixa.classList.toggle('off', !chk.checked); estado.textContent = chk.checked ? 'Aparece no site' : 'Escondido do site'; };
+      chk.addEventListener('change', pintar); pintar();
+      fs.appendChild(caixa);
+      // os campos de dentro são criados no fieldset (para se enxergarem entre si) e levados para o bloco
+      (campo.campos || []).forEach((sub) => {
+        const antes = fs.children.length;
+        renderCampoConteudo(fs, sub);
+        Array.from(fs.children).slice(antes).forEach((n) => corpo.appendChild(n));
+      });
+      return;
+    }
     if (campo.tipo === 'liga') {
       const chk = h('input', { type: 'checkbox', 'data-chave': campo.chave, id: 'liga-' + campo.chave.replace(/\W/g, '-') });
       chk.checked = ctDados[campo.chave] !== '0'; // ligado, a não ser que tenha sido desligado
@@ -2890,21 +2940,10 @@
     }
     if (campo.tipo === 'previa_capa') {
       const CAT = window.FONTES_CATALOGO;
-      const cel = criarCapaMock(210 / 460);
-      const deskAlt = 205, esc = deskAlt / 900;
-      const fundoD = h('div', { style: 'position:absolute;inset:-10%;filter:blur(14px) saturate(1.15) brightness(.72);' });
-      const colD = criarCapaMock(esc);
-      const desk = h('div', { class: 'mock-desk', style: 'width:340px;height:' + deskAlt + 'px;display:flex;justify-content:center;' }, fundoD, h('div', { style: 'position:relative;' }, colD.el));
-      const celBox = h('div', { class: 'mock-cel' }, cel.el);
-      const alterna = h('div', { class: 'midia-tabs', style: 'margin:0 0 10px;' });
-      const bCel = h('button', { type: 'button', text: 'Celular' }), bDesk = h('button', { type: 'button', text: 'Computador' });
-      alterna.append(bCel, bDesk);
-      const mostrarMock = (cel_) => { celBox.style.display = cel_ ? '' : 'none'; desk.style.display = cel_ ? 'none' : 'flex'; bCel.classList.toggle('on', cel_); bDesk.classList.toggle('on', !cel_); };
-      bCel.addEventListener('click', () => mostrarMock(true)); bDesk.addEventListener('click', () => mostrarMock(false));
-      mostrarMock(true);
+      const cel = criarCapaMock(220 / 460);
       fs.appendChild(h('div', { class: 'previas-capa' },
-        h('div', { class: 'rot', text: 'Prévia da capa' }), alterna, celBox, desk,
-        h('div', { class: 'dica-campo', style: 'margin:10px 0 0;', text: 'Prévia aproximada. No computador, a capa fica numa coluna no centro, com o fundo desfocado ao redor.' })));
+        h('div', { class: 'rot', text: 'Prévia da capa no celular' }), h('div', { class: 'mock-cel' }, cel.el),
+        h('div', { class: 'dica-campo', style: 'margin:10px 0 0;', text: 'Prévia aproximada. No computador, a capa fica numa coluna no centro da tela, com o fundo desfocado ao redor.' })));
       const raiz = fs;
       const ler = (k, def) => { const e = raiz.querySelector('[data-chave="' + k + '"]'); if (!e) return ctDados[k] !== undefined && ctDados[k] !== '' ? ctDados[k] : def; return e.type === 'checkbox' ? (e.checked ? '1' : '0') : (e.value !== '' ? e.value : def); };
       const atualizar = () => {
@@ -2922,9 +2961,7 @@
           cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio') + (ler('hero.prazo_horario_display', '') ? ' ' + ler('hero.prazo_horario_display', '') : ''),
           mostrar: { eyebrow: ler('hero.mostrar_eyebrow', '1') !== '0', nomes: ler('hero.mostrar_nomes', '1') !== '0', data: ler('hero.mostrar_data', '1') !== '0', horario: ler('hero.mostrar_horario', '1') !== '0', botao: ler('hero.mostrar_botao', '1') !== '0' },
         };
-        cel.atualizar(estado); colD.atualizar(estado);
-        const base = tipo === 'video' ? estado.poster : estado.foto;
-        fundoD.style.background = base ? 'center/cover url(' + base + ')' : 'linear-gradient(160deg,' + estado.p + ',color-mix(in srgb,' + estado.p + ' 70%, black 30%))';
+        cel.atualizar(estado);
       };
       setTimeout(atualizar, 0);
       let agenda = null;
@@ -3000,6 +3037,25 @@
       campoLista(fs, campo, () => ({ nome: '', texto: '', foto: '' }), (p, campos, mudou) => {
         campos.append(inputLigado(p.nome, 'Nome', (v) => { p.nome = v; mudou(); }), inputLigado(p.texto, 'Papel (ex.: Madrinha, Pai do noivo)', (v) => { p.texto = v; mudou(); }));
       }, 'Adicionar pessoa');
+      return;
+    }
+
+    if (campo.tipo === 'lista_infos') {
+      campoLista(fs, campo, (titulo) => ({ titulo: typeof titulo === 'string' ? titulo : '', texto: '' }), (it, campos, mudou) => {
+        const txt = h('textarea', { rows: '2', placeholder: 'Ex.: 4 anos (camiseta 4, calçado 27)' }); txt.value = it.texto || '';
+        txt.addEventListener('input', () => { it.texto = txt.value; mudou(); });
+        campos.append(inputLigado(it.titulo, 'Título (ex.: Tamanho de roupa)', (v) => { it.titulo = v; mudou(); }), txt);
+      }, 'Adicionar informação', {
+        semFoto: true,
+        valido: (it) => String(it.titulo || '').trim() || String(it.texto || '').trim(),
+        sugestoes: ['Tamanho de roupa', 'Tamanho de calçado', 'Brinquedos e interesses', 'Personagens e cores favoritas', 'O que já temos'],
+      });
+      return;
+    }
+
+    if (campo.tipo === 'previa_modulo') {
+      const ctx = grupoEmEdicao;
+      fs.appendChild(criarPreviaModulo(ctx.grupo, ctx.form).el);
       return;
     }
 
@@ -3249,6 +3305,60 @@
   }
 
   let rerenderAtual = () => {};
+  let grupoEmEdicao = { grupo: null, form: null };
+
+  // Prévia de um módulo: o próprio site aberto num "celular", já rolado até o módulo, com o que está sendo editado
+  // (inclusive o que ainda não foi salvo). Nada é gravado: o site recebe o conteúdo por mensagem, só neste painel.
+  function criarPreviaModulo(grupo, form) {
+    const LARG = 360, ALT = 640, ESC = 0.8;
+    const tela = h('div', { class: 'mock-cel previa-tela', style: 'width:' + Math.round(LARG * ESC + 12) + 'px;height:' + Math.round(ALT * ESC + 12) + 'px;' });
+    const aviso = h('div', { class: 'aviso-midia', hidden: true, style: 'margin:0 0 10px;' });
+    const carregando = h('div', { class: 'previa-carregando', text: 'Carregando a prévia…' });
+    tela.appendChild(carregando);
+    const el_ = h('div', { class: 'previa-mod' }, h('div', { class: 'rot', text: 'Prévia no celular' }), aviso, tela,
+      h('div', { class: 'dica-campo', style: 'margin:10px 0 0;', text: 'É o site de verdade, com o que você está editando, mesmo antes de salvar. Role dentro do celular para ver mais.' }));
+    let frameAtual = null, aguardando = null, agenda = null, montado = true;
+
+    const rascunho = () => {
+      const d = Object.assign({}, ctDados);
+      form.querySelectorAll('[data-chave]').forEach((e) => { d[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
+      if (grupo.toggle) d['secao.' + grupo.toggle + '.ativa'] = '1';   // mostra o módulo mesmo desligado
+      if (!grupo.especial) d['config.modo_save_the_date'] = '0';        // sem Save the Date, para o módulo aparecer
+      return d;
+    };
+    const avisoDesligado = () => {
+      if (!grupo.toggle) return;
+      const chk = form.querySelector('[data-chave="secao.' + grupo.toggle + '.ativa"]');
+      const off = chk ? !chk.checked : false;
+      aviso.hidden = !off;
+      aviso.textContent = off ? 'Este módulo está desligado: não aparece no site. A prévia mostra como ficaria ligado.' : '';
+    };
+    const carregar = () => {
+      if (!el_.isConnected && frameAtual) { montado = false; return; }
+      avisoDesligado();
+      const f = h('iframe', { src: urlSite() + '?previa=1#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
+      aguardando = f;
+      tela.appendChild(f);
+    };
+    const ouvir = (ev) => {
+      if (!el_.isConnected && frameAtual) { window.removeEventListener('message', ouvir); return; }
+      if (ev.origin !== location.origin || !ev.data) return;
+      const novo = aguardando;
+      if (novo && ev.source === novo.contentWindow) {
+        if (ev.data.tipo === 'previa-pronta') novo.contentWindow.postMessage({ tipo: 'previa-conteudo', conteudo: rascunho() }, location.origin);
+        if (ev.data.tipo === 'previa-renderizada') {
+          novo.style.visibility = 'visible';
+          if (frameAtual) frameAtual.remove();
+          frameAtual = novo; aguardando = null; carregando.remove();
+        }
+      }
+    };
+    window.addEventListener('message', ouvir);
+    const agendar = () => { clearTimeout(agenda); agenda = setTimeout(() => { if (aguardando) { aguardando.remove(); aguardando = null; } carregar(); }, 800); };
+    form.addEventListener('input', agendar); form.addEventListener('change', agendar);
+    setTimeout(carregar, 0);
+    return { el: el_ };
+  }
 
   // Grupo dividido em etapas (abas numeradas): cada campo tem "etapa"; a prévia fica numa coluna ao lado, sempre visível.
   const etapaAtiva = {}; // lembra a aba aberta de cada grupo
@@ -3365,6 +3475,7 @@
   // Desenha um grupo de campos (módulo do site, aparência...) dentro de "form", com barra de salvar.
   function renderGrupoEm(grupo, form, opcoes) {
     opcoes = opcoes || {};
+    grupoEmEdicao = { grupo, form };
     rerenderAtual = () => {
       // mantém no formulário o que ainda não foi salvo
       form.querySelectorAll('[data-chave]').forEach((e) => { ctDados[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
@@ -3400,10 +3511,14 @@
     if (opcoes.semMoldura) { fs.style.border = 'none'; fs.style.padding = '0'; fs.style.background = 'transparent'; }
     if (grupo.etapas) {
       montarEtapas(fs, grupo);
+      form.appendChild(fs);
     } else {
       grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
+      if (grupo.ancora && !grupo.especial && !opcoes.semPrevia) {
+        // módulos simples: campos à esquerda, prévia do módulo à direita
+        form.appendChild(h('div', { class: 'etapas-layout' }, fs, h('aside', { class: 'etapas-previa' }, criarPreviaModulo(grupo, form).el)));
+      } else form.appendChild(fs);
     }
-    form.appendChild(fs);
 
     if (opcoes.rodape) opcoes.rodape(form);
     const estado = h('span', { class: 'estado', text: 'Tudo salvo' });
@@ -3581,7 +3696,7 @@
     { chave: 'mapa', nome: 'Localização', toggle: true },
     { chave: 'galeria', nome: 'Galeria', toggle: true },
     { chave: 'rsvp', nome: 'Confirmação de presença', toggle: false },
-    { chave: 'presentes', nome: 'Lista de presentes', toggle: true },
+    { chave: 'presentes', nome: 'Presentes (lista e dicas)', toggle: true },
     { chave: 'recados', nome: 'Recados', toggle: true },
   ];
   let ordemAtual = [];

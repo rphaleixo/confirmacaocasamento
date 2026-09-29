@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const evento = slug ? await env.DB.prepare('SELECT id FROM eventos WHERE slug = ?').bind(slug).first() : null;
   if (!evento) return new Response('Evento não encontrado.', { status: 404 });
 
-  if (partes[2] !== 'admin') {
+  if (partes[2] !== 'admin' && url.searchParams.get('previa') !== '1') { // a prévia do painel não conta como visita
     waitUntil(
       env.DB
         .prepare("INSERT INTO acessos (evento_id, dia, visitas) VALUES (?, date('now'), 1) ON CONFLICT(evento_id, dia) DO UPDATE SET visitas = visitas + 1")

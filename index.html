@@ -32,7 +32,19 @@
   (function () {
     var m = location.pathname.match(/^\/e\/([^\/]+)/);
     var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
-    window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    if (/[?&]previa=1/.test(location.search) && window.parent !== window) {
+      // Prévia dentro do painel: recebe o conteúdo (inclusive o que ainda não foi salvo) do painel, na mesma origem
+      window.__previa = true;
+      window.__conteudo = new Promise(function (resolve) {
+        window.addEventListener('message', function (e) {
+          if (e.origin !== location.origin || !e.data || e.data.tipo !== 'previa-conteudo') return;
+          resolve(e.data.conteudo || {});
+        });
+        window.parent.postMessage({ tipo: 'previa-pronta' }, location.origin);
+      });
+    } else {
+      window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    }
     // rede de segurança: se algo travar por completo, mostra a página depois de um tempo
     setTimeout(function () { document.documentElement.classList.add('pronto'); var sk = document.getElementById('sk'); if (sk) sk.remove(); }, 15000);
   })();
@@ -296,6 +308,10 @@
   .gift-section .eyebrow{color:var(--wine-pale);}
   .gift-section h2{font-size:27px;margin:8px 0 12px;color:var(--cream);font-weight:500;line-height:1.2;}
   .gift-section > p{font-size:14px;color:var(--wine-pale);margin:0 0 24px;}
+  .gift-infos{display:flex;flex-direction:column;gap:10px;margin:0 0 22px;text-align:left;}
+  .gift-info{background:var(--cream);color:var(--ink);border-radius:14px;padding:14px 16px;}
+  .gift-info b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:16px;color:var(--wine);margin-bottom:3px;}
+  .gift-info span{display:block;font-size:13.5px;line-height:1.5;color:var(--ink-soft);white-space:pre-line;}
   .gift-itens{display:flex;flex-direction:column;gap:10px;margin:0 0 22px;text-align:left;}
   .gift-item{background:var(--cream);color:var(--ink);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;transition:opacity .3s;}
   .gift-item img,.gift-item .sem-img{width:60px;height:60px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--blush-deep);display:grid;place-items:center;color:var(--wine-soft);}
@@ -583,6 +599,7 @@
     <div class="eyebrow" id="presentesEyebrow">Lista de presentes</div>
     <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
+    <div class="gift-infos" id="presentesInfos" hidden></div>
     <div class="gift-filtro" id="presentesFiltro" hidden>
       <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
       <button type="button" data-filtro="livres" aria-pressed="false">Disponíveis</button>
@@ -619,7 +636,7 @@
     </div>
   </section>
 
-  <footer>
+  <footer id="rodape">
     <span class="display" id="footerNomes">Noiva &amp; Noivo</span>
     <span id="footerDataLocal">12 de junho de 2027 · Copacabana Palace, Rio de Janeiro</span>
     <div class="flinks">
@@ -756,6 +773,13 @@
   }
 
   // Libera a página só quando o conteúdo do evento já foi aplicado (troca o esqueleto pelo site real, sem mostrar a página base)
+  if (window.__previa) {
+    // dentro do painel: nada é enviado ao servidor e os links não navegam
+    const fetchReal = window.fetch;
+    window.fetch = function (u, o) { return (o && o.method && o.method.toUpperCase() !== 'GET') ? Promise.resolve(new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } })) : fetchReal.apply(window, arguments); };
+    document.addEventListener('click', function (ev) { const a = ev.target.closest && ev.target.closest('a[href]'); if (a) ev.preventDefault(); }, true);
+    document.addEventListener('submit', function (ev) { ev.preventDefault(); }, true);
+  }
   function revelarPagina() {
     if (window.__revelado) return; window.__revelado = true;
     const esperas = [];
@@ -767,6 +791,11 @@
       requestAnimationFrame(function () { setTimeout(function () { hero.classList.add('loaded'); }, 60); });
       const sk = document.getElementById('sk');
       if (sk) { sk.classList.add('sai'); setTimeout(function () { sk.remove(); }, 400); }
+      if (window.__previa) {
+        const alvo = document.getElementById((location.hash || '').slice(1));
+        if (alvo) { document.documentElement.style.scrollBehavior = 'auto'; alvo.scrollIntoView({ block: 'start' }); }
+        window.parent.postMessage({ tipo: 'previa-renderizada' }, location.origin);
+      }
     });
   }
   function mostrarErroEvento(dados) {
@@ -934,6 +963,7 @@
     aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');
     aplicar('presenteTeaserTexto', 'presente_teaser.texto');
     aplicar('presenteTeaserCta', 'presente_teaser.cta_label');
+    document.getElementById('presenteTeaserCta').style.display = t('presente_teaser.mostrar_botao', '1') === '0' ? 'none' : '';
     escondeSeInativa('presente_teaser', 'secPresenteTeaser');
 
     aplicar('timelineEyebrow', 'timeline.eyebrow');
@@ -1173,7 +1203,26 @@
     const pixBox = document.getElementById('presentesPix');
     const filtro = document.getElementById('presentesFiltro');
 
-    if (!presentesItens.length) {
+    // dicas e informações (tamanho de roupa, brinquedos de interesse...): funcionam com ou sem lista de presentes
+    let infos = [];
+    try { infos = JSON.parse(t('presentes.infos', '[]')); } catch (e) { infos = []; }
+    if (!Array.isArray(infos)) infos = [];
+    infos = infos.filter(function (it) { return it && (String(it.titulo || '').trim() || String(it.texto || '').trim()); });
+    const boxInfos = document.getElementById('presentesInfos');
+    boxInfos.innerHTML = '';
+    infos.forEach(function (it) {
+      const card = document.createElement('div'); card.className = 'gift-info';
+      if (it.titulo) { const b = document.createElement('b'); b.textContent = it.titulo; card.appendChild(b); }
+      if (it.texto) { const sp = document.createElement('span'); sp.textContent = it.texto; card.appendChild(sp); }
+      boxInfos.appendChild(card);
+    });
+    boxInfos.hidden = !(infos.length && t('presentes.mostrar_infos', '1') !== '0');
+
+    // lista desligada no painel: some a lista de itens (e o link de lista externa), o resto do módulo continua
+    if (t('presentes.mostrar_lista', '1') === '0') {
+      wrap.hidden = true; filtro.hidden = true; ctaFallback.hidden = true;
+      presentesItens = [];
+    } else if (!presentesItens.length) {
       wrap.hidden = true; filtro.hidden = true;
       // botão de lista externa só aparece quando há um link de verdade
       ctaFallback.hidden = t('presentes.cta_url', '#') === '#';
