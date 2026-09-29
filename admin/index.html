@@ -315,6 +315,42 @@
   .inserir{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 
   /* ---------- tabelas ---------- */
+  /* ---------- lembranças (controle privado do anfitrião) ---------- */
+  .lb-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:22px;}
+  .lb-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .lb-card h3{font-size:15.5px;margin:0;overflow-wrap:anywhere;}
+  .lb-card .crit{font-size:12.5px;color:var(--ink-soft);line-height:1.45;} .lb-card .desc{font-size:12.5px;line-height:1.45;}
+  .lb-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+  .lb-card .por{font-size:12px;color:var(--ink-soft);line-height:1.5;} .lb-card .por b{color:var(--ink);}
+  .lb-card .acoes{margin-top:auto;padding-top:8px;display:flex;gap:8px;}
+  .lb-filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .lb-filtros .busca{flex:1 1 220px;max-width:320px;}
+  .lb-bulk{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--info-bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px 14px;margin-bottom:12px;}
+  .lb-bulk select{width:auto;min-width:150px;}
+  .lb-tab td{vertical-align:top;} .lb-tab th.sel,.lb-tab td.sel{width:34px;padding-right:0;}
+  .lb-cel{display:flex;flex-direction:column;gap:4px;align-items:flex-start;background:none;border:1px dashed transparent;border-radius:10px;padding:4px 6px;margin:-4px -6px;cursor:pointer;text-align:left;color:inherit;font:inherit;min-width:110px;}
+  .lb-cel:hover{background:var(--muted-bg);border-color:var(--line);}
+  .lb-cel.auto .chip{outline:1px dashed color-mix(in srgb, currentColor 45%, transparent);outline-offset:1px;}
+  .lb-cel .inf{font-size:12.5px;font-weight:600;} .lb-cel .nota{font-size:11.5px;color:var(--ink-soft);max-width:180px;overflow-wrap:anywhere;}
+  .lb-seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
+  .lb-seg button{flex:1 1 auto;border:none;border-left:1px solid var(--line);background:none;padding:8px 10px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:36px;}
+  .lb-seg button:first-child{border-left:none;} .lb-seg button:hover{background:var(--muted-bg);}
+  .lb-seg button.on{background:var(--navy);color:#fff;}
+  .lb-bloco{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px;}
+  .lb-bloco h4{margin:0 0 2px;font-size:14.5px;} .lb-bloco .hint{margin:2px 0 8px;}
+  .lb-bloco .form-linha{margin-top:10px;}
+  .lb-exemplos{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .lb-exemplos button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--ink-soft);}
+  @media (max-width:760px){
+    .lb-tab thead{display:none;}
+    .lb-tab,.lb-tab tbody,.lb-tab tr,.lb-tab td{display:block;}
+    .lb-tab tr{border:1px solid var(--line);border-radius:var(--r-lg);margin:0 0 10px;padding:10px 12px;background:var(--surface);}
+    .lb-tab td{border:none;padding:5px 0;}
+    .lb-tab td[data-rot]::before{content:attr(data-rot);display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:3px;}
+    .lb-tab td.sel{width:auto;}
+    .tabela-wrap.lb-wrap{background:none;border:none;overflow:visible;}
+    .lb-bulk select{flex:1 1 140px;}
+  }
   .tabela-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);}
   table{width:100%;border-collapse:collapse;}
   th,td{padding:11px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
@@ -973,6 +1009,13 @@
     <div id="pr-form" style="max-width:820px;"><div class="carregando">Carregando...</div></div>
   </section>
 
+  <!-- ===== EVENTO: LEMBRANÇAS (controle privado do anfitrião) ===== -->
+  <section id="tab-lembrancas" class="tab">
+    <div class="pag-head"><div><h2>Lembranças</h2><p>Planeje e controle as lembranças que você vai dar aos convidados. Esta tela é só sua: nada disto aparece no site, no convite ou para qualquer convidado.</p></div>
+      <div class="acoes" id="lb-topo"></div></div>
+    <div id="lb-corpo"><div class="carregando">Carregando...</div></div>
+  </section>
+
   <!-- ===== EVENTO: RECADOS ===== -->
   <section id="tab-recados" class="tab">
     <div class="pag-head"><div><h2>Recados</h2><p>Mensagens deixadas pelos convidados no site. Elas só aparecem para todos depois que você aprova.</p></div></div>
@@ -1358,6 +1401,7 @@
     ordem: () => carregarOrdem(),
     presentes: () => carregarPresentes(),
     recados: () => carregarRecados(),
+    lembrancas: () => carregarLembrancas(),
   };
   // Menu do evento: 4 áreas, cada uma com suas abas no submenu.
   const NAV_EVENTO = [
@@ -1365,6 +1409,7 @@
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
     { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
+    { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
   ];
   const ABAS_MASTER = ['visao', 'eventos', 'anfitrioes', 'templates'];
@@ -2234,8 +2279,8 @@
   function segmentoResposta(c) {
     const atual = c.resposta || '';
     const seg = h('div', { class: 'rs-seg', role: 'group', 'aria-label': 'Resposta de ' + c.nome });
-    [['sim', 'Sim'], ['nao_sei', 'Não sei'], ['nao', 'Não'], ['', '—']].forEach(([v, r]) => {
-      const b = h('button', { type: 'button', class: (atual === v ? 'on ' : '') + (v || 'limpo'), 'aria-pressed': atual === v ? 'true' : 'false', title: v ? 'Marcar ' + r : 'Tirar a resposta (sem resposta)', text: r });
+    [['sim', 'Sim'], ['nao_sei', 'Não sei'], ['nao', 'Não'], ['', 'Limpar']].forEach(([v, r]) => {
+      const b = h('button', { type: 'button', class: (atual === v ? 'on ' : '') + (v || 'limpo'), 'aria-pressed': atual === v ? 'true' : 'false', title: v ? 'Marcar ' + r : 'Limpar a resposta (volta para sem resposta)', text: r });
       b.addEventListener('click', () => { if (atual !== v) mudarResposta([c.id], v); });
       seg.appendChild(b);
     });
@@ -5228,6 +5273,298 @@
   // =====================================================================
   let recadosDados = [];
   let filtroRecados = 'pendentes';
+  // =====================================================================
+  //  LEMBRANÇAS — controle PRIVADO do anfitrião (nada disto vai para o site nem para os convidados)
+  // =====================================================================
+  const LB = { lembrancas: [], convidados: [], itens: new Map(), filtro: 'todos', busca: '', sel: new Set(), alvoLote: null, acaoLote: 'planejada' };
+  const LB_SIT = { planejada: ['Vai receber', 'info'], separada: ['Separada', 'warn'], entregue: ['Entregue', 'ok'], nao_recebe: ['Não recebe', ''], fora: ['Fora do critério', 'sem-ponto'] };
+  const LB_ACOES = [['planejada', 'Vai receber'], ['separada', 'Separada'], ['entregue', 'Entregue'], ['nao_recebe', 'Não recebe'], ['auto', 'Voltar ao automático']];
+  const lbNorm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const lbRecebe = (sit) => sit === 'planejada' || sit === 'separada' || sit === 'entregue';
+
+  function lbElegivel(l, c) {
+    if (l.publico === 'adultos' && c.tipo !== 'adulto') return false;
+    if (l.publico === 'criancas' && c.tipo !== 'crianca') return false;
+    if (l.presenca === 'confirmados') return c.resposta === 'sim';
+    if (l.presenca === 'confirmados_talvez') return c.resposta === 'sim' || c.resposta === 'nao_sei';
+    return true;
+  }
+  // situação de fato: a marcada pelo anfitrião ou, sem marcação, a que o critério da lembrança indica
+  function lbSituacao(l, c) {
+    const it = LB.itens.get(l.id + ':' + c.id) || {};
+    const auto = !it.situacao;
+    const sit = it.situacao || (lbElegivel(l, c) ? 'planejada' : 'fora');
+    const faltaInfo = l.infoObrigatoria && !!l.infoRotulo && lbRecebe(sit) && !it.info;
+    return { sit, auto, info: it.info || '', comentario: it.comentario || '', faltaInfo };
+  }
+  function lbCriterio(l) {
+    const quem = ({ todos: 'Todos os convidados', adultos: 'Só adultos', criancas: 'Só crianças' })[l.publico] || 'Todos os convidados';
+    const pres = ({ qualquer: '', confirmados: ' que confirmaram presença', confirmados_talvez: ' que confirmaram ou estão em dúvida' })[l.presenca] || '';
+    return quem + pres;
+  }
+  function lbPresencaChip(c) {
+    const m = { sim: ['Vai', 'ok'], nao_sei: ['Não sei', 'warn'], nao: ['Não vai', ''] }[c.resposta] || ['Sem resposta', 'sem-ponto'];
+    return h('span', { class: 'chip ' + m[1], text: m[0] });
+  }
+
+  async function carregarLembrancas() {
+    const corpo = document.getElementById('lb-corpo');
+    const d = await api('/api/admin/lembrancas');
+    if (d.erro) { corpo.textContent = 'Não consegui carregar as lembranças agora. ' + d.erro; return; }
+    LB.lembrancas = d.lembrancas; LB.convidados = d.convidados;
+    LB.itens = new Map(d.itens.map((i) => [i.lembrancaId + ':' + i.convidadoId, i]));
+    const vivos = new Set(d.convidados.map((c) => c.id));
+    LB.sel = new Set(Array.from(LB.sel).filter((id) => vivos.has(id)));
+    if (!LB.alvoLote || !d.lembrancas.some((l) => l.id === LB.alvoLote)) LB.alvoLote = d.lembrancas[0] ? d.lembrancas[0].id : null;
+    desenharLembrancas();
+  }
+
+  function lbLinhaPassaFiltro(c) {
+    if (LB.busca && lbNorm(c.nome + ' ' + c.grupo).indexOf(lbNorm(LB.busca)) === -1) return false;
+    if (LB.filtro === 'todos') return true;
+    if (LB.filtro === 'sem') return !c.resposta;
+    if (LB.filtro === 'falta') return LB.lembrancas.some((l) => lbSituacao(l, c).faltaInfo);
+    return c.resposta === LB.filtro;
+  }
+
+  function desenharLembrancas() {
+    const topo = document.getElementById('lb-topo'); topo.innerHTML = '';
+    const corpo = document.getElementById('lb-corpo'); corpo.innerHTML = '';
+    topo.appendChild(btn('Nova lembrança', () => abrirEditarLembranca(null), 'prim'));
+    if (LB.lembrancas.length && LB.convidados.length) topo.appendChild(btn('Baixar planilha', baixarLembrancasCsv, ''));
+
+    if (!LB.lembrancas.length) {
+      corpo.appendChild(h('div', { class: 'caixa vazio' }, h('h3', { text: 'Nenhuma lembrança ainda' }),
+        h('p', { text: 'Cadastre cada lembrança que você pretende dar (um chinelo, um saco de doces, uma camiseta…). Para cada uma você define quem tem direito a receber e o que precisa anotar de cada convidado, como tamanho ou alergia.' }),
+        h('div', { style: 'margin-top:12px;' }, btn('Criar a primeira lembrança', () => abrirEditarLembranca(null), 'prim'))));
+      return;
+    }
+
+    // resumo por lembrança
+    const cards = h('div', { class: 'lb-cards' });
+    LB.lembrancas.forEach((l) => {
+      const cont = { planejada: 0, separada: 0, entregue: 0, falta: 0 };
+      const porInfo = new Map();
+      LB.convidados.forEach((c) => {
+        const x = lbSituacao(l, c);
+        if (!lbRecebe(x.sit)) return;
+        cont[x.sit]++;
+        if (x.faltaInfo) cont.falta++;
+        if (l.infoRotulo) { const k = x.info || '(sem informação)'; porInfo.set(k, (porInfo.get(k) || 0) + 1); }
+      });
+      const total = cont.planejada + cont.separada + cont.entregue;
+      const por = Array.from(porInfo.entries()).sort((a, b) => b[1] - a[1]).map(([k, n]) => k + ' × ' + n).join(' · ');
+      cards.appendChild(h('div', { class: 'lb-card' },
+        h('h3', { text: l.nome }),
+        h('div', { class: 'crit', text: 'Quem recebe: ' + lbCriterio(l) }),
+        l.descricao ? h('div', { class: 'desc', text: l.descricao }) : null,
+        h('div', { class: 'lb-stats' },
+          h('span', { class: 'chip info', text: total + (total === 1 ? ' vai receber' : ' vão receber') }),
+          h('span', { class: 'chip warn', text: cont.separada + ' separadas' }),
+          h('span', { class: 'chip ok', text: cont.entregue + ' entregues' }),
+          cont.falta ? h('span', { class: 'chip err', text: 'Falta ' + l.infoRotulo.toLowerCase() + ': ' + cont.falta }) : null),
+        l.infoRotulo && por ? h('div', { class: 'por' }, h('b', { text: l.infoRotulo + ': ' }), por) : null,
+        h('div', { class: 'acoes' }, btn('Editar', () => abrirEditarLembranca(l), 'sm'))));
+    });
+    corpo.appendChild(cards);
+
+    if (!LB.convidados.length) {
+      corpo.appendChild(h('div', { class: 'caixa vazio', text: 'Cadastre convidados na área Convidados para começar a planejar quem recebe cada lembrança.' }));
+      return;
+    }
+
+    // filtros
+    const cnt = (f) => LB.convidados.filter((c) => f === 'todos' || (f === 'sem' ? !c.resposta : f === 'falta' ? LB.lembrancas.some((l) => lbSituacao(l, c).faltaInfo) : c.resposta === f)).length;
+    const filtros = h('div', { class: 'filtros' });
+    [['todos', 'Todos'], ['sim', 'Vão'], ['nao_sei', 'Não sei'], ['nao', 'Não vão'], ['sem', 'Sem resposta'], ['falta', 'Falta informação']].forEach(([id, rot]) => {
+      if (id === 'falta' && !cnt('falta')) return;
+      const b = h('button', { type: 'button', class: LB.filtro === id ? 'active' : '', 'aria-pressed': LB.filtro === id ? 'true' : 'false' }, rot, h('b', { text: cnt(id) }));
+      b.addEventListener('click', () => { LB.filtro = id; desenharLembrancas(); });
+      filtros.appendChild(b);
+    });
+    const busca = h('input', { type: 'search', placeholder: 'Buscar pessoa ou grupo', 'aria-label': 'Buscar convidado' }); busca.value = LB.busca;
+    busca.addEventListener('input', () => { LB.busca = busca.value; const pos = busca.selectionStart; desenharLembrancas(); const nova = document.querySelector('#lb-corpo .busca input'); if (nova) { nova.focus(); nova.setSelectionRange(pos, pos); } });
+    const caixaBusca = h('div', { class: 'busca' }, h('span', { html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>' }), busca);
+    corpo.appendChild(h('div', { class: 'lb-filtros' }, caixaBusca, filtros));
+
+    const visiveis = LB.convidados.filter(lbLinhaPassaFiltro);
+
+    // ação em massa
+    if (LB.sel.size) {
+      const selL = h('select', { 'aria-label': 'Lembrança' });
+      LB.lembrancas.forEach((l) => selL.appendChild(new Option(l.nome, String(l.id))));
+      selL.value = String(LB.alvoLote); selL.addEventListener('change', () => { LB.alvoLote = Number(selL.value); });
+      const selA = h('select', { 'aria-label': 'Situação' });
+      LB_ACOES.forEach(([v, r]) => selA.appendChild(new Option(r, v)));
+      selA.value = LB.acaoLote; selA.addEventListener('change', () => { LB.acaoLote = selA.value; });
+      corpo.appendChild(h('div', { class: 'lb-bulk' },
+        h('b', { text: plural(LB.sel.size, 'selecionado', 'selecionados') + ':' }), selL, selA,
+        btn('Aplicar', async () => {
+          const d = await api('/api/admin/lembrancas/item', 'POST', { lembrancaId: LB.alvoLote, convidadoIds: Array.from(LB.sel), situacao: LB.acaoLote });
+          if (d.erro) { toast(d.erro, 'err'); return; }
+          toast('Atualizado para ' + plural(d.alterados, 'convidado', 'convidados')); LB.sel.clear(); carregarLembrancas();
+        }, 'prim sm'),
+        btn('Limpar seleção', () => { LB.sel.clear(); desenharLembrancas(); }, 'fantasma sm')));
+    }
+
+    if (!visiveis.length) { corpo.appendChild(h('div', { class: 'caixa vazio', text: 'Ninguém encontrado com esse filtro.' })); return; }
+
+    // tabela
+    const todos = h('input', { type: 'checkbox', 'aria-label': 'Selecionar todos os convidados da lista' });
+    todos.checked = visiveis.every((c) => LB.sel.has(c.id));
+    todos.addEventListener('change', () => { visiveis.forEach((c) => { if (todos.checked) LB.sel.add(c.id); else LB.sel.delete(c.id); }); desenharLembrancas(); });
+    const cab = h('tr', {}, h('th', { class: 'sel' }, todos), h('th', { text: 'Convidado' }), h('th', { text: 'Presença' }));
+    LB.lembrancas.forEach((l) => cab.appendChild(h('th', {}, l.nome, l.infoRotulo ? h('div', { style: 'text-transform:none;font-weight:500;letter-spacing:0;color:var(--ink-faint);' }, l.infoRotulo) : null)));
+    const corpoTab = h('tbody');
+    visiveis.forEach((c) => {
+      const chk = h('input', { type: 'checkbox', 'aria-label': 'Selecionar ' + c.nome }); chk.checked = LB.sel.has(c.id);
+      chk.addEventListener('change', () => { if (chk.checked) LB.sel.add(c.id); else LB.sel.delete(c.id); desenharLembrancas(); });
+      const nomeBtn = h('button', { type: 'button', class: 't-nome', style: 'background:none;border:none;padding:0;cursor:pointer;color:inherit;font:inherit;font-weight:700;text-align:left;', title: 'Abrir as lembranças de ' + c.nome, text: c.nome });
+      nomeBtn.addEventListener('click', () => abrirLembrancasDoConvidado(c));
+      const tr = h('tr', {},
+        h('td', { class: 'sel' }, chk),
+        h('td', { 'data-rot': 'Convidado' }, nomeBtn, c.tipo === 'crianca' ? h('span', { class: 'tag', style: 'margin-left:6px;font-size:11px;color:var(--ink-soft);', text: 'criança' }) : null, h('div', { class: 't-sub', text: c.grupo })),
+        h('td', { 'data-rot': 'Presença' }, lbPresencaChip(c)));
+      LB.lembrancas.forEach((l) => {
+        const x = lbSituacao(l, c);
+        const m = LB_SIT[x.sit];
+        const cel = h('button', { type: 'button', class: 'lb-cel' + (x.auto ? ' auto' : ''), title: (x.auto ? 'Definido pelo critério da lembrança. ' : '') + 'Clique para editar' },
+          h('span', { class: 'chip ' + m[1], text: m[0] }),
+          x.info ? h('span', { class: 'inf', text: (l.infoRotulo ? l.infoRotulo + ': ' : '') + x.info }) : null,
+          x.faltaInfo ? h('span', { class: 'chip err', text: 'Falta ' + l.infoRotulo.toLowerCase() }) : null,
+          x.comentario ? h('span', { class: 'nota', text: x.comentario }) : null);
+        cel.addEventListener('click', () => abrirLembrancasDoConvidado(c, l.id));
+        tr.appendChild(h('td', { 'data-rot': l.nome }, cel));
+      });
+      corpoTab.appendChild(tr);
+    });
+    corpo.appendChild(h('div', { class: 'tabela-wrap lb-wrap' }, h('table', { class: 'lb-tab' }, h('thead', {}, cab), corpoTab)));
+    corpo.appendChild(h('p', { class: 'hint', text: 'Bordas tracejadas indicam a situação automática, definida pelo critério de cada lembrança. Ao marcar algo manualmente, sua escolha passa a valer.' }));
+  }
+
+  // ---- cadastro / edição de uma lembrança ----
+  function abrirEditarLembranca(l) {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const nome = inputTexto(l ? l.nome : '', 'Ex.: Chinelo personalizado'); nome.id = 'lb-nome'; nome.maxLength = 80;
+    const desc = inputTexto(l ? l.descricao : '', 'Ex.: modelo, cor, fornecedor, quantidade comprada'); desc.id = 'lb-desc'; desc.maxLength = 300;
+    const selPub = h('select', { id: 'lb-publico' });
+    [['todos', 'Todos os convidados'], ['adultos', 'Só adultos'], ['criancas', 'Só crianças']].forEach(([v, r]) => selPub.appendChild(new Option(r, v)));
+    selPub.value = l ? l.publico : 'todos';
+    const selPres = h('select', { id: 'lb-presenca' });
+    [['qualquer', 'Qualquer resposta de presença'], ['confirmados', 'Só quem confirmou presença'], ['confirmados_talvez', 'Quem confirmou ou está em dúvida']].forEach(([v, r]) => selPres.appendChild(new Option(r, v)));
+    selPres.value = l ? l.presenca : 'confirmados';
+    const resumo = h('div', { class: 'hint', 'aria-live': 'polite' });
+    const atualizarResumo = () => {
+      const alvo = { publico: selPub.value, presenca: selPres.value };
+      const n = LB.convidados.filter((c) => lbElegivel(alvo, c)).length;
+      resumo.textContent = 'Pelo critério, ' + plural(n, 'convidado', 'convidados') + ' ' + (n === 1 ? 'tem' : 'têm') + ' direito a esta lembrança agora. Você ainda pode incluir ou tirar pessoas manualmente.';
+    };
+    selPub.addEventListener('change', atualizarResumo); selPres.addEventListener('change', atualizarResumo); atualizarResumo();
+    const rot = inputTexto(l ? l.infoRotulo : '', 'Ex.: Tamanho do calçado'); rot.id = 'lb-rotulo'; rot.maxLength = 60;
+    const exemplos = h('div', { class: 'lb-exemplos' });
+    ['Tamanho do calçado', 'Tamanho da camiseta', 'Restrição alimentar', 'Alergias'].forEach((t) => {
+      const b = h('button', { type: 'button', text: t }); b.addEventListener('click', () => { rot.value = t; rot.dispatchEvent(new Event('input')); rot.focus(); }); exemplos.appendChild(b);
+    });
+    const opc = h('textarea', { id: 'lb-opcoes', rows: '2', placeholder: 'Ex.: 34, 35, 36, 37, 38, 39, 40' }); opc.value = l ? l.infoOpcoes.join(', ') : '';
+    const obrig = h('input', { type: 'checkbox', id: 'lb-obrig' }); obrig.checked = !!(l && l.infoObrigatoria);
+    const extra = h('div', {},
+      campoTexto('Lista de opções (opcional)', opc, 'Separe por vírgula ou por linha. Deixe em branco se quiser escrever livremente, como em alergias.'),
+      h('label', { class: 'check', for: 'lb-obrig' }, obrig, 'Mostrar aviso quando faltar essa informação de quem vai receber'));
+    rot.addEventListener('input', () => { extra.hidden = !rot.value.trim(); }); extra.hidden = !rot.value.trim();
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(campoTexto('Nome da lembrança', nome), h('div', { style: 'margin-top:10px;' }, campoTexto('Detalhes (opcional)', desc)),
+      h('div', { class: 'lb-bloco' }, h('h4', { text: 'Quem tem direito' }), h('div', { class: 'form-linha' }, campoTexto('Público', selPub), campoTexto('Presença', selPres)), resumo),
+      h('div', { class: 'lb-bloco' }, h('h4', { text: 'O que anotar de cada convidado (opcional)' }),
+        h('p', { class: 'hint', text: 'Use para tamanho de calçado ou roupa, alergia em doces, sabor preferido… A informação fica no cadastro de cada convidado nesta lembrança.' }),
+        campoTexto('Nome da informação', rot), exemplos, h('div', { style: 'margin-top:10px;' }, extra)),
+      erro);
+    const salvar = async () => {
+      if (!nome.value.trim()) { erro.textContent = 'Dê um nome para a lembrança.'; erro.hidden = false; return; }
+      const d = await api('/api/admin/lembrancas/salvar', 'POST', { id: l ? l.id : undefined, nome: nome.value, descricao: desc.value, publico: selPub.value, presenca: selPres.value, infoRotulo: rot.value, infoOpcoes: opc.value, infoObrigatoria: obrig.checked });
+      if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
+      fecharDialogo(); toast(l ? 'Lembrança salva' : 'Lembrança criada'); carregarLembrancas();
+    };
+    const botoes = [{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }];
+    if (l) botoes.unshift({ rotulo: 'Excluir', perigo: true, esquerda: true, fn: async () => {
+      const ok = await confirmar({ titulo: 'Excluir "' + l.nome + '"?', texto: 'A lembrança e tudo o que foi anotado sobre ela (situação, tamanhos e comentários de cada convidado) serão apagados de vez.', rotulo: 'Excluir lembrança', perigo: true });
+      if (!ok) return;
+      const d = await api('/api/admin/lembrancas/excluir', 'POST', { id: l.id });
+      if (d.erro) { toast(d.erro, 'err'); return; }
+      toast('Lembrança excluída'); carregarLembrancas();
+    } });
+    montarRodape(botoes);
+    abrirDialogo({ titulo: l ? 'Editar lembrança' : 'Nova lembrança', largura: '560px' });
+    setTimeout(() => nome.focus(), 30);
+  }
+
+  // ---- lembranças de um convidado ----
+  function abrirLembrancasDoConvidado(c, focoId) {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    corpo.appendChild(h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:2px;' }, lbPresencaChip(c), c.tipo === 'crianca' ? h('span', { class: 'chip sem-ponto', text: 'criança' }) : null, h('span', { class: 'hint', style: 'margin:0;', text: c.grupo })));
+    const estados = LB.lembrancas.map((l) => {
+      const it = LB.itens.get(l.id + ':' + c.id) || {};
+      const est = { l, sit: it.situacao || 'auto', info: it.info || '', comentario: it.comentario || '', orig: { sit: it.situacao || 'auto', info: it.info || '', comentario: it.comentario || '' } };
+      const autoSit = lbElegivel(l, c) ? 'planejada' : 'fora';
+      const dica = h('div', { class: 'hint' });
+      const seg = h('div', { class: 'lb-seg', role: 'group', 'aria-label': l.nome });
+      const pintar = () => {
+        Array.from(seg.children).forEach((b) => { const on = b.dataset.v === est.sit; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+        dica.textContent = est.sit === 'auto' ? 'Automático: ' + (autoSit === 'planejada' ? 'vai receber, porque está dentro do critério (' + lbCriterio(l).toLowerCase() + ').' : 'fora do critério (' + lbCriterio(l).toLowerCase() + '), então não recebe.') : 'Marcado por você.';
+      };
+      [['auto', 'Automático'], ['planejada', 'Vai receber'], ['separada', 'Separada'], ['entregue', 'Entregue'], ['nao_recebe', 'Não recebe']].forEach(([v, r]) => {
+        const b = h('button', { type: 'button', 'data-v': v, text: r }); b.addEventListener('click', () => { est.sit = v; pintar(); }); seg.appendChild(b);
+      });
+      pintar();
+      let campoInfo = null;
+      if (l.infoRotulo) {
+        let entrada;
+        if (l.infoOpcoes.length) {
+          entrada = h('select', { id: 'lb-i' + l.id });
+          entrada.appendChild(new Option('Escolha…', ''));
+          const lista = l.infoOpcoes.slice(); if (est.info && lista.indexOf(est.info) === -1) lista.push(est.info);
+          lista.forEach((o) => entrada.appendChild(new Option(o, o)));
+          entrada.value = est.info;
+        } else { entrada = inputTexto(est.info, l.infoRotulo); entrada.id = 'lb-i' + l.id; entrada.maxLength = 80; }
+        entrada.addEventListener('input', () => { est.info = entrada.value; }); entrada.addEventListener('change', () => { est.info = entrada.value; });
+        campoInfo = h('div', { style: 'margin-top:10px;' }, campoTexto(l.infoRotulo, entrada));
+      }
+      const com = h('textarea', { id: 'lb-c' + l.id, rows: '2', maxLength: 500, placeholder: 'Ex.: prefere sem amendoim, pé grande, entregar na mesa 4…' }); com.value = est.comentario;
+      com.addEventListener('input', () => { est.comentario = com.value; });
+      const bloco = h('div', { class: 'lb-bloco', id: 'lb-b' + l.id }, h('h4', { text: l.nome }), seg, dica, campoInfo, h('div', { style: 'margin-top:10px;' }, campoTexto('Comentário (opcional)', com)));
+      corpo.appendChild(bloco);
+      return est;
+    });
+    const erro = h('div', { class: 'erro-campo', hidden: true }); corpo.appendChild(erro);
+    const salvar = async () => {
+      const mudou = estados.filter((e) => e.sit !== e.orig.sit || e.info !== e.orig.info || e.comentario !== e.orig.comentario);
+      for (const e of mudou) {
+        const d = await api('/api/admin/lembrancas/item', 'POST', { lembrancaId: e.l.id, convidadoIds: [c.id], situacao: e.sit, info: e.info, comentario: e.comentario });
+        if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
+      }
+      fecharDialogo(); if (mudou.length) toast('Lembranças de ' + c.nome + ' salvas'); carregarLembrancas();
+    };
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
+    abrirDialogo({ titulo: c.nome, sub: 'Lembranças deste convidado (só você vê)', largura: '560px' });
+    if (focoId) setTimeout(() => { const b = document.getElementById('lb-b' + focoId); if (b) b.scrollIntoView({ block: 'nearest' }); }, 60);
+  }
+
+  function baixarLembrancasCsv() {
+    const escapar = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const cab = ['Convidado', 'Grupo', 'Tipo', 'Presença'];
+    LB.lembrancas.forEach((l) => { cab.push(l.nome + ' — situação'); if (l.infoRotulo) cab.push(l.nome + ' — ' + l.infoRotulo); cab.push(l.nome + ' — comentário'); });
+    const linhas = [cab.map(escapar).join(';')];
+    LB.convidados.filter(lbLinhaPassaFiltro).forEach((c) => {
+      const l1 = [c.nome, c.grupo, c.tipo === 'crianca' ? 'criança' : 'adulto', ROTULO_RESP[c.resposta] || 'Sem resposta'];
+      LB.lembrancas.forEach((l) => { const x = lbSituacao(l, c); l1.push(LB_SIT[x.sit][0]); if (l.infoRotulo) l1.push(x.info); l1.push(x.comentario); });
+      linhas.push(l1.map(escapar).join(';'));
+    });
+    baixarArquivo('﻿' + linhas.join('\n'), 'lembrancas-' + (eventoAtual || 'evento') + '.csv', 'text/csv;charset=utf-8;');
+  }
+
   async function carregarRecados() {
     const div = document.getElementById('recados-lista');
     const dados = await api('/api/admin/recados');

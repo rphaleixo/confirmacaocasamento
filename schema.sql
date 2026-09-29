@@ -71,3 +71,31 @@ CREATE TABLE acessos (
   visitas INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (evento_id, dia)
 );
+
+-- Lembranças (brindes) que o anfitrião planeja dar aos convidados. Controle EXCLUSIVO do painel do
+-- anfitrião: fica em tabelas próprias (nunca em "conteudo", que é público) e nenhuma rota pública lê estas tabelas.
+CREATE TABLE IF NOT EXISTS lembrancas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  evento_id INTEGER NOT NULL,
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  publico TEXT NOT NULL DEFAULT 'todos',        -- 'todos' | 'adultos' | 'criancas'
+  presenca TEXT NOT NULL DEFAULT 'qualquer',    -- 'qualquer' | 'confirmados' | 'confirmados_talvez'
+  info_rotulo TEXT,                             -- o que anotar de cada convidado (ex.: "Tamanho do calçado")
+  info_opcoes TEXT,                             -- lista de opções em JSON (vazio = texto livre)
+  info_obrigatoria INTEGER NOT NULL DEFAULT 0,
+  ordem INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_lembrancas_evento ON lembrancas(evento_id);
+
+CREATE TABLE IF NOT EXISTS lembranca_itens (
+  lembranca_id INTEGER NOT NULL,
+  convidado_id INTEGER NOT NULL,
+  evento_id INTEGER NOT NULL,
+  situacao TEXT,                                -- NULL = automática (pelo critério) | 'planejada' | 'separada' | 'entregue' | 'nao_recebe'
+  info TEXT,
+  comentario TEXT,
+  atualizado_em TEXT,
+  PRIMARY KEY (lembranca_id, convidado_id)
+);
+CREATE INDEX IF NOT EXISTS idx_lembranca_itens_evento ON lembranca_itens(evento_id);

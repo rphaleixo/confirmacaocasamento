@@ -140,6 +140,37 @@ const MIGRACOES = [
       if (!(await tabelaExiste(db, 'eventos')) || !(await tabelaExiste(db, 'conteudo'))) return null;
       return ["INSERT OR IGNORE INTO conteudo (evento_id, chave, valor) SELECT e.id, 'hero.convite_prefixo', 'Convite para' FROM eventos e"];
     },
+  },  {
+    id: '008-lembrancas',
+    // controle privado do anfitrião: tabelas próprias, fora do conteúdo público do site
+    async comandos() {
+      return [
+        `CREATE TABLE IF NOT EXISTS lembrancas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  evento_id INTEGER NOT NULL,
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  publico TEXT NOT NULL DEFAULT 'todos',        -- 'todos' | 'adultos' | 'criancas'
+  presenca TEXT NOT NULL DEFAULT 'qualquer',    -- 'qualquer' | 'confirmados' | 'confirmados_talvez'
+  info_rotulo TEXT,                             -- o que anotar de cada convidado (ex.: "Tamanho do calçado")
+  info_opcoes TEXT,                             -- lista de opções em JSON (vazio = texto livre)
+  info_obrigatoria INTEGER NOT NULL DEFAULT 0,
+  ordem INTEGER NOT NULL DEFAULT 0
+)`,
+        'CREATE INDEX IF NOT EXISTS idx_lembrancas_evento ON lembrancas(evento_id)',
+        `CREATE TABLE IF NOT EXISTS lembranca_itens (
+  lembranca_id INTEGER NOT NULL,
+  convidado_id INTEGER NOT NULL,
+  evento_id INTEGER NOT NULL,
+  situacao TEXT,                                -- NULL = automática (pelo critério) | 'planejada' | 'separada' | 'entregue' | 'nao_recebe'
+  info TEXT,
+  comentario TEXT,
+  atualizado_em TEXT,
+  PRIMARY KEY (lembranca_id, convidado_id)
+)`,
+        'CREATE INDEX IF NOT EXISTS idx_lembranca_itens_evento ON lembranca_itens(evento_id)',
+      ];
+    },
   },
 ];
 
