@@ -522,6 +522,7 @@
   .ordem-item.sortable-ghost{opacity:.35;}
   .ordem-item.sortable-drag{box-shadow:0 6px 16px rgba(0,0,0,.15);}
   .ordem-fixo{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);padding:10px 14px;}
+  .ordem-fixo.off{opacity:.75;}
   .ordem-fixo .pos{width:24px;height:24px;border-radius:50%;border:1px dashed var(--line);display:grid;place-items:center;}
 
   /* ---------- Recados ---------- */
@@ -748,7 +749,7 @@
     <div style="max-width:720px;">
       <div class="ordem-fixo"><span class="pos">↑</span>Capa: sempre a primeira</div>
       <div class="ordem-lista" id="ordem-lista"></div>
-      <div class="ordem-fixo"><span class="pos">↓</span>Rodapé: sempre o último</div>
+      <div class="ordem-fixo" id="ordem-rodape"><span class="pos">↓</span><span>Rodapé: sempre o último <small id="ordem-rodape-estado" style="color:var(--ink-faint);"></small></span><label class="mini-switch lado-fixo" title="Mostrar o rodapé no site" style="margin-left:auto;margin-right:86px;"><input type="checkbox" id="ord-rodape" aria-label="Mostrar o rodapé no site"><span></span></label></div>
       <div class="savebar" id="ordem-savebar"><span class="estado" id="ordem-estado">Tudo salvo</span><div class="msg" id="ordem-msg"></div><button class="action" id="ordem-btn" type="button">Salvar ordem</button></div>
     </div>
   </section>
@@ -3527,6 +3528,7 @@
     { chave: 'recados', nome: 'Recados', toggle: true },
   ];
   let ordemAtual = [];
+  let ordemRodape = true; // rodapé do site ligado?
   let ordemVisivel = {};
   let ordemSortable = null;
 
@@ -3541,6 +3543,12 @@
     chavesValidas.forEach((c) => { if (!ordemAtual.includes(c)) ordemAtual.push(c); });
     ordemVisivel = {};
     chavesValidas.forEach((c) => { ordemVisivel[c] = dados['secao.' + c + '.ativa'] !== '0'; });
+    ordemRodape = dados['footer.mostrar'] !== '0';
+    const chkRodape = document.getElementById('ord-rodape');
+    chkRodape.checked = ordemRodape;
+    const pintarRodape = () => { document.getElementById('ordem-rodape-estado').textContent = ordemRodape ? '· aparece no site' : '· escondido do site'; document.getElementById('ordem-rodape').classList.toggle('off', !ordemRodape); };
+    chkRodape.onchange = () => { ordemRodape = chkRodape.checked; pintarRodape(); ordemSujo(true); };
+    pintarRodape();
     ordemSujo(false);
     renderOrdem();
   }
@@ -3578,7 +3586,7 @@
   }
   document.getElementById('ordem-btn').addEventListener('click', async () => {
     const b = document.getElementById('ordem-btn');
-    const payload = { 'layout.ordem': JSON.stringify(ordemAtual) };
+    const payload = { 'layout.ordem': JSON.stringify(ordemAtual), 'footer.mostrar': ordemRodape ? '1' : '0' };
     BLOCOS_ORDENAVEIS.forEach((bl) => { if (bl.toggle && ordemVisivel[bl.chave] !== undefined) payload['secao.' + bl.chave + '.ativa'] = ordemVisivel[bl.chave] ? '1' : '0'; });
     b.disabled = true; b.textContent = 'Salvando…';
     const d = await api('/api/admin/conteudo', 'POST', payload);
