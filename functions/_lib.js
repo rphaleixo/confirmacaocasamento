@@ -60,16 +60,28 @@ export async function identificarAdmin(request, env) {
   return { tipo: 'evento', eventoId: ev.id };
 }
 
-export async function gerarCodigoUnico(db) {
+// Código de link (do grupo ou individual): nunca repete entre grupos e convidados
+async function codigoLivre(db) {
   let codigo;
   let existe = true;
   while (existe) {
     codigo = '';
     for (let i = 0; i < 6; i++) codigo += CODE_CHARS.charAt(Math.floor(Math.random() * CODE_CHARS.length));
-    const row = await db.prepare('SELECT 1 FROM grupos WHERE codigo = ?').bind(codigo).first();
-    existe = !!row;
+    const g = await db.prepare('SELECT 1 FROM grupos WHERE codigo = ?').bind(codigo).first();
+    const c = g ? null : await db.prepare('SELECT 1 FROM convidados WHERE codigo_individual = ?').bind(codigo).first();
+    existe = !!(g || c);
   }
   return codigo;
+}
+export async function gerarCodigoUnico(db) { return codigoLivre(db); }
+export async function gerarCodigoIndividual(db) { return codigoLivre(db); }
+
+// Como a pessoa é chamada nas comunicações: [tratamento] + (como chamar || primeiro nome)
+export function nomeParaChamar(c) {
+  const primeiro = String(c.nome || '').trim().split(/\s+/)[0] || '';
+  const base = String(c.como_chamar || c.comoChamar || '').trim() || primeiro;
+  const trat = String(c.tratamento || '').trim();
+  return (trat ? trat + ' ' : '') + base;
 }
 
 export async function recalcularStatusGrupo(db, codigo) {

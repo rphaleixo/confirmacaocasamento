@@ -33,8 +33,13 @@ CREATE TABLE convidados (
   telefone TEXT,
   codigo_grupo TEXT NOT NULL REFERENCES grupos(codigo),
   confirmado INTEGER NOT NULL DEFAULT 0,
-  tipo TEXT NOT NULL DEFAULT 'adulto' CHECK (tipo IN ('adulto','crianca'))
+  tipo TEXT NOT NULL DEFAULT 'adulto' CHECK (tipo IN ('adulto','crianca')),
+  resposta TEXT,            -- 'sim' | 'nao_sei' | 'nao' | NULL (ainda não respondeu); confirmado = 1 só quando 'sim'
+  como_chamar TEXT,         -- como a pessoa prefere ser chamada (opcional)
+  tratamento TEXT,          -- pronome de tratamento que antecede o nome (Sr., Sra., Tio...)
+  codigo_individual TEXT    -- código do link individual (opcional, criado sob demanda)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_convidados_codigo_ind ON convidados(codigo_individual) WHERE codigo_individual IS NOT NULL;
 
 CREATE INDEX idx_convidados_grupo ON convidados(codigo_grupo);
 

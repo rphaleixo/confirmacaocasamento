@@ -1,6 +1,6 @@
 import { jsonResponse, gerarCodigoUnico, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
-// body: { texto } — linhas de: Nome [tab] Grupo [tab] Telefone(opcional) [tab] adulto|crianca(opcional) [tab] Responsável pelo grupo(opcional)
+// body: { texto } — linhas de: Nome [tab] Grupo [tab] Telefone [tab] adulto|crianca [tab] Responsável pelo grupo [tab] Como chamar [tab] Tratamento (só Nome e Grupo são obrigatórios)
 export async function onRequestPost({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
   if (!evento) return eventoNaoEncontrado();
@@ -24,6 +24,8 @@ export async function onRequestPost({ request, env }) {
     const telefone = cols[2] || '';
     const tipo = (cols[3] || '').toLowerCase() === 'crianca' ? 'crianca' : 'adulto';
     const responsavel = cols[4] || '';
+    const comoChamar = (cols[5] || '').slice(0, 60);
+    const tratamento = (cols[6] || '').slice(0, 60);
     if (!nome || !nomeGrupo) continue;
 
     const chave = nomeGrupo.toLowerCase();
@@ -33,7 +35,7 @@ export async function onRequestPost({ request, env }) {
       mapaGrupos[chave] = codigo;
       novosGrupos.push({ codigo, nomeGrupo });
     }
-    novosConvidados.push({ nome, telefone, codigo, tipo });
+    novosConvidados.push({ nome, telefone, codigo, tipo, comoChamar, tratamento });
     if (responsavel) responsavelPorCodigo[codigo] = responsavel;
   }
 
@@ -48,8 +50,8 @@ export async function onRequestPost({ request, env }) {
   for (const c of novosConvidados) {
     writes.push(
       db
-        .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES (?, ?, ?, ?, ?)')
-        .bind(c.nome, c.telefone, c.codigo, c.tipo === 'crianca' ? 1 : 0, c.tipo)
+        .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo, como_chamar, tratamento) VALUES (?, ?, ?, 0, ?, ?, ?)')
+        .bind(c.nome, c.telefone, c.codigo, c.tipo, c.comoChamar || null, c.tratamento || null)
     );
   }
   // grupos já existentes (não estão em novosGrupos) só atualizam responsavel se um valor foi informado

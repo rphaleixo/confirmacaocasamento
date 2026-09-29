@@ -1,5 +1,7 @@
 import { jsonResponse, recalcularStatusGrupo, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
+const limpar = (v) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+
 export async function onRequestGet({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
   if (!evento) return eventoNaoEncontrado();
@@ -31,8 +33,8 @@ export async function onRequestPost({ request, env }) {
   if (!grupo) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
 
   await db
-    .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES (?, ?, ?, ?, ?)')
-    .bind(nome, payload.telefone || '', codigoGrupo, tipo === 'crianca' ? 1 : 0, tipo)
+    .prepare('INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo, como_chamar, tratamento) VALUES (?, ?, ?, 0, ?, ?, ?)')
+    .bind(nome, payload.telefone || '', codigoGrupo, tipo, limpar(payload.comoChamar), limpar(payload.tratamento))
     .run();
 
   const responsavel = (payload.responsavel || '').trim();
@@ -41,5 +43,33 @@ export async function onRequestPost({ request, env }) {
   }
 
   await recalcularStatusGrupo(db, codigoGrupo);
+  return jsonResponse({ ok: true });
+}
+
+// body: { id, nome?, telefone?, tipo?, comoChamar?, tratamento? } — edita um convidado (só o que vier no corpo)
+export async function onRequestPatch({ request, env }) {
+  const evento = await resolverEvento(env.DB, request);
+  if (!evento) return eventoNaoEncontrado();
+  const payload = await request.json().catch(() => ({}));
+  const id = Number(payload.id);
+  if (!id) return jsonResponse({ erro: 'Convidado não informado.' }, 400);
+  const db = env.DB;
+  const atual = await db.prepare('SELECT c.* FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE c.id = ? AND g.evento_id = ?').bind(id, evento.id).first();
+  if (!atual) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
+
+  const nome = payload.nome !== undefined ? String(payload.nome).trim() : atual.nome;
+  if (!nome) return jsonResponse({ erro: 'O convidado precisa de um nome.' }, 400);
+  const tipo = payload.tipo === undefined ? atual.tipo : payload.tipo === 'crianca' ? 'crianca' : 'adulto';
+  await db
+    .prepare('UPDATE convidados SET nome = ?, telefone = ?, tipo = ?, como_chamar = ?, tratamento = ? WHERE id = ?')
+    .bind(
+      nome,
+      payload.telefone !== undefined ? String(payload.telefone).trim() : atual.telefone,
+      tipo,
+      payload.comoChamar !== undefined ? limpar(payload.comoChamar) : atual.como_chamar,
+      payload.tratamento !== undefined ? limpar(payload.tratamento) : atual.tratamento,
+      id
+    )
+    .run();
   return jsonResponse({ ok: true });
 }

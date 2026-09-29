@@ -114,6 +114,33 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '006-respostas-e-nomes',
+    // Confirmação com três respostas (sim / não sei / não), nome de tratamento e código individual por convidado
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'convidados'))) return null;
+      const tem = await db.prepare("SELECT 1 AS ok FROM pragma_table_info('convidados') WHERE name = 'resposta'").first();
+      if (tem) return null;
+      return [
+        'ALTER TABLE convidados ADD COLUMN resposta TEXT',
+        'ALTER TABLE convidados ADD COLUMN como_chamar TEXT',
+        'ALTER TABLE convidados ADD COLUMN tratamento TEXT',
+        'ALTER TABLE convidados ADD COLUMN codigo_individual TEXT',
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_convidados_codigo_ind ON convidados(codigo_individual) WHERE codigo_individual IS NOT NULL',
+        // crianças nasciam "confirmadas" no cadastro: agora quem responde é o convidado
+        "UPDATE convidados SET confirmado = 0 WHERE tipo = 'crianca' AND confirmado = 1 AND codigo_grupo IN (SELECT codigo FROM grupos WHERE data_confirmacao IS NULL OR data_confirmacao = '')",
+        "UPDATE convidados SET resposta = 'sim' WHERE confirmado = 1",
+        "UPDATE convidados SET resposta = 'nao' WHERE confirmado = 0 AND codigo_grupo IN (SELECT codigo FROM grupos WHERE data_confirmacao IS NOT NULL AND data_confirmacao <> '')",
+      ];
+    },
+  },
+  {
+    id: '007-saudacao',
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos')) || !(await tabelaExiste(db, 'conteudo'))) return null;
+      return ["INSERT OR IGNORE INTO conteudo (evento_id, chave, valor) SELECT e.id, 'hero.convite_prefixo', 'Convite para' FROM eventos e"];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

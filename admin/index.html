@@ -199,10 +199,12 @@
   .grupo-nome{font-size:15.5px;font-weight:700;overflow-wrap:anywhere;}
   .grupo-meta{grid-column:1 / -1;font-size:12.5px;color:var(--ink-soft);display:flex;gap:4px 14px;flex-wrap:wrap;margin-top:-4px;}
   .grupo-acoes{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;}
-  .membros{grid-column:1 / -1;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;}
-  .membro{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line-soft);min-width:0;}
+  .membros{grid-column:1 / -1;display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:6px;}
+  .membro{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 10px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line-soft);min-width:0;}
   .membro.vai{background:var(--ok-bg);border-color:#CBE7D6;}
-  .membro .nm{flex:1;min-width:0;font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .membro.talvez{background:var(--warn-bg);border-color:#F0DBA8;}
+  .membro .resp-sel{margin-right:auto;flex-shrink:0;width:auto;min-width:0;padding:4px 6px;font-size:12px;border-radius:8px;height:30px;max-width:112px;}
+  .membro .nm{flex:1 1 100%;min-width:0;font-size:13.5px;font-weight:500;overflow-wrap:anywhere;}
   .membro .tel{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:400;}
   .membro .mover{border:none;background:none;color:var(--ink-faint);cursor:pointer;padding:4px;border-radius:6px;display:grid;place-items:center;}
   .membro .mover:hover{color:var(--ink);background:var(--muted-bg);}
@@ -725,7 +727,7 @@
     <div class="imp-grid">
       <div class="caixa" style="margin:0;">
         <h3>1. Cole a lista ou envie um arquivo</h3>
-        <ol class="passos-lista"><li>Uma pessoa por linha, nesta ordem: <b>Nome</b>, <b>Grupo</b>, Telefone, Tipo (adulto ou crianca), Responsável.</li><li>Só Nome e Grupo são obrigatórios.</li><li>Dá para copiar direto do Excel ou do Google Planilhas e colar aqui.</li></ol>
+        <ol class="passos-lista"><li>Uma pessoa por linha, nesta ordem: <b>Nome</b>, <b>Grupo</b>, Telefone, Tipo (adulto ou crianca), Responsável, Como chamar, Tratamento.</li><li>Só Nome e Grupo são obrigatórios. Como chamar e Tratamento são opcionais.</li><li>Dá para copiar direto do Excel ou do Google Planilhas e colar aqui.</li></ol>
         <div class="row" style="margin-top:12px;align-items:center;">
           <div style="min-width:0;flex:0 1 auto;"><input type="file" id="im-csv" accept=".csv,text/csv" hidden><button type="button" class="btn sm" id="im-csv-btn">Escolher arquivo CSV</button></div>
           <div style="min-width:0;flex:0 1 auto;"><button class="btn sm fantasma" id="im-modelo" type="button">Baixar planilha modelo</button></div>
@@ -1722,13 +1724,15 @@
   function preencherMensagem(modelo, nome, link) { return String(modelo || '').split('{nome}').join(nome).split('{link}').join(link); }
 
   // Situação do grupo, do jeito que o anfitrião entende
-  // Respondeu = tem data de confirmação, ou algum adulto marcado (crianças já nascem marcadas no cadastro)
-  function respondeu(g) { return !!g.dataConfirmacao || g.membros.some((m) => m.confirmado && m.tipo !== 'crianca'); }
+  // Respondeu = tem data de confirmação ou alguém já tem resposta (sim, não sei ou não)
+  function respondeu(g) { return !!g.dataConfirmacao || g.membros.some((m) => !!m.resposta); }
   function situacaoGrupo(g) {
     if (respondeu(g)) {
       if (g.confirmados === g.membros.length && g.membros.length) return { id: 'confirmado', rot: 'Confirmado', cls: 'ok' };
-      if (g.confirmados === 0) return { id: 'naovao', rot: 'Não vão', cls: 'err' };
-      return { id: 'parcial', rot: 'Parcial: ' + g.confirmados + ' de ' + g.membros.length, cls: 'warn' };
+      const duvida = g.membros.filter((m) => m.resposta === 'nao_sei').length;
+      if (g.confirmados === 0 && !duvida) return { id: 'naovao', rot: 'Não vão', cls: 'err' };
+      if (g.confirmados === 0) return { id: 'duvida', rot: 'Em dúvida: ' + duvida + ' de ' + g.membros.length, cls: 'warn' };
+      return { id: 'parcial', rot: 'Parcial: ' + g.confirmados + ' de ' + g.membros.length + (duvida ? ' (' + duvida + ' em dúvida)' : ''), cls: 'warn' };
     }
     if (g.statusAbertura === 'Aberto') return { id: 'aberto', rot: 'Abriu, sem resposta', cls: 'info' };
     return { id: 'naoaberto', rot: 'Não abriu o convite', cls: '' };
@@ -1739,6 +1743,7 @@
     { id: 'aberto', rot: 'Abriram, sem resposta' },
     { id: 'confirmado', rot: 'Confirmados' },
     { id: 'parcial', rot: 'Parciais' },
+    { id: 'duvida', rot: 'Em dúvida' },
     { id: 'naovao', rot: 'Não vão' },
   ];
 
@@ -1764,7 +1769,7 @@
     const total = d.totalCadastrados;
     document.getElementById('p-cadastrados').textContent = total;
     document.getElementById('p-confirmados').textContent = d.totalConfirmados;
-    document.getElementById('p-confirmados-lbl').textContent = d.adultosConfirmados + ' adultos e ' + d.criancasConfirmadas + ' crianças';
+    document.getElementById('p-confirmados-lbl').textContent = d.adultosConfirmados + ' adultos e ' + d.criancasConfirmadas + ' crianças' + (d.talvez ? ' · ' + d.talvez + (d.talvez === 1 ? ' em dúvida' : ' em dúvida') : '');
     document.getElementById('p-barra-conf').style.width = (total ? Math.round((d.totalConfirmados / total) * 100) : 0) + '%';
     document.getElementById('p-meta').textContent = d.metaConvidados;
     document.getElementById('p-ocupacao').textContent = String(d.percentualOcupacao).replace('.', ',') + '%';
@@ -1817,14 +1822,34 @@
   function destinatariosDoGrupo(g) {
     const lista = [];
     const vistos = {};
-    g.membros.forEach((c) => { const n = normalizarTelefoneWhatsapp(c.telefone); if (n && !vistos[n]) { vistos[n] = 1; lista.push({ nome: c.nome, tel: n, bruto: c.telefone }); } });
+    g.membros.forEach((c) => { const n = normalizarTelefoneWhatsapp(c.telefone); if (n && !vistos[n]) { vistos[n] = 1; lista.push({ nome: c.nome, chamar: nomeChamar(c), tel: n, bruto: c.telefone }); } });
     const nResp = normalizarTelefoneWhatsapp(g.contatoResponsavel);
-    if (nResp && !vistos[nResp]) lista.push({ nome: g.responsavel && g.responsavel.indexOf('manualmente') === -1 ? g.responsavel : g.nome, tel: nResp, bruto: g.contatoResponsavel });
+    if (nResp && !vistos[nResp]) { const nomeR = g.responsavel && g.responsavel.indexOf('manualmente') === -1 ? g.responsavel : g.nome; lista.push({ nome: nomeR, chamar: primeiroNome(nomeR), tel: nResp, bruto: g.contatoResponsavel }); }
     return lista;
   }
   function mensagemPara(g, nome) { return preencherMensagem(ultimoPainelDados.mensagemTemplate, nome, linkConvite(g.codigo)); }
   function linkWhatsapp(tel, texto) { return 'https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(String(texto).normalize('NFC')); }
   function primeiroNome(n) { return String(n || '').trim().split(/\s+/)[0] || n; }
+  // Como a pessoa é chamada nas comunicações: [tratamento] + (como chamar, ou o primeiro nome)
+  function nomeChamar(c) {
+    const base = String(c.comoChamar || '').trim() || primeiroNome(c.nome);
+    const t = String(c.tratamento || '').trim();
+    return (t ? t + ' ' : '') + base;
+  }
+  const TRATAMENTOS = ['Sr.', 'Sra.', 'Dr.', 'Dra.', 'Prof.', 'Profa.', 'Excelentíssimo', 'Excelentíssima', 'Tio', 'Tia', 'Vovô', 'Vovó', 'Padrinho', 'Madrinha'];
+  // Campos opcionais "Tratamento" e "Como chamar" (usados na saudação do convite e nas mensagens)
+  function camposNomes(valor) {
+    valor = valor || {};
+    const trat = inputTexto(valor.tratamento || '', 'Ex.: Sr., Sra., Tio'); trat.setAttribute('list', 'lista-tratamentos'); trat.maxLength = 30;
+    const lista = h('datalist', { id: 'lista-tratamentos' }); TRATAMENTOS.forEach((t) => lista.appendChild(h('option', { value: t })));
+    const como = inputTexto(valor.comoChamar || '', 'Ex.: Bebeto (em branco: o primeiro nome)'); como.maxLength = 40;
+    const previa = h('div', { class: 'dica-campo', 'aria-live': 'polite' });
+    const nomeRef = () => valor.nomeRef ? valor.nomeRef() : (valor.nome || '');
+    const atualizar = () => { const n = nomeChamar({ nome: nomeRef(), comoChamar: como.value, tratamento: trat.value }); previa.textContent = n.trim() ? 'A pessoa será chamada de: ' + n : ''; };
+    trat.addEventListener('input', atualizar); como.addEventListener('input', atualizar); atualizar();
+    const el_ = h('div', {}, h('div', { class: 'form-linha' }, campoTexto('Tratamento (opcional)', trat), campoTexto('Como chamar (opcional)', como)), lista, previa);
+    return { el: el_, trat, como, atualizar };
+  }
 
   function desenharGrupos() {
     const box = document.getElementById('p-tbody');
@@ -1840,11 +1865,11 @@
   function cartaoGrupo(g) {
     const link = linkConvite(g.codigo);
     const dest = destinatariosDoGrupo(g);
-    const nomeMsg = dest.length ? primeiroNome(dest[0].nome) : g.nome;
+    const nomeMsg = dest.length ? dest[0].chamar : g.nome;
     const acoes = h('div', { class: 'grupo-acoes' });
     // WhatsApp: um toque quando há um telefone; escolha quando há vários
     if (dest.length === 1) {
-      acoes.appendChild(h('a', { class: 'btn sm wa', href: linkWhatsapp(dest[0].tel, mensagemPara(g, primeiroNome(dest[0].nome))), target: '_blank', rel: 'noopener', title: 'Enviar para ' + dest[0].nome, html: ICONES.wa + 'WhatsApp' }));
+      acoes.appendChild(h('a', { class: 'btn sm wa', href: linkWhatsapp(dest[0].tel, mensagemPara(g, dest[0].chamar)), target: '_blank', rel: 'noopener', title: 'Enviar para ' + dest[0].nome, html: ICONES.wa + 'WhatsApp' }));
     } else if (dest.length > 1) {
       acoes.appendChild(btn('WhatsApp', () => escolherWhatsapp(g, dest), 'sm wa', 'wa'));
     } else {
@@ -1861,21 +1886,24 @@
 
     const membros = h('div', { class: 'membros' });
     g.membros.forEach((c) => {
-      const chk = h('input', { type: 'checkbox', 'aria-label': 'Presença de ' + c.nome + ' confirmada' });
-      chk.checked = c.confirmado;
-      chk.addEventListener('change', async () => {
-        chk.disabled = true;
-        const r = await api('/api/admin/confirmar', 'POST', { id: c.id, confirmado: chk.checked });
-        if (r.erro) { toast(r.erro, 'err'); chk.checked = !chk.checked; chk.disabled = false; return; }
-        toast(c.nome + (chk.checked ? ' marcado(a) como confirmado(a)' : ' marcado(a) como não vai'));
+      const sel = h('select', { class: 'resp-sel', 'aria-label': 'Resposta de ' + c.nome, title: 'Mudar a resposta manualmente' });
+      [['', 'Sem resposta'], ['sim', 'Sim'], ['nao_sei', 'Não sei'], ['nao', 'Não']].forEach(([v, r]) => { const o = new Option(r, v); if ((c.resposta || '') === v) o.selected = true; sel.appendChild(o); });
+      sel.addEventListener('change', async () => {
+        sel.disabled = true;
+        const r = await api('/api/admin/confirmar', 'POST', { id: c.id, resposta: sel.value });
+        if (r.erro) { toast(r.erro, 'err'); sel.disabled = false; return; }
+        toast(c.nome + ': ' + (sel.value === 'sim' ? 'vai' : sel.value === 'nao_sei' ? 'não sabe ainda' : sel.value === 'nao' ? 'não vai' : 'sem resposta'));
         carregarPainel();
       });
+      const acaoIcone = (rotulo, titulo, fn) => { const x = h('button', { type: 'button', class: 'mover', title: titulo, 'aria-label': titulo + ': ' + c.nome, text: rotulo }); x.style.fontSize = '11.5px'; x.style.fontWeight = '600'; x.addEventListener('click', fn); return x; };
       const mover = h('button', { type: 'button', class: 'mover', title: 'Mover para outro grupo', 'aria-label': 'Mover ' + c.nome + ' para outro grupo', html: ICONES.mover });
       mover.addEventListener('click', () => abrirMoverConvidado(c));
-      membros.appendChild(h('div', { class: 'membro' + (c.confirmado ? ' vai' : '') },
-        h('label', { class: 'mini-switch', title: 'Confirmar manualmente' }, chk, h('span')),
-        h('div', { class: 'nm' }, c.nome, c.tipo === 'crianca' ? h('span', { class: 'tag', style: 'margin-left:6px;', text: 'criança' }) : null, c.telefone ? h('span', { class: 'tel', text: c.telefone }) : null),
-        mover));
+      const chamar = nomeChamar(c);
+      membros.appendChild(h('div', { class: 'membro' + (c.resposta === 'sim' ? ' vai' : c.resposta === 'nao_sei' ? ' talvez' : '') },
+        h('div', { class: 'nm' }, c.nome, c.tipo === 'crianca' ? h('span', { class: 'tag', style: 'margin-left:6px;', text: 'criança' }) : null,
+          chamar !== primeiroNome(c.nome) ? h('span', { class: 'tel', text: 'Chamado(a) de ' + chamar }) : null,
+          c.telefone ? h('span', { class: 'tel', text: c.telefone }) : null),
+        sel, acaoIcone('Editar', 'Editar dados', () => abrirEditarConvidado(c)), acaoIcone('Link', 'Link individual', () => abrirLinkIndividual(c)), mover));
     });
 
     return h('div', { class: 'grupo' },
@@ -1892,7 +1920,7 @@
     corpo.appendChild(el('p', 'Para quem enviar o convite de ' + g.nome + '?', 'margin:0 0 12px;color:var(--ink-soft);'));
     dest.forEach((d) => {
       corpo.appendChild(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('b', { text: d.nome }), h('code', { text: d.bruto })),
-        h('a', { class: 'btn sm wa', href: linkWhatsapp(d.tel, mensagemPara(g, primeiroNome(d.nome))), target: '_blank', rel: 'noopener', html: ICONES.wa + 'Enviar', onclick: () => setTimeout(fecharDialogo, 200) })));
+        h('a', { class: 'btn sm wa', href: linkWhatsapp(d.tel, mensagemPara(g, d.chamar)), target: '_blank', rel: 'noopener', html: ICONES.wa + 'Enviar', onclick: () => setTimeout(fecharDialogo, 200) })));
     });
     montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }]);
     abrirDialogo({ titulo: 'Enviar pelo WhatsApp', largura: '480px' });
@@ -1905,7 +1933,7 @@
     const modelo = document.getElementById('cfg-mensagem').value;
     const g = gruposPainel[0];
     const exemploLink = urlSite() + '?c=' + (g ? g.codigo : 'ABC123');
-    const nome = g ? primeiroNome((destinatariosDoGrupo(g)[0] || g.membros[0] || {}).nome || g.nome) : 'Maria';
+    const nome = g ? ((destinatariosDoGrupo(g)[0] || {}).chamar || nomeChamar(g.membros[0] || { nome: g.nome })) : 'Maria';
     const texto = preencherMensagem(modelo || '', nome, '\u0000');
     const prev = document.getElementById('cfg-previa');
     prev.innerHTML = '';
@@ -1946,7 +1974,7 @@
       linhas.push([
         c.nome, c.grupo, c.responsavel || '', c.telefone || '', link, mensagem,
         c.statusAbertura, c.dataAbertura || '', c.statusConfirmacao, c.dataConfirmacao || '',
-        c.tipo === 'crianca' ? 'criança' : 'adulto', c.confirmado ? 'Sim' : 'Não',
+        c.tipo === 'crianca' ? 'criança' : 'adulto', ({ sim: 'Sim', nao_sei: 'Não sei', nao: 'Não' })[c.resposta] || 'Sem resposta',
       ].map(escapar).join(','));
     });
     baixarArquivo('﻿' + linhas.join('\n'), 'convidados-' + (eventoAtual || 'evento') + '.csv', 'text/csv;charset=utf-8;');
@@ -2005,12 +2033,14 @@
       const nome = inputTexto('', 'Ex.: Maria Silva'); nome.id = 'ng2-nome';
       const tel = h('input', { type: 'tel', id: 'ng2-telefone', placeholder: '(21) 90000-0000', inputmode: 'tel' });
       const cri = h('input', { type: 'checkbox', id: 'ng2-crianca' });
+      const nomes = camposNomes({ nomeRef: () => nome.value });
+      nome.addEventListener('input', nomes.atualizar);
       const erro = h('div', { class: 'erro-campo', hidden: true });
       const adicionar = async () => {
         if (!nome.value.trim()) { erro.textContent = 'Escreva o nome da pessoa.'; erro.hidden = false; nome.focus(); return; }
         addBtn.disabled = true;
-        const p = { nome: nome.value.trim(), telefone: tel.value.trim(), crianca: cri.checked };
-        const d = await api('/api/admin/convidados', 'POST', { nome: p.nome, telefone: p.telefone, codigoGrupo: est.criado, tipo: p.crianca ? 'crianca' : 'adulto' });
+        const p = { nome: nome.value.trim(), telefone: tel.value.trim(), crianca: cri.checked, tratamento: nomes.trat.value.trim(), comoChamar: nomes.como.value.trim() };
+        const d = await api('/api/admin/convidados', 'POST', { nome: p.nome, telefone: p.telefone, codigoGrupo: est.criado, tipo: p.crianca ? 'crianca' : 'adulto', tratamento: p.tratamento, comoChamar: p.comoChamar });
         addBtn.disabled = false;
         if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
         est.pessoas.push(p);
@@ -2019,7 +2049,7 @@
       };
       [nome, tel, cri].forEach((i) => i.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); adicionar(); } }));
       const addBtn = btn('Adicionar pessoa', adicionar, '', 'mais');
-      corpo.append(h('div', { class: 'form-linha' }, campoTexto(est.pessoas.length ? 'Próxima pessoa' : 'Nome da pessoa', nome), campoTexto('WhatsApp (opcional)', tel)),
+      corpo.append(h('div', { class: 'form-linha' }, campoTexto(est.pessoas.length ? 'Próxima pessoa' : 'Nome da pessoa', nome), campoTexto('WhatsApp (opcional)', tel)), nomes.el,
         h('label', { class: 'check', for: 'ng2-crianca' }, cri, 'É criança'), erro, h('div', { style: 'margin-top:14px;' }, addBtn),
         h('p', { class: 'hint', style: 'margin-top:12px;', text: 'Dica: aperte Enter para adicionar e já digitar a próxima.' }));
       montarRodape([{ rotulo: est.pessoas.length ? 'Concluir →' : 'Pular por enquanto', prim: !!est.pessoas.length, fn: () => { est.passo = 2; renderNovoGrupo(est); } }]);
@@ -2030,7 +2060,7 @@
       delete dlgEvento.dataset.fixo;
       const link = linkConvite(est.criado);
       const comTel = est.pessoas.find((p) => normalizarTelefoneWhatsapp(p.telefone));
-      const nomeMsg = comTel ? primeiroNome(comTel.nome) : est.nome;
+      const nomeMsg = comTel ? nomeChamar(comTel) : est.nome;
       const texto = preencherMensagem(ultimoPainelDados ? ultimoPainelDados.mensagemTemplate : 'Oi {nome}! Confirme sua presença: {link}', nomeMsg, link);
       corpo.appendChild(h('div', { class: 'sucesso-selo', html: ICONES.ok }));
       corpo.appendChild(el('p', est.pessoas.length ? plural(est.pessoas.length, 'pessoa adicionada', 'pessoas adicionadas') + '. O convite do grupo está pronto para enviar.' : 'Grupo criado sem pessoas. Adicione depois pelo botão "Pessoa" no painel.', 'margin:0 0 14px;color:var(--ink-soft);'));
@@ -2069,26 +2099,72 @@
     const resp = inputTexto('', 'Deixe em branco para não mudar'); resp.id = 'ad-responsavel';
     const erro = h('div', { class: 'erro-campo', hidden: true });
     const feitos = h('ul', { class: 'pessoas-add' });
-    corpo.append(campoTexto('Grupo', sel), h('div', { class: 'form-linha' }, campoTexto('Nome do convidado', nome), campoTexto('WhatsApp (opcional)', tel)),
+    const nomes = camposNomes({ nomeRef: () => nome.value });
+    nome.addEventListener('input', nomes.atualizar);
+    corpo.append(campoTexto('Grupo', sel), h('div', { class: 'form-linha' }, campoTexto('Nome do convidado', nome), campoTexto('WhatsApp (opcional)', tel)), nomes.el,
       h('label', { class: 'check', for: 'ad-crianca' }, cri, 'É criança'),
       h('details', { style: 'margin-top:14px;' }, h('summary', { style: 'cursor:pointer;font-weight:600;font-size:13px;color:var(--ink-soft);', text: 'Trocar o responsável pelo grupo' }), campoTexto('Responsável pelo grupo', resp)),
       erro, feitos);
     let adicionados = 0;
     const salvar = async (fechar) => {
       if (!nome.value.trim()) { erro.textContent = 'Escreva o nome do convidado.'; erro.hidden = false; nome.focus(); return; }
-      const d = await api('/api/admin/convidados', 'POST', { nome: nome.value.trim(), telefone: tel.value.trim(), codigoGrupo: sel.value, tipo: cri.checked ? 'crianca' : 'adulto', responsavel: resp.value.trim() });
+      const d = await api('/api/admin/convidados', 'POST', { nome: nome.value.trim(), telefone: tel.value.trim(), codigoGrupo: sel.value, tipo: cri.checked ? 'crianca' : 'adulto', responsavel: resp.value.trim(), tratamento: nomes.trat.value.trim(), comoChamar: nomes.como.value.trim() });
       if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
       adicionados++;
       erro.hidden = true;
       if (fechar) { fecharDialogo(); toast(nome.value.trim() + ' adicionado(a)'); return; }
       feitos.appendChild(h('li', { html: ICONES.ok }, nome.value.trim() + ' adicionado(a) em ' + sel.options[sel.selectedIndex].text));
-      nome.value = ''; tel.value = ''; cri.checked = false; resp.value = '';
+      nome.value = ''; tel.value = ''; cri.checked = false; resp.value = ''; nomes.trat.value = ''; nomes.como.value = ''; nomes.atualizar();
       nome.focus();
     };
     nome.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); salvar(false); } });
     montarRodape([{ rotulo: 'Salvar e adicionar outro', esquerda: true, fn: () => salvar(false) }, { rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: () => salvar(true) }]);
     abrirDialogo({ titulo: 'Adicionar convidado', largura: '540px', aoFechar: () => { if (adicionados || true) carregarPainel(); } });
     setTimeout(() => nome.focus(), 30);
+  }
+
+  // =====================================================================
+  //  EDITAR CONVIDADO e LINK INDIVIDUAL
+  // =====================================================================
+  function abrirEditarConvidado(c) {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const nome = inputTexto(c.nome, 'Nome completo'); nome.id = 'ed-nome';
+    const tel = h('input', { type: 'tel', id: 'ed-telefone', inputmode: 'tel', placeholder: '(21) 90000-0000' }); tel.value = c.telefone || '';
+    const cri = h('input', { type: 'checkbox', id: 'ed-crianca' }); cri.checked = c.tipo === 'crianca';
+    const nomes = camposNomes({ tratamento: c.tratamento, comoChamar: c.comoChamar, nomeRef: () => nome.value });
+    nome.addEventListener('input', nomes.atualizar);
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(h('div', { class: 'form-linha' }, campoTexto('Nome', nome), campoTexto('WhatsApp (opcional)', tel)), nomes.el,
+      h('label', { class: 'check', for: 'ed-crianca' }, cri, 'É criança'),
+      h('p', { class: 'hint', style: 'margin-top:12px;', text: 'O tratamento e o "como chamar" aparecem na saudação do convite e nas mensagens de WhatsApp. Sem "como chamar", usamos o primeiro nome.' }), erro);
+    const salvar = async () => {
+      if (!nome.value.trim()) { erro.textContent = 'O convidado precisa de um nome.'; erro.hidden = false; return; }
+      const d = await api('/api/admin/convidados', 'PATCH', { id: c.id, nome: nome.value.trim(), telefone: tel.value.trim(), tipo: cri.checked ? 'crianca' : 'adulto', tratamento: nomes.trat.value.trim(), comoChamar: nomes.como.value.trim() });
+      if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
+      fecharDialogo(); toast('Dados de ' + nome.value.trim() + ' salvos'); carregarPainel();
+    };
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
+    abrirDialogo({ titulo: 'Editar ' + c.nome, largura: '540px' });
+    setTimeout(() => nome.focus(), 30);
+  }
+
+  async function abrirLinkIndividual(c) {
+    const d = await api('/api/admin/convidados/codigo', 'POST', { id: c.id });
+    if (d.erro) { toast(d.erro, 'err'); return; }
+    c.codigoIndividual = d.codigo;
+    const link = linkConvite(d.codigo);
+    const texto = preencherMensagem(ultimoPainelDados ? ultimoPainelDados.mensagemTemplate : 'Oi {nome}! Confirme sua presença: {link}', nomeChamar(c), link);
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    corpo.append(el('p', 'Este link é só de ' + c.nome + ': a saudação é para essa pessoa e a resposta vale apenas para ela. O link do grupo continua valendo para todos juntos.', 'margin:0 0 12px;color:var(--ink-soft);'),
+      linhaCopiar('Link individual', link), linhaCopiar('Mensagem pronta', texto));
+    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }]);
+    const tel = normalizarTelefoneWhatsapp(c.telefone);
+    if (tel) document.getElementById('me-foot').querySelector('.dir').appendChild(h('a', { class: 'btn prim', href: linkWhatsapp(tel, texto), target: '_blank', rel: 'noopener', html: ICONES.wa + 'Enviar para ' + primeiroNome(c.nome) }));
+    abrirDialogo({ titulo: 'Link individual de ' + c.nome, largura: '520px' });
   }
 
   // =====================================================================
@@ -2310,7 +2386,7 @@
     leitor.readAsText(arquivo);
   });
   document.getElementById('im-modelo').addEventListener('click', () => {
-    baixarArquivo('﻿Nome,Grupo,Telefone,Tipo,Responsavel\nMaria Silva,Família Silva,(21) 90000-0000,adulto,Maria Silva\nPedrinho Silva,Família Silva,,crianca,\n', 'modelo-convidados.csv', 'text/csv;charset=utf-8;');
+    baixarArquivo('﻿Nome,Grupo,Telefone,Tipo,Responsavel,ComoChamar,Tratamento\nMaria Silva,Família Silva,(21) 90000-0000,adulto,Maria Silva,Mari,Sra.\nPedrinho Silva,Família Silva,,crianca,,,\n', 'modelo-convidados.csv', 'text/csv;charset=utf-8;');
   });
 
   // =====================================================================
@@ -2372,7 +2448,9 @@
       { etapa: 'textos', chave: '__bloco_botao__', tipo: 'bloco_texto', liga: 'hero.mostrar_botao', label: 'Botão de confirmar e prazo', sub: 'Com o botão desligado, o botão fixo de confirmação só aparece depois que a capa sai da tela.', campos: [
         { chave: 'hero.cta_label', label: 'Texto do botão' },
       ]},
-      { etapa: 'textos', chave: 'hero.mostrar_convite', tipo: 'liga', label: 'Saudação com o nome do grupo', sub: 'Ex.: "Convite para Família Lima". Só aparece em convites individuais.' },
+      { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
+        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes.' },
+      ]},
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
       { etapa: 'data', chave: '__bloco_data__', tipo: 'bloco_texto', liga: 'hero.mostrar_data', label: 'Data na capa', campos: [
         { chave: 'hero.data_display', label: 'Data como aparece no site' },
@@ -2380,7 +2458,7 @@
       { etapa: 'data', chave: '__bloco_horario__', tipo: 'bloco_texto', liga: 'hero.mostrar_horario', label: 'Horário na capa', campos: [
         { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
       ]},
-      { etapa: 'data', chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Depois dessa data e hora o site avisa que o prazo terminou, mas ainda aceita respostas.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
+      { etapa: 'data', chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Até essa data e hora o convidado pode responder e mudar a resposta. Depois disso o site só mostra as respostas registradas e não aceita mais alterações. Em branco: sem prazo.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
       { etapa: 'data', chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
       { etapa: 'data', chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data. O prazo só aparece no site quando o botão de confirmar está ligado.' },
       { etapa: 'previa', chave: '__previa_capa__', tipo: 'previa_capa' },
@@ -2462,10 +2540,6 @@
       { chave: 'rsvp.eyebrow', label: 'Texto pequeno' },
       { chave: 'rsvp.titulo', label: 'Título' },
       { chave: 'rsvp.texto', label: 'Texto de apoio', tipo: 'textarea' },
-      { chave: '__bloco_criancas__', tipo: 'bloco_texto', liga: 'rsvp.criancas_mostrar', recolhe: true, label: 'Crianças que não estão na lista', sub: 'O convidado pode acrescentar, na hora de confirmar, crianças que não foram cadastradas. Elas entram no grupo como crianças confirmadas.', campos: [
-        { chave: 'rsvp.criancas_botao', label: 'Texto do botão' },
-        { chave: 'rsvp.criancas_placeholder', label: 'Texto de ajuda do campo de nome' },
-      ]},
       { chave: 'rsvp.cta_label', label: 'Texto do botão de confirmar' },
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },

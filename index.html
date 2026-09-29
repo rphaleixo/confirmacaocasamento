@@ -298,22 +298,21 @@
   .rsvp-aviso.erro .ic{background:var(--ink);}
   .rsvp-grupo{text-align:center;margin:0 0 4px;font-family:var(--font-display);font-style:var(--display-style);font-size:23px;color:var(--wine);line-height:1.2;}
   .rsvp-instrucao{text-align:center;font-size:13px;color:var(--ink-soft);margin:0 0 18px;}
-  .rsvp-lista{display:flex;flex-direction:column;gap:8px;}
-  .rsvp-guest-row{position:relative;display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--border);border-radius:14px;font-size:15px;background:var(--cream);cursor:pointer;transition:border-color .2s, background .2s;min-height:58px;}
-  .rsvp-guest-row input[type=checkbox]{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer;}
-  .rsvp-guest-row .marca{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--wine-soft);display:grid;place-items:center;transition:background .2s,border-color .2s;}
-  .rsvp-guest-row .marca svg{opacity:0;transform:scale(.6);transition:.2s;}
-  .rsvp-guest-row .nome{flex:1;min-width:0;overflow-wrap:anywhere;}
-  .rsvp-guest-row .estado{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);}
-  .rsvp-guest-row.vai{border-color:var(--wine);background:color-mix(in srgb, var(--blush) 55%, var(--cream));}
-  .rsvp-guest-row.vai .marca{background:var(--wine);border-color:var(--wine);}
-  .rsvp-guest-row.vai .marca svg{opacity:1;transform:scale(1);}
-  .rsvp-guest-row.vai .estado{color:var(--wine);font-weight:600;}
-  .rsvp-extras{margin:10px 0 4px;text-align:center;}
-  .rsvp-extra-row{display:flex;align-items:center;gap:8px;margin:0 0 8px;}
-  .rsvp-extra-row input{flex:1;min-width:0;padding:14px 16px;border:1.5px solid var(--wine);border-radius:14px;background:color-mix(in srgb, var(--blush) 55%, var(--cream));font:inherit;font-size:15px;color:var(--ink);min-height:54px;}
-  .rsvp-extra-row button{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:var(--cream);color:var(--ink-soft);font-size:18px;line-height:1;}
-  .rsvp-guest-row:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px;}
+  .rsvp-lista{display:flex;flex-direction:column;gap:10px;}
+  .rsvp-pessoa{padding:14px 14px 12px;border:1.5px solid var(--border);border-radius:14px;background:var(--cream);transition:border-color .2s, background .2s;}
+  .rsvp-pessoa.sem-resposta{border-color:var(--ink);}
+  .rsvp-pessoa-nome{text-align:center;font-size:15px;margin:0 0 10px;overflow-wrap:anywhere;}
+  .rsvp-pessoa-nome .tag{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:color-mix(in srgb, var(--blush) 70%, var(--cream));color:var(--ink-soft);vertical-align:1px;}
+  .rsvp-opcoes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .rsvp-op{position:relative;display:block;}
+  .rsvp-op input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .rsvp-op span{display:flex;align-items:center;justify-content:center;min-height:46px;padding:8px 6px;border-radius:12px;border:1.5px solid var(--border);background:var(--cream);font-size:14px;font-weight:500;color:var(--ink);text-align:center;line-height:1.2;transition:background .2s,border-color .2s,color .2s;}
+  .rsvp-op input:checked + span{color:var(--on-wine);border-color:transparent;}
+  .rsvp-op.sim input:checked + span{background:var(--wine);}
+  .rsvp-op.talvez input:checked + span{background:var(--gold);color:color-mix(in srgb, var(--gold) 15%, black);}
+  .rsvp-op.nao input:checked + span{background:color-mix(in srgb, var(--ink) 72%, white);}
+  .rsvp-op input:focus-visible + span{outline:2px solid var(--focus);outline-offset:2px;}
+  .rsvp-pessoa.desabilitada .rsvp-op input{cursor:default;}
   .rsvp-atalhos{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 2px 4px;font-size:12.5px;color:var(--ink-soft);}
   .rsvp-label{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 6px;font-weight:500;}
   .rsvp-input{width:100%;padding:13px 14px;border:1.5px solid var(--blush-deep);border-radius:12px;font-size:16px;font-family:var(--font-body);background:var(--cream);color:var(--ink);transition:border-color .2s;}
@@ -330,6 +329,8 @@
   .rsvp-sucesso-titulo{font-size:22px;color:var(--wine);font-family:var(--font-display);font-style:var(--display-style);margin:0 0 6px;line-height:1.3;}
   .rsvp-resumo{list-style:none;padding:0;margin:14px 0 20px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
   .rsvp-resumo li{font-size:12.5px;padding:5px 11px;border-radius:999px;background:color-mix(in srgb, var(--blush) 70%, var(--cream));color:var(--ink);}
+  .rsvp-resumo li.talvez{background:color-mix(in srgb, var(--gold) 22%, var(--cream));}
+  .rsvp-ate{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;}
   .rsvp-resumo li.nao{background:transparent;border:1px dashed var(--border);color:var(--ink-soft);text-decoration:line-through;}
   .rsvp-proximos{display:grid;gap:8px;}
 
@@ -414,6 +415,13 @@
   .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,20px);background:var(--ink);color:var(--cream);font-size:13.5px;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px color-mix(in srgb, black 25%, transparent);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:80;max-width:calc(100% - 32px);text-align:center;}
   .toast.show{opacity:1;transform:translate(-50%,0);}
 
+  /* ---------- TEXTOS CENTRALIZADOS EM RELAÇÃO À PÁGINA ---------- */
+  /* Letras espaçadas deixam um vazio depois da última letra: o padding do outro lado devolve o centro de verdade */
+  .eyebrow,.gift-como-tit{padding-left:.3em;} .gift-como-tit{padding-left:.24em;}
+  .cd-label,.node-year{padding-left:.14em;} .pessoa-papel{padding-left:.08em;} .rsvp-label{padding-left:.06em;}
+  .hero-date > span:not(.ln){padding-left:.18em;}
+  .hero-content,.section-head,.node-text,.recado-card,.gift-infos,.gift-info,.rsvp-label,.campo-erro,.pessoa-card{text-align:center;}
+  .campo-erro{justify-content:center;}
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
   }
@@ -585,13 +593,10 @@
       <form id="rsvpForm" hidden novalidate>
         <div class="rsvp-aviso" id="rsvpJaRespondeu" hidden><span class="ic" aria-hidden="true">✓</span><span>Já recebemos uma resposta deste convite. Se algo mudou, é só ajustar abaixo e enviar de novo.</span></div>
         <h3 class="rsvp-grupo" id="rsvpGrupoNome"></h3>
-        <p class="rsvp-instrucao" id="rsvpInstrucao">Toque no nome de quem vai.</p>
+        <p class="rsvp-instrucao" id="rsvpInstrucao">Para cada pessoa, escolha: Sim, Não sei ou Não.</p>
         <div id="rsvpListaConvidados" class="rsvp-lista"></div>
-        <div class="rsvp-atalhos"><span id="rsvpContagem" aria-live="polite"></span><button type="button" class="link-btn" id="rsvpTodos">Marcar todos</button></div>
-        <div class="rsvp-extras" id="rsvpExtras" hidden>
-          <div id="rsvpExtrasLista"></div>
-          <button type="button" class="link-btn" id="rsvpAddCrianca">Adicionar criança que não está na lista</button>
-        </div>
+        <div class="campo-erro" id="rsvpFaltaResposta" hidden>Escolha uma opção para cada pessoa.</div>
+        <div class="rsvp-atalhos"><span id="rsvpContagem" aria-live="polite"></span><button type="button" class="link-btn" id="rsvpTodos">Todos vão</button></div>
 
         <label class="rsvp-label" for="rsvpResponsavel">Seu nome</label>
         <input class="rsvp-input" id="rsvpResponsavel" type="text" placeholder="Quem está respondendo" autocomplete="name" required>
@@ -601,9 +606,9 @@
         <div class="campo-erro" id="rsvpContatoErro" hidden>Confira o número: precisa ter DDD e 8 ou 9 dígitos.</div>
 
         <div class="rsvp-ninguem" id="rsvpNinguem" hidden>
-          Você não marcou ninguém. Vamos avisar que o grupo <b>não poderá ir</b>. Está certo?
+          <span id="rsvpAvisoTexto">Você não marcou ninguém. Vamos avisar que o grupo <b>não poderá ir</b>. Está certo?</span>
           <div class="acoes">
-            <button type="button" class="pill outline small" id="rsvpNinguemVoltar">Voltar e marcar</button>
+            <button type="button" class="pill outline small" id="rsvpNinguemVoltar">Voltar e revisar</button>
             <button type="button" class="pill solid small" id="rsvpNinguemEnviar">Sim, enviar</button>
           </div>
         </div>
@@ -614,6 +619,7 @@
         <div class="selo" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
         <p class="rsvp-sucesso-titulo" id="rsvpSucessoTexto">Presença confirmada! Obrigado 💛</p>
         <ul class="rsvp-resumo" id="rsvpResumo"></ul>
+        <p class="rsvp-ate" id="rsvpAte" hidden></p>
         <div class="rsvp-proximos" id="rsvpProximos">
           <a class="pill solid small" id="rsvpAgenda" href="#" target="_blank" rel="noopener">Salvar na agenda</a>
           <a class="pill outline small" id="rsvpComoChegar" href="#" target="_blank" rel="noopener">Como chegar ↗</a>
@@ -1385,7 +1391,6 @@
     const form = $('rsvpForm');
     const lista = $('rsvpListaConvidados');
     const sucesso = $('rsvpSucesso');
-    const sticky = $('sticky');
 
     function mostrarErro(texto) { $('rsvpErroTexto').textContent = texto; erroBox.hidden = false; }
     if (!codigo) return; // mantém a mensagem "sem código" já visível por padrão
@@ -1393,56 +1398,43 @@
     semCodigo.hidden = true;
     carregando.hidden = false;
 
-    const SVG_CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--on-wine)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-    const extrasBox = $('rsvpExtras'), extrasLista = $('rsvpExtrasLista');
-    // crianças acrescentadas pelo convidado na hora (não estavam na lista)
-    function nomesExtras() {
-      return Array.from(extrasLista.querySelectorAll('input')).map(function (i) { return i.value.replace(/\s+/g, ' ').trim(); }).filter(function (n) { return n.length >= 2; });
-    }
-    function novaCrianca() {
-      const row = document.createElement('div'); row.className = 'rsvp-extra-row';
-      const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 80; inp.autocomplete = 'off';
-      inp.placeholder = t('rsvp.criancas_placeholder', 'Nome da criança'); inp.setAttribute('aria-label', 'Nome da criança');
-      inp.addEventListener('input', atualizarContagem);
-      const rem = document.createElement('button'); rem.type = 'button'; rem.textContent = '×'; rem.setAttribute('aria-label', 'Remover criança');
-      rem.addEventListener('click', function () { row.remove(); atualizarContagem(); });
-      row.append(inp, rem); extrasLista.appendChild(row); inp.focus();
-    }
-    $('rsvpAddCrianca').addEventListener('click', novaCrianca);
+    const ROTULO = { sim: 'Vai', nao_sei: 'Não sei', nao: 'Não vai' };
+    let pessoas = [];           // { id, nome, tipo, chamar, resposta }
+    let contexto = { escopo: 'grupo', adultosNoGrupo: 0, outrosAdultosSim: 0, prazoEncerrado: false };
 
-    let linhas = 0;
-    function adicionarLinha(c) {
-      const i = linhas++;
-      const row = document.createElement('label');
-      row.className = 'rsvp-guest-row';
-      const chk = document.createElement('input');
-      chk.type = 'checkbox';
-      chk.id = 'rsvpConv' + i;
-      chk.setAttribute('data-nome', c.nome);
-      chk.checked = !!c.confirmado;
-      chk.addEventListener('change', atualizarContagem);
-      const marca = document.createElement('span'); marca.className = 'marca'; marca.innerHTML = SVG_CHECK; marca.setAttribute('aria-hidden', 'true');
-      const span = document.createElement('span'); span.className = 'nome'; span.textContent = c.nome;
-      const estado = document.createElement('span'); estado.className = 'estado'; estado.setAttribute('aria-hidden', 'true');
-      row.append(chk, marca, span, estado);
-      lista.appendChild(row);
+    // "Ana, Beto e Carla": lista de nomes para a saudação
+    function listaNomes(nomes) {
+      if (nomes.length <= 1) return nomes.join('');
+      return nomes.slice(0, -1).join(', ') + ' e ' + nomes[nomes.length - 1];
+    }
+    function ateQuando() { const p = prazoCompleto(); return p ? ' até ' + p : ''; }
+
+    function desenharPessoas() {
+      lista.innerHTML = '';
+      pessoas.forEach(function (p) {
+        const card = document.createElement('div');
+        card.className = 'rsvp-pessoa' + (contexto.prazoEncerrado ? ' desabilitada' : '');
+        card.setAttribute('data-id', p.id);
+        const nome = document.createElement('div'); nome.className = 'rsvp-pessoa-nome'; nome.textContent = p.nome;
+        if (p.tipo === 'crianca') { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'criança'; nome.appendChild(tag); }
+        const grupo = document.createElement('div'); grupo.className = 'rsvp-opcoes'; grupo.setAttribute('role', 'radiogroup'); grupo.setAttribute('aria-label', 'Presença de ' + p.nome);
+        [['sim', 'Sim'], ['nao_sei', 'Não sei'], ['nao', 'Não']].forEach(function (op) {
+          const lab = document.createElement('label'); lab.className = 'rsvp-op ' + (op[0] === 'nao_sei' ? 'talvez' : op[0]);
+          const inp = document.createElement('input'); inp.type = 'radio'; inp.name = 'rsvp-' + p.id; inp.value = op[0]; inp.checked = p.resposta === op[0]; inp.disabled = contexto.prazoEncerrado;
+          inp.addEventListener('change', function () { p.resposta = op[0]; card.classList.remove('sem-resposta'); $('rsvpFaltaResposta').hidden = true; esconderAviso(); atualizarContagem(); });
+          const sp = document.createElement('span'); sp.textContent = op[1];
+          lab.append(inp, sp); grupo.appendChild(lab);
+        });
+        card.append(nome, grupo);
+        lista.appendChild(card);
+      });
     }
     function atualizarContagem() {
-      const chks = Array.from(lista.querySelectorAll('input[type=checkbox]'));
-      const extras = nomesExtras().length;
-      const marcados = chks.filter(function (c) { return c.checked; }).length;
-      const vao = marcados + extras, total = chks.length + extras;
-      chks.forEach(function (c) {
-        const row = c.closest('.rsvp-guest-row');
-        row.classList.toggle('vai', c.checked);
-        row.querySelector('.estado').textContent = c.checked ? 'Vai' : 'Não vai';
-      });
-      $('rsvpContagem').textContent = total > 1 ? vao + ' de ' + total + (vao === 1 ? ' pessoa vai' : ' pessoas vão') : '';
-      $('rsvpTodos').hidden = chks.length < 2;
-      $('rsvpTodos').textContent = marcados === chks.length ? 'Desmarcar todos' : 'Marcar todos';
-      if (vao > 0) $('rsvpNinguem').hidden = true;
-      $('rsvpSubmitBtn').hidden = !$('rsvpNinguem').hidden;
+      const vao = pessoas.filter(function (p) { return p.resposta === 'sim'; }).length;
+      $('rsvpContagem').textContent = pessoas.length > 1 ? vao + ' de ' + pessoas.length + (vao === 1 ? ' pessoa vai' : ' pessoas vão') : '';
+      $('rsvpTodos').hidden = pessoas.length < 2 || contexto.prazoEncerrado;
     }
+    function esconderAviso() { $('rsvpNinguem').hidden = true; $('rsvpSubmitBtn').hidden = false; }
 
     fetch(api('rsvp', 'c=' + encodeURIComponent(codigo)))
       .then(function (r) { return r.json(); })
@@ -1450,20 +1442,34 @@
         carregando.hidden = true;
         if (data.erro) { mostrarErro(data.erro + ' Se o problema continuar, peça o link de novo a quem te convidou.'); return; }
 
-        // capa e cabeçalho personalizados com o nome do grupo
-        if (data.grupo && !modoSaveTheDate) {
-          const convite = $('heroConvite'); convite.textContent = 'Convite para ' + data.grupo; convite.hidden = t('hero.mostrar_convite', '1') === '0';
-          $('rsvpGrupoNome').textContent = data.grupo;
-        }
-        $('rsvpInstrucao').textContent = data.convidados.length > 1 ? 'Toque no nome de cada pessoa que vai.' : 'Toque no seu nome para confirmar.';
-        $('rsvpJaRespondeu').hidden = data.statusConfirmacao !== 'Confirmado';
+        pessoas = data.convidados.map(function (c) { return { id: c.id, nome: c.nome, tipo: c.tipo, chamar: c.chamar || c.nome, resposta: c.resposta || null }; });
+        const adultos = pessoas.filter(function (p) { return p.tipo !== 'crianca'; });
+        contexto = { escopo: data.escopo, adultosNoGrupo: data.adultosNoGrupo || adultos.length, outrosAdultosSim: data.outrosAdultosSim || 0, prazoEncerrado: !!data.prazoEncerrado };
 
-        lista.innerHTML = '';
-        data.convidados.forEach(adicionarLinha);
-        extrasBox.hidden = t('rsvp.criancas_mostrar', '1') === '0';
-        definir($('rsvpAddCrianca'), t('rsvp.criancas_botao', 'Adicionar criança que não está na lista'));
-        form.hidden = false;
+        // saudação para todos os convites: o nome de cada pessoa (como ela gosta de ser chamada); no link individual, só a pessoa
+        if (!modoSaveTheDate) {
+          const convite = $('heroConvite');
+          const prefixo = t('hero.convite_prefixo', 'Convite para');
+          convite.textContent = (prefixo ? prefixo + ' ' : '') + listaNomes(pessoas.map(function (p) { return p.chamar; }));
+          convite.hidden = t('hero.mostrar_convite', '1') === '0' || !pessoas.length;
+          $('rsvpGrupoNome').textContent = data.escopo === 'individual' ? pessoas[0].nome : data.grupo;
+        }
+        $('rsvpInstrucao').textContent = pessoas.length > 1 ? 'Para cada pessoa, escolha: Sim, Não sei ou Não.' : 'Escolha: Sim, Não sei ou Não.';
+        $('rsvpTodos').textContent = 'Todos vão';
+        $('rsvpJaRespondeu').hidden = !data.respondeu || contexto.prazoEncerrado;
+        if (data.respondeu && !contexto.prazoEncerrado) $('rsvpJaRespondeu').querySelector('span:last-child').textContent = 'Já recebemos uma resposta deste convite. Se algo mudou, é só ajustar abaixo e enviar de novo' + ateQuando() + '.';
+
+        desenharPessoas();
         atualizarContagem();
+
+        if (contexto.prazoEncerrado) {
+          // depois do prazo nada mais muda: mostra o que foi respondido (se houver) e avisa
+          $('rsvpPrazo').hidden = true; $('rsvpTexto').hidden = true;
+          if (data.respondeu) { mostrarSucesso(true); }
+          else mostrarErro('O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite.');
+          return;
+        }
+        form.hidden = false;
       })
       .catch(function () {
         carregando.hidden = true;
@@ -1471,10 +1477,8 @@
       });
 
     $('rsvpTodos').addEventListener('click', function () {
-      const chks = Array.from(lista.querySelectorAll('input[type=checkbox]'));
-      const todos = chks.every(function (c) { return c.checked; });
-      chks.forEach(function (c) { c.checked = !todos; });
-      atualizarContagem();
+      pessoas.forEach(function (p) { p.resposta = 'sim'; });
+      desenharPessoas(); $('rsvpFaltaResposta').hidden = true; esconderAviso(); atualizarContagem();
     });
 
     const inpNome = $('rsvpResponsavel'), inpTel = $('rsvpContato');
@@ -1498,10 +1502,7 @@
 
     function enviar() {
       erroBox.hidden = true;
-      const chks = Array.from(lista.querySelectorAll('input[type=checkbox]'));
-      const convidados = chks.map(function (chk) { return { nome: chk.getAttribute('data-nome'), confirmado: chk.checked }; });
-      const extras = nomesExtras();
-      const payload = { codigo: codigo, responsavel: inpNome.value.trim(), contatoResponsavel: inpTel.value.trim(), convidados: convidados, criancasExtras: extras };
+      const payload = { codigo: codigo, responsavel: inpNome.value.trim(), contatoResponsavel: inpTel.value.trim(), respostas: pessoas.map(function (p) { return { id: p.id, resposta: p.resposta }; }) };
       const btns = [$('rsvpSubmitBtn'), $('rsvpNinguemEnviar')];
       const rotulo = $('rsvpSubmitBtn').textContent;
       btns.forEach(function (b) { b.disabled = true; }); $('rsvpSubmitBtn').textContent = 'Enviando…';
@@ -1509,11 +1510,8 @@
         .then(function (r) { return r.json(); })
         .then(function (d) {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
-          if (d && d.erro) { mostrarErro(d.erro); return; }
-          // as crianças acrescentadas agora fazem parte do grupo: viram linhas normais da lista
-          extras.forEach(function (n) { adicionarLinha({ nome: n, confirmado: true }); });
-          extrasLista.innerHTML = '';
-          mostrarSucesso(convidados.concat(extras.map(function (n) { return { nome: n, confirmado: true }; })));
+          if (d && d.erro) { esconderAviso(); mostrarErro(d.erro); return; }
+          mostrarSucesso(false);
         })
         .catch(function () {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
@@ -1521,14 +1519,25 @@
         });
     }
 
-    function mostrarSucesso(convidados) {
-      const vao = convidados.filter(function (c) { return c.confirmado; });
+    function mostrarSucesso(somenteLeitura) {
+      const vao = pessoas.filter(function (p) { return p.resposta === 'sim'; });
+      const talvez = pessoas.filter(function (p) { return p.resposta === 'nao_sei'; });
       form.hidden = true;
       $('rsvpPrazo').hidden = true;
       $('rsvpTexto').hidden = true;
-      $('rsvpSucessoTexto').textContent = vao.length ? rsvpTextoSucesso : 'Resposta enviada. Obrigado por avisar, vamos sentir sua falta 💛';
+      $('rsvpSucessoTexto').textContent = vao.length ? rsvpTextoSucesso
+        : talvez.length ? 'Resposta registrada. Quando souber, volte a este link e atualize' + (ateQuando() || ' sua resposta') + '.'
+        : 'Resposta enviada. Obrigado por avisar, vamos sentir sua falta 💛';
       const resumo = $('rsvpResumo'); resumo.innerHTML = '';
-      convidados.forEach(function (c) { const li = document.createElement('li'); li.textContent = c.nome; if (!c.confirmado) li.className = 'nao'; resumo.appendChild(li); });
+      pessoas.forEach(function (p) {
+        const li = document.createElement('li');
+        li.textContent = p.nome + ' · ' + (ROTULO[p.resposta] || 'sem resposta');
+        if (p.resposta === 'nao') li.className = 'nao'; else if (p.resposta === 'nao_sei') li.className = 'talvez';
+        resumo.appendChild(li);
+      });
+      const ate = $('rsvpAte');
+      if (somenteLeitura) { ate.textContent = 'O prazo para confirmar terminou: estas são as respostas registradas.'; ate.hidden = false; }
+      else { ate.textContent = 'Você pode mudar as respostas' + ateQuando() + '.'; ate.hidden = !prazoCompleto(); }
       const agenda = linkAgenda();
       $('rsvpAgenda').hidden = !vao.length || !agenda;
       if (agenda) $('rsvpAgenda').href = agenda;
@@ -1536,9 +1545,11 @@
       const cc = $('rsvpComoChegar'), dest = destinoComoChegar();
       cc.hidden = !vao.length || !dest;
       if (dest) { cc.href = dest.href; if (dest.externo) { cc.target = '_blank'; cc.rel = 'noopener'; } else { cc.removeAttribute('target'); cc.removeAttribute('rel'); } }
+      $('rsvpProximos').hidden = !vao.length;
+      $('rsvpAlterar').hidden = !!somenteLeitura;
       sucesso.hidden = false;
       rsvpRespondido = true; updateSticky();
-      sucesso.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!somenteLeitura) sucesso.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     $('rsvpAlterar').addEventListener('click', function () {
@@ -1548,14 +1559,36 @@
       form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
+    // avisos antes de enviar: ninguém confirmado, ou só crianças confirmadas
+    function pedirConfirmacao(html) { $('rsvpAvisoTexto').innerHTML = html; $('rsvpNinguem').hidden = false; $('rsvpSubmitBtn').hidden = true; $('rsvpNinguemVoltar').focus(); }
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
+      if (contexto.prazoEncerrado) return;
       if (!validarCampos(true)) return;
-      const algum = nomesExtras().length > 0 || Array.from(lista.querySelectorAll('input[type=checkbox]')).some(function (c) { return c.checked; });
-      if (!algum) { $('rsvpNinguem').hidden = false; $('rsvpSubmitBtn').hidden = true; $('rsvpNinguemVoltar').focus(); return; }
+      const faltam = pessoas.filter(function (p) { return !p.resposta; });
+      if (faltam.length) {
+        $('rsvpFaltaResposta').hidden = false;
+        lista.querySelectorAll('.rsvp-pessoa').forEach(function (c) { c.classList.toggle('sem-resposta', faltam.some(function (p) { return String(p.id) === c.getAttribute('data-id'); })); });
+        const primeiro = lista.querySelector('.sem-resposta'); if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      const sim = pessoas.filter(function (p) { return p.resposta === 'sim'; });
+      const individual = contexto.escopo === 'individual';
+      if (!sim.length) {
+        const alguemTalvez = pessoas.some(function (p) { return p.resposta === 'nao_sei'; });
+        pedirConfirmacao(alguemTalvez
+          ? 'Por enquanto ' + (individual ? 'você ainda não está confirmado(a)' : 'ninguém está confirmado') + ' (há respostas "Não sei"). Tudo bem enviar assim? Dá para mudar' + (ateQuando() || ' depois') + '.'
+          : 'Vamos avisar que ' + (individual ? 'você <b>não poderá ir</b>' : 'o grupo <b>não poderá ir</b>') + '. Está certo?');
+        return;
+      }
+      const adultoSim = sim.some(function (p) { return p.tipo !== 'crianca'; }) || contexto.outrosAdultosSim > 0;
+      if (contexto.adultosNoGrupo > 0 && !adultoSim) {
+        pedirConfirmacao('Só ' + (sim.length > 1 ? 'crianças estão confirmadas' : 'uma criança está confirmada') + ': <b>nenhum adulto do grupo vai</b>. Está certo?');
+        return;
+      }
       enviar();
     });
-    $('rsvpNinguemVoltar').addEventListener('click', function () { $('rsvpNinguem').hidden = true; $('rsvpSubmitBtn').hidden = false; const p = lista.querySelector('input'); if (p) p.focus(); });
+    $('rsvpNinguemVoltar').addEventListener('click', function () { esconderAviso(); const p = lista.querySelector('input'); if (p) p.focus(); });
     $('rsvpNinguemEnviar').addEventListener('click', function () { if (validarCampos(true)) enviar(); });
   }
 
