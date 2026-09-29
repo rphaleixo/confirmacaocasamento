@@ -2318,6 +2318,7 @@
     { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
       { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
       { chave: 'savethedate.texto', label: 'Mensagem', tipo: 'textarea', dica: 'Aparece abaixo da data, na capa. Ex.: "Em breve enviaremos o convite oficial."' },
+      { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'É a mesma opção de "Rodapé e barra fixa": vale para o Save the Date e para o site normal.' },
     ]},
     { titulo: 'Contagem regressiva', toggle: 'countdown', ancora: 'secCountdown', campos: [
       { chave: 'countdown.eyebrow', label: 'Texto pequeno' },
@@ -2392,6 +2393,7 @@
       { chave: 'recados.texto', label: 'Texto de apoio', tipo: 'textarea' },
     ]},
     { titulo: 'Rodapé e barra fixa', campos: [
+      { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'Desligado, o site termina no último módulo, sem o bloco com nomes, data e texto final. Vale também no modo Save the Date.' },
       { chave: 'config.mostrar_menu', label: 'Mostrar menu de navegação (☰) no site', tipo: 'checkbox' },
       { chave: 'footer.texto', label: 'Texto do rodapé' },
       { chave: '__sep_sticky__', tipo: 'separador', label: 'Barra fixa de confirmação (aparece ao rolar o site)' },

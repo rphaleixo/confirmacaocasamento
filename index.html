@@ -854,6 +854,12 @@
     aplicar('stickyTitulo', 'sticky.titulo');
     aplicar('stickyCta', 'sticky.cta_label');
     aplicar('footerTexto', 'footer.texto');
+    // rodapé ligado/desligado no painel (vale também no modo Save the Date)
+    const rodapeLigado = t('footer.mostrar', '1') !== '0';
+    if (!rodapeLigado) {
+      document.querySelector('footer').style.display = 'none';
+      document.querySelector('.frame').style.paddingBottom = '90px'; // espaço para a barra fixa não cobrir o último módulo
+    }
     document.getElementById('footerNomes').textContent = ehAniversario() ? t('hero.noiva', '') : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
     document.getElementById('footerDataLocal').textContent = t('hero.data_display', '12 de junho de 2027') + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
 
@@ -976,6 +982,7 @@
       });
       document.getElementById('sticky').style.display = 'none';
       document.querySelector('footer .flinks').style.display = 'none';
+      document.querySelector('.frame').style.paddingBottom = ''; // no Save the Date não há barra fixa
       document.getElementById('heroEyebrow').textContent = t('savethedate.titulo', 'Guarde a data!');
       document.getElementById('heroCta').style.display = 'none';
       document.getElementById('heroConvite').hidden = true;
@@ -1031,7 +1038,7 @@
     const primeiroVisivel = modulosVisiveis[0];
     document.querySelector('.hero-veil').style.setProperty('--hero-fade', primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)');
 
-    if (modulosVisiveis.length) {
+    if (modulosVisiveis.length && rodapeLigado) {
       footerEl.parentNode.insertBefore(criarDivisor('var(--ink)', indiceForma++), footerEl);
     }
 
