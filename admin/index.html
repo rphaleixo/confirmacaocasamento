@@ -2301,7 +2301,7 @@
       { chave: 'hero.mostrar_convite', tipo: 'liga', label: 'Saudação com o nome do grupo', sub: 'Ex.: "Convite para Família Lima". Só aparece em convites individuais.' },
       { chave: '__previa_capa__', tipo: 'previa_capa' },
       { chave: '__sep_nomes__', tipo: 'separador', label: 'Textos da capa' },
-      { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".' },
+      { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".', avisoSTD: true },
       { chave: 'hero.noiva', label: 'Nome da noiva' },
       { chave: 'hero.noivo', label: 'Nome do noivo', tipos: ['casamento'] },
       { chave: 'hero.idade', label: 'Idade ou destaque (ex.: 30 anos)', tipos: ['aniversario'] },
@@ -2903,7 +2903,7 @@
           ajuste: ler('hero.enquadramento', 'preencher'), veu: ler('hero.veu', '1') !== '0',
           p: ctDados['aparencia.cor_primaria'] || '#0B2545', d: ctDados['aparencia.cor_destaque'] || '#C9A227', f: ctDados['aparencia.cor_fundo'] || '#EAF1FB',
           fonteTitulo: ctDados['aparencia.fonte_titulo'] || leg.titulo,
-          eyebrow: ler('hero.eyebrow', aniv ? 'Você é nosso convidado' : 'Nosso casamento'),
+          eyebrow: modoSTD() ? ler('savethedate.titulo', 'Guarde a data!') : ler('hero.eyebrow', aniv ? 'Você é nosso convidado' : 'Nosso casamento'),
           nomes: aniv ? ler('hero.noiva', 'Nome') : ler('hero.noiva', 'Noiva') + ' & ' + ler('hero.noivo', 'Noivo'),
           data: ler('hero.data_display', '12 de junho de 2027'), horario: ler('hero.horario_display', 'às 15h00'),
           cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio') + (ler('hero.prazo_horario_display', '') ? ' ' + ler('hero.prazo_horario_display', '') : ''),
@@ -3211,6 +3211,12 @@
     } else {
       const input = h('input', { type: 'text', 'data-chave': campo.chave, id: idCampo }); input.value = ctDados[campo.chave] || '';
       fs.appendChild(input);
+      if (campo.avisoSTD && modoSTD()) {
+        // com o Save the Date ligado, o site troca este texto pelo título do Save the Date: avisa para não parecer erro
+        fs.appendChild(h('div', { class: 'aviso-midia', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;' },
+          h('span', { text: 'O modo Save the Date está ligado: por isso o site mostra "' + (ctDados['savethedate.titulo'] || 'Guarde a data!') + '" no lugar deste texto. Ele volta a aparecer quando o Save the Date for desligado.' }),
+          btn('Gerenciar Save the Date', abrirSaveTheDate, 'sm')));
+      }
       if (campo.tipo === 'endereco') {
         const teste = h('a', { href: '#', target: '_blank', rel: 'noopener', style: 'font-size:12.5px;font-weight:600;display:inline-block;margin-top:6px;', text: 'Conferir no Google Maps ↗' });
         const atual = () => { const nome = fs.querySelector('[data-chave="mapa.local_nome"]'); teste.href = 'https://www.google.com/maps?q=' + encodeURIComponent((nome ? nome.value + ', ' : '') + input.value); };

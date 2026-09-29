@@ -3,8 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0B2545">
+<meta name="theme-color" content="#F2F3F5">
 <title>Noiva & Noivo • Casamento</title>
+<link rel="icon" href="data:,">
+<style>
+  /* Enquanto o conteúdo do evento não chega, só o esqueleto (cinza neutro) aparece: nada da página base, nem o azul padrão */
+  html:not(.pronto){overflow:hidden;background:#F2F3F5;}
+  html:not(.pronto) body{background:#F2F3F5 !important;}
+  html:not(.pronto) body > *:not(#sk):not(#erroEvento):not(script):not(style):not(noscript){display:none !important;}
+  #sk{position:fixed;inset:0;z-index:9999;background:#F2F3F5;display:flex;justify-content:center;transition:opacity .35s ease;}
+  #sk.sai{opacity:0;pointer-events:none;}
+  .sk-col{width:100%;max-width:460px;height:100%;overflow:hidden;background:#F8F9FA;position:relative;}
+  .sk-hero{height:min(100svh,900px);min-height:560px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:14px;padding:0 28px 46px;background:#E6E9EE;}
+  .sk-hero .sk-b,.sk-sec .sk-b{border-radius:8px;background:linear-gradient(90deg,#D9DDE4 0%,#EEF0F4 50%,#D9DDE4 100%);background-size:200% 100%;animation:skb 1.4s ease-in-out infinite;}
+  .sk-hero .sk-b{background:linear-gradient(90deg,#D2D6DE 0%,#E9ECF1 50%,#D2D6DE 100%);background-size:200% 100%;}
+  .sk-b.p{border-radius:999px;} .sk-b.w30{width:30%;} .sk-b.w45{width:45%;} .sk-b.w55{width:55%;} .sk-b.w70{width:70%;} .sk-b.w85{width:85%;} .sk-b.w100{width:100%;}
+  .sk-b.h10{height:10px;} .sk-b.h14{height:14px;} .sk-b.h44{height:44px;} .sk-b.h54{height:54px;} .sk-b.h120{height:120px;border-radius:14px;}
+  .sk-sec{padding:34px 28px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .sk-row{display:flex;gap:10px;width:100%;} .sk-row .sk-b{flex:1;height:64px;}
+  @keyframes skb{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  @media (prefers-reduced-motion:reduce){.sk-hero .sk-b,.sk-sec .sk-b{animation:none;}}
+  #erroEvento{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:24px;background:#F2F3F5;text-align:center;font-family:system-ui,Arial,sans-serif;color:#1B2433;}
+  #erroEvento.mostra{display:flex;} #erroEvento .cx{max-width:380px;} #erroEvento h1{font-size:20px;margin:0 0 8px;} #erroEvento p{margin:0 0 16px;color:#5B6678;line-height:1.5;font-size:14.5px;}
+  #erroEvento button{border:none;background:#1F3A5F;color:#fff;border-radius:999px;padding:12px 22px;font-size:14px;cursor:pointer;}
+</style>
+<script>
+  // Já começa a buscar o conteúdo do evento enquanto o resto da página carrega (o resto do código usa esta busca)
+  (function () {
+    var m = location.pathname.match(/^\/e\/([^\/]+)/);
+    var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
+    window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    // rede de segurança: se algo travar por completo, mostra a página depois de um tempo
+    setTimeout(function () { document.documentElement.classList.add('pronto'); var sk = document.getElementById('sk'); if (sk) sk.remove(); }, 15000);
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -350,6 +382,13 @@
 </style>
 </head>
 <body>
+<div id="sk" aria-hidden="true"><div class="sk-col">
+  <div class="sk-hero"><i class="sk-b p w30 h10"></i><i class="sk-b w85 h44"></i><i class="sk-b w55 h44"></i><i class="sk-b w45 h14"></i><i class="sk-b p w100 h54" style="margin-top:14px"></i></div>
+  <div class="sk-sec"><i class="sk-b w30 h10"></i><i class="sk-b w70 h44"></i><div class="sk-row"><i class="sk-b"></i><i class="sk-b"></i><i class="sk-b"></i><i class="sk-b"></i></div></div>
+  <div class="sk-sec"><i class="sk-b w100 h120"></i><i class="sk-b w85 h14"></i><i class="sk-b w70 h14"></i></div>
+</div></div>
+<div id="erroEvento" role="alert"><div class="cx"><h1 id="erroTitulo">Convite não encontrado</h1><p id="erroTexto">Confira o link que você recebeu.</p><button type="button" id="erroBtn" hidden>Tentar de novo</button></div></div>
+<noscript><style>html:not(.pronto) body > *{display:revert !important;} #sk{display:none;}</style></noscript>
 <div class="palco" id="palco" aria-hidden="true"><div class="palco-img" id="palcoImg"></div></div>
 <div class="frame">
 
@@ -454,7 +493,7 @@
     <div class="map-address" id="mapEndereco">Copacabana Palace — Av. Atlântica, 1702, Copacabana, Rio de Janeiro</div>
     <div class="map-frame-wrap">
       <iframe class="map-frame" loading="lazy" title="Mapa do local" referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps?q=Copacabana%20Palace%2C%20Av.%20Atl%C3%A2ntica%2C%201702%2C%20Copacabana%2C%20Rio%20de%20Janeiro&output=embed">
+        src="about:blank">
       </iframe>
     </div>
     <div class="map-cta-bar">
@@ -617,7 +656,6 @@
 
 <script>
   const hero = document.getElementById('hero');
-  requestAnimationFrame(()=> setTimeout(()=> hero.classList.add('loaded'), 60));
   const $ = (id) => document.getElementById(id);
 
   // ---- aviso rápido na parte de baixo da tela (ex.: "Chave PIX copiada") ----
@@ -717,8 +755,33 @@
       '&details=' + encodeURIComponent(location.origin + location.pathname);
   }
 
-  fetch(api('conteudo')).then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (dados) {
-    conteudo = dados || {};
+  // Libera a página só quando o conteúdo do evento já foi aplicado (troca o esqueleto pelo site real, sem mostrar a página base)
+  function revelarPagina() {
+    if (window.__revelado) return; window.__revelado = true;
+    const esperas = [];
+    const imagemPrincipal = conteudo['hero.midia_tipo'] === 'video' ? conteudo['hero.video_poster_url'] : conteudo['hero.foto_url'];
+    if (imagemPrincipal) esperas.push(new Promise(function (res) { const i = new Image(); i.onload = i.onerror = res; i.src = imagemPrincipal; }));
+    if (document.fonts && document.fonts.ready) esperas.push(document.fonts.ready.catch(function () {}));
+    Promise.race([Promise.all(esperas), new Promise(function (res) { setTimeout(res, 2200); })]).then(function () {
+      document.documentElement.classList.add('pronto');
+      requestAnimationFrame(function () { setTimeout(function () { hero.classList.add('loaded'); }, 60); });
+      const sk = document.getElementById('sk');
+      if (sk) { sk.classList.add('sai'); setTimeout(function () { sk.remove(); }, 400); }
+    });
+  }
+  function mostrarErroEvento(dados) {
+    window.__revelado = true;
+    const sem = dados && dados.rede;
+    document.getElementById('erroTitulo').textContent = sem ? 'Não conseguimos carregar agora' : 'Convite não encontrado';
+    document.getElementById('erroTexto').textContent = sem ? 'Confira sua internet e tente de novo.' : 'Confira o link que você recebeu ou peça um novo para quem enviou o convite.';
+    const btn = document.getElementById('erroBtn'); btn.hidden = !sem; btn.onclick = function () { location.reload(); };
+    document.getElementById('erroEvento').classList.add('mostra');
+    const sk = document.getElementById('sk'); if (sk) sk.remove();
+  }
+
+  (window.__conteudo || fetch(api('conteudo')).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; })).then(function (dados) {
+    if (!dados || dados.erro) { mostrarErroEvento(dados); return 'erro'; }
+    conteudo = dados;
 
     const root = document.documentElement.style;
     if (t('aparencia.cor_primaria', '')) root.setProperty('--wine', t('aparencia.cor_primaria', ''));
@@ -1094,7 +1157,7 @@
     }
 
     iniciarRsvp();
-  });
+  }).then(function (r) { if (r !== 'erro') revelarPagina(); }, function () { revelarPagina(); });
   let modoSaveTheDate = false;
 
   // ======= LISTA DE PRESENTES =======
