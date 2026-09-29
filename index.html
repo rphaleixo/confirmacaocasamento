@@ -548,6 +548,31 @@
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
   }
+
+  /* ---------- CORES PRÓPRIAS DOS MÓDULOS (Site › módulo › Cores) ----------
+     O script marca a seção com data-cor="papel papel…" e define --m-<papel>; sem marca, vale o visual do site. */
+  section[data-cor~="titulo"] .eyebrow, section[data-cor~="titulo"] h2, section[data-cor~="titulo"] .gift-box-title, section[data-cor~="titulo"] .gift-pix .rot{color:var(--m-titulo);}
+  section[data-cor~="texto"] .section-lead, section[data-cor~="texto"] .scroll-hint, section[data-cor~="texto"] .map-address, section[data-cor~="texto"] > p, section[data-cor~="texto"] .gift-como-tit, section[data-cor~="texto"] .gift-pix, section[data-cor~="texto"] .gift-pix-texto, section[data-cor~="texto"] .gift-pix b, section[data-cor~="texto"] .gift-box-text, section[data-cor~="texto"] .pessoa-nome, section[data-cor~="texto"] .pessoa-papel{color:var(--m-texto);}
+  section[data-cor~="cartao"] .gift-box, section[data-cor~="cartao"] .node-card, section[data-cor~="cartao"] .rsvp-card, section[data-cor~="cartao"] .rsvp-pessoa, section[data-cor~="cartao"] .rsvp-input, section[data-cor~="cartao"] .rsvp-op input:not(:checked) + span, section[data-cor~="cartao"] .recado-card, section[data-cor~="cartao"] .recados-form, section[data-cor~="cartao"] .gift-opcao, section[data-cor~="cartao"] .gift-info{background:var(--m-cartao);}
+  section[data-cor~="texto-cartao"] .node-year, section[data-cor~="texto-cartao"] .node-title, section[data-cor~="texto-cartao"] .node-text, section[data-cor~="texto-cartao"] .rsvp-card > p, section[data-cor~="texto-cartao"] .rsvp-prazo, section[data-cor~="texto-cartao"] .rsvp-prazo b, section[data-cor~="texto-cartao"] .rsvp-aviso, section[data-cor~="texto-cartao"] .rsvp-grupo, section[data-cor~="texto-cartao"] .rsvp-instrucao, section[data-cor~="texto-cartao"] .rsvp-pessoa-nome, section[data-cor~="texto-cartao"] .rsvp-label, section[data-cor~="texto-cartao"] .rsvp-atalhos, section[data-cor~="texto-cartao"] .rsvp-sucesso-titulo, section[data-cor~="texto-cartao"] .rsvp-ate, section[data-cor~="texto-cartao"] .rsvp-resumo li, section[data-cor~="texto-cartao"] .rsvp-ninguem, section[data-cor~="texto-cartao"] .rsvp-input, section[data-cor~="texto-cartao"] .rsvp-op input:not(:checked) + span, section[data-cor~="texto-cartao"] .recado-card .nome, section[data-cor~="texto-cartao"] .recado-card .texto, section[data-cor~="texto-cartao"] .recados-ok p, section[data-cor~="texto-cartao"] .contador, section[data-cor~="texto-cartao"] .gift-opcao h3, section[data-cor~="texto-cartao"] .gift-opcao p, section[data-cor~="texto-cartao"] .gift-info b, section[data-cor~="texto-cartao"] .gift-info span{color:var(--m-texto-cartao);}
+  section[data-cor~="destaque"] .pill.solid{background:var(--m-destaque);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .pill.solid:hover{background:color-mix(in srgb, var(--m-destaque) 82%, black);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .pill.outline{color:var(--m-destaque);border-color:var(--m-destaque);}
+  section[data-cor~="destaque"] .pill.outline:hover{background:var(--m-destaque);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .pill.ghost-dark{color:var(--m-destaque);border-color:var(--m-destaque);}
+  section[data-cor~="destaque"] .node-dot{background:var(--m-destaque);}
+  section[data-cor~="destaque"] .path-line{stroke:var(--m-destaque) !important;}
+  section[data-cor~="destaque"] .scroll-hint .seta{color:var(--m-destaque);}
+  section[data-cor~="destaque"] .pessoa-foto{box-shadow:0 0 0 4px var(--cream), 0 0 0 6px var(--m-destaque);}
+  section[data-cor~="destaque"] .map-frame-wrap, section[data-cor~="destaque"] .gallery-viewport{border-color:var(--m-destaque);}
+  section[data-cor~="destaque"] .g-dot.active::before{background:var(--m-destaque);}
+  section[data-cor~="destaque"] .g-thumb.active{outline-color:var(--m-destaque);}
+  section[data-cor~="destaque"] .rsvp-op.sim input:checked + span{background:var(--m-destaque);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .rsvp-aviso .ic, section[data-cor~="destaque"] .rsvp-sucesso .selo{background:var(--m-destaque);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .rsvp-input:focus{border-color:var(--m-destaque);}
+  section[data-cor~="destaque"] .link-btn{color:var(--m-destaque);}
+  section[data-cor~="destaque"] .gift-pix button{background:var(--m-destaque);border-color:var(--m-destaque);color:var(--m-destaque-on);}
+  section[data-cor~="destaque"] .gift-box-icon{background:color-mix(in srgb, var(--m-destaque) 18%, transparent);color:var(--m-destaque);}
 </style>
 </head>
 <body>
@@ -1203,6 +1228,7 @@
     escondeSeInativa('countdown', 'secCountdown');
 
     aplicarChamadaPresentes();
+    aplicarCoresModulos();
 
     aplicar('timelineEyebrow', 'timeline.eyebrow');
     aplicar('timelineTitulo', 'timeline.titulo');
@@ -1480,6 +1506,39 @@
     const c = new URLSearchParams(window.location.search).get('c');
     return (eventoMatch ? '/e/' + eventoMatch[1] + '/presentes' : '/presentes/') + (c ? '?c=' + encodeURIComponent(c) : '');
   }
+  // Cores próprias dos demais módulos (Site › módulo › Cores). Em branco vale o visual do site.
+  function aplicarCoresModulos() {
+    const MODS = { presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', padrinhos: 'secPadrinhos', madrinhas_pais: 'secMadrinhasPais', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
+    const ESCUROS = { mapa: 1, presentes: 1 };
+    const lum = function (hex) {
+      let h = hex.replace('#', ''); if (h.length === 3 || h.length === 4) h = h.split('').map(function (c) { return c + c; }).join('');
+      const c = [0, 2, 4].map(function (i) { const x = parseInt(h.substr(i, 2), 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    Object.keys(MODS).forEach(function (mod) {
+      const sec = $(MODS[mod]); if (!sec) return;
+      ['fundo', 'titulo', 'texto', 'cartao', 'texto-cartao', 'destaque', 'destaque-on'].forEach(function (p) { sec.style.removeProperty('--m-' + p); });
+      sec.style.background = ''; sec.removeAttribute('data-cor');
+      const cor = function (p) { const v = String(t(mod + '.cor_' + p.replace('-', '_'), '')).trim(); return /^#[0-9a-f]{3,8}$/i.test(v) ? v : ''; };
+      const v = {}; ['fundo', 'titulo', 'texto', 'cartao', 'texto-cartao', 'destaque'].forEach(function (p) { v[p] = cor(p); });
+      if (v.fundo) {
+        sec.style.background = v.fundo; sec.dataset.bgTop = v.fundo; sec.dataset.bgBottom = v.fundo;
+        // fundo claro/escuro diferente do padrão do módulo: títulos e textos trocam sozinhos para continuar legíveis
+        const padraoEscuro = !!ESCUROS[mod] || sec.classList.contains('f-marca');
+        const escuro = lum(v.fundo) < 0.4;
+        if (escuro !== padraoEscuro && !sec.classList.contains('tem-foto')) {
+          const auto = escuro ? '#FFFFFF' : '#1A1A1A';
+          if (!v.titulo) v.titulo = auto;
+          if (!v.texto) v.texto = escuro ? '#E8ECF3' : '#3A3A3A';
+        }
+      }
+      const marcas = [];
+      Object.keys(v).forEach(function (p) { if (p !== 'fundo' && v[p]) { sec.style.setProperty('--m-' + p, v[p]); marcas.push(p); } });
+      if (v.destaque) sec.style.setProperty('--m-destaque-on', (1.05 / (lum(v.destaque) + 0.05) >= (lum(v.destaque) + 0.05) / 0.05 ? '#FFFFFF' : '#111111'));
+      if (marcas.length) sec.setAttribute('data-cor', marcas.join(' '));
+    });
+  }
+
   function aplicarChamadaPresentes() {
     const sec = $('secPresenteTeaser');
     aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');

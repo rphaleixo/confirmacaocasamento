@@ -3246,6 +3246,29 @@
       { chave: 'sticky.cta_label', label: 'Texto do botão da barra' },
     ]},
   ];
+  // Cores próprias de cada módulo (etapa "Cores"): só aparecem os papéis que existem naquele módulo.
+  const CORES_DOS_MODULOS = {
+    presente_teaser: { fundo: 'Fundo da seção', cartao: 'Caixa da chamada', titulo: 'Título', texto: 'Texto', destaque: 'Botão e ícone' },
+    timeline: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Dica "arraste para o lado"', cartao: 'Cartões dos marcos', 'texto-cartao': 'Textos dos marcos', destaque: 'Bolinhas, linhas e setas' },
+    padrinhos: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
+    madrinhas_pais: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
+    mapa: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Endereço', destaque: 'Botões e borda do mapa' },
+    galeria: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', destaque: 'Bolinhas, miniatura ativa e borda' },
+    rsvp: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', cartao: 'Cartão do formulário', 'texto-cartao': 'Textos do formulário', destaque: 'Botões e opção "Sim"' },
+    presentes: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Textos sobre o fundo', cartao: 'Cartões das opções e dicas', 'texto-cartao': 'Textos dos cartões', destaque: 'Botões' },
+    recados: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Texto de apresentação', cartao: 'Cartões dos recados e do formulário', 'texto-cartao': 'Textos dos recados', destaque: 'Botão de enviar' },
+  };
+  GRUPOS_CONTEUDO.forEach((g) => {
+    const papeis = g.toggle ? CORES_DOS_MODULOS[g.toggle] : (g.ancora === 'rsvp' ? CORES_DOS_MODULOS.rsvp : null);
+    if (!papeis) return;
+    const mod = g.toggle || 'rsvp';
+    if (!g.etapas) g.etapas = [{ id: 'conteudo', titulo: 'Conteúdo' }];
+    g.etapas.push({ id: 'cores', titulo: 'Cores' });
+    g.campos.push({ etapa: 'cores', chave: '__nota_cores_' + mod + '__', tipo: 'nota', label: 'Tudo aqui é opcional. Em "Padrão do site", este módulo usa as cores da paleta do site. As bolinhas são as cores da paleta escolhida.' });
+    Object.keys(papeis).forEach((p) => g.campos.push({ etapa: 'cores', chave: mod + '.cor_' + p.replace('-', '_'), tipo: 'cor_livre', label: papeis[p], dica: p === 'fundo' ? 'Se o fundo ficar claro ou escuro demais para o texto atual, os títulos e textos se ajustam sozinhos (você pode escolher as cores deles logo abaixo).' : undefined }));
+    if (!g.campos.some((c) => c.tipo === 'previa_modulo')) g.campos.push({ etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' });
+  });
+
 
   let ctDados = null;
   let ctGrupoAtivo = 0;
