@@ -83,6 +83,24 @@
     transform:scale(1.08);transition:transform 6s ease-out;
   }
   .hero.loaded .hero-img{transform:scale(1);}
+  /* mídia da capa: imagem ou vídeo (vertical ou horizontal). "preencher" corta as bordas; "inteira" mostra tudo sobre um fundo desfocado */
+  .hero-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;background:transparent;}
+  .hero.inteira .hero-media{object-fit:contain;}
+  .hero.inteira .hero-img{filter:blur(26px) brightness(.8);transform:scale(1.18) !important;}
+  .hero.sem-veu .hero-veil{background:linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);opacity:1;}
+  .hero-ctrl{position:absolute;top:14px;left:14px;z-index:6;display:flex;gap:8px;}
+  .hero-ctrl[hidden]{display:none;}
+  .hero-ctrl button{width:38px;height:38px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.45);color:#fff;backdrop-filter:blur(6px);padding:0;}
+  .hero-ctrl button:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+  /* cenário: em telas largas, a capa ganha um fundo desfocado ao redor da coluna (bom para vídeo em pé) */
+  .palco{display:none;}
+  @media (min-width:720px){
+    body{position:relative;}
+    body.tem-palco .palco{display:block;position:absolute;top:0;left:0;right:0;height:max(580px,min(100svh,900px));overflow:hidden;z-index:0;pointer-events:none;}
+    body.tem-palco .palco-img{position:absolute;inset:-8%;background:linear-gradient(160deg,var(--wine-soft),var(--wine),var(--wine-deep)) center/cover;filter:blur(38px) saturate(1.15) brightness(.7);}
+    body.tem-palco .palco::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--blush) 0%,transparent 26%);}
+    body.tem-palco .frame{z-index:1;}
+  }
   .hero-veil{position:absolute;inset:0;background:
     linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 45%, transparent) 0%, transparent 12%, color-mix(in srgb, var(--wine-deep) 88%, black) 90%),
     linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);
@@ -331,12 +349,17 @@
 </style>
 </head>
 <body>
+<div class="palco" id="palco" aria-hidden="true"><div class="palco-img" id="palcoImg"></div></div>
 <div class="frame">
 
   <!-- CAPA -->
   <section class="hero" id="hero">
     <div class="hero-img"></div>
     <div class="hero-veil"></div>
+    <div class="hero-ctrl" id="heroCtrl" hidden>
+      <button type="button" id="heroPlay" aria-label="Pausar o vídeo"></button>
+      <button type="button" id="heroSom" aria-label="Ativar o som"></button>
+    </div>
     <div class="hero-content">
       <div class="hero-convite" id="heroConvite" hidden></div>
       <div class="eyebrow" id="heroEyebrow">Nosso casamento</div>
@@ -344,7 +367,7 @@
       <div class="eyebrow hero-idade" id="heroIdade" hidden></div>
       <div class="hero-date flanked"><span class="ln"></span><span id="heroData">12 de junho de 2027</span><span class="ln"></span></div>
       <div class="hero-time display" id="heroHorario">às 15h00</div>
-      <div class="hero-cta-wrap">
+      <div class="hero-cta-wrap" id="heroCtaWrap">
         <a href="#rsvp" class="pill on-dark" id="heroCta">Confirmar Presença →</a>
         <div class="deadline-chip" id="deadlineChip">confirme até 01 de maio</div>
       </div>
@@ -737,7 +760,87 @@
     }
     document.getElementById('deadlineChip').textContent = 'confirme até ' + t('hero.prazo_display', '01 de maio');
     document.getElementById('stickyPrazo').textContent = t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', t('hero.prazo_display', '01 de maio'));
-    if (t('hero.foto_url', '')) document.querySelector('.hero-img').style.background = 'center/cover url(' + t('hero.foto_url', '') + ')';
+    montarMidiaCapa();
+    aplicarTextosCapa();
+
+    function aplicarTextosCapa() {
+      // cada bloco de texto da capa pode ser ligado/desligado (útil quando a imagem ou o vídeo já trazem essas informações)
+      const ligado = function (k) { return t('hero.mostrar_' + k, '1') !== '0'; };
+      const esconder = function (el, esconde) { if (el) el.style.display = esconde ? 'none' : ''; };
+      esconder(document.getElementById('heroEyebrow'), !ligado('eyebrow'));
+      esconder(document.querySelector('#hero h1'), !ligado('nomes'));
+      esconder(document.getElementById('heroIdade'), !ligado('nomes'));
+      esconder(document.querySelector('#hero .hero-date'), !ligado('data'));
+      esconder(document.getElementById('heroHorario'), !ligado('horario'));
+      esconder(document.getElementById('heroCtaWrap'), !ligado('botao'));
+    }
+    function montarMidiaCapa() {
+      const hero = document.getElementById('hero');
+      const fundo = hero.querySelector('.hero-img');
+      const foto = t('hero.foto_url', '');
+      const video = t('hero.video_url', '');
+      const poster = t('hero.video_poster_url', '');
+      const ehVideo = t('hero.midia_tipo', 'imagem') === 'video' && !!video;
+      const inteira = t('hero.enquadramento', 'preencher') === 'inteira';
+      if (t('hero.veu', '1') === '0') hero.classList.add('sem-veu');
+      const imagemBase = ehVideo ? poster : foto; // usada no fundo desfocado e no cenário
+      if (inteira) hero.classList.add('inteira');
+      if (imagemBase && (inteira || !ehVideo)) fundo.style.background = 'center/cover url(' + imagemBase + ')';
+
+      let midia = null;
+      if (ehVideo) {
+        midia = document.createElement('video');
+        midia.className = 'hero-media';
+        midia.muted = true; midia.defaultMuted = true; midia.loop = true; midia.autoplay = true;
+        midia.playsInline = true; midia.setAttribute('playsinline', ''); midia.setAttribute('webkit-playsinline', '');
+        midia.setAttribute('muted', ''); midia.preload = 'auto'; midia.disablePictureInPicture = true;
+        if (poster) midia.poster = poster;
+        midia.setAttribute('aria-hidden', 'true');
+        midia.src = video;
+      } else if (foto && inteira) {
+        midia = document.createElement('img');
+        midia.className = 'hero-media'; midia.alt = ''; midia.src = foto;
+      }
+      if (midia) hero.insertBefore(midia, hero.querySelector('.hero-veil'));
+
+      // cenário desfocado atrás da coluna em telas largas
+      if (imagemBase) {
+        document.getElementById('palcoImg').style.background = 'center/cover url(' + imagemBase + ')';
+        document.body.classList.add('tem-palco');
+      } else if (ehVideo) {
+        document.body.classList.add('tem-palco'); // sem quadro de apoio, usa o degradê da cor primária
+      }
+
+      if (ehVideo) montarControlesVideo(midia);
+    }
+    function montarControlesVideo(v) {
+      const ctrl = document.getElementById('heroCtrl');
+      const play = document.getElementById('heroPlay'), som = document.getElementById('heroSom');
+      const IC_PLAY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      const IC_PAUSE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+      const IC_MUDO = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>';
+      const IC_SOM = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+      const pintar = function () {
+        play.innerHTML = v.paused ? IC_PLAY : IC_PAUSE;
+        play.setAttribute('aria-label', v.paused ? 'Reproduzir o vídeo' : 'Pausar o vídeo');
+        som.innerHTML = v.muted ? IC_MUDO : IC_SOM;
+        som.setAttribute('aria-label', v.muted ? 'Ativar o som' : 'Desativar o som');
+      };
+      ctrl.hidden = false;
+      play.addEventListener('click', function () { if (v.paused) v.play().catch(function () {}); else v.pause(); });
+      som.addEventListener('click', function () { v.muted = !v.muted; if (!v.muted && v.paused) v.play().catch(function () {}); pintar(); });
+      v.addEventListener('play', pintar); v.addEventListener('pause', pintar);
+      // quem pede menos movimento (ou está com economia de dados) vê só o quadro de apoio
+      const reduzido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const economia = navigator.connection && navigator.connection.saveData;
+      if (reduzido || economia) { v.autoplay = false; v.removeAttribute('autoplay'); v.pause(); }
+      else { const tentar = v.play(); if (tentar && tentar.catch) tentar.catch(function () { pintar(); }); }
+      // não gasta bateria com o vídeo fora da tela
+      if ('IntersectionObserver' in window && !(reduzido || economia)) {
+        new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { if (!v.dataset.pausadoPorMim) v.play().catch(function () {}); } else if (!v.paused) { v.pause(); } }); }, { threshold: 0.15 }).observe(document.getElementById('hero'));
+      }
+      pintar();
+    }
 
     aplicar('stickyTitulo', 'sticky.titulo');
     aplicar('stickyCta', 'sticky.cta_label');
@@ -868,6 +971,7 @@
       document.getElementById('heroCta').style.display = 'none';
       document.getElementById('heroConvite').hidden = true;
       document.getElementById('deadlineChip').textContent = t('savethedate.texto', '');
+      document.getElementById('heroCtaWrap').style.display = ''; // a mensagem do Save the Date vive nesse bloco
       modoSaveTheDate = true;
     }
 
@@ -1162,7 +1266,7 @@
 
         // capa e cabeçalho personalizados com o nome do grupo
         if (data.grupo && !modoSaveTheDate) {
-          const convite = $('heroConvite'); convite.textContent = 'Convite para ' + data.grupo; convite.hidden = false;
+          const convite = $('heroConvite'); convite.textContent = 'Convite para ' + data.grupo; convite.hidden = t('hero.mostrar_convite', '1') === '0';
           $('rsvpGrupoNome').textContent = data.grupo;
         }
         $('rsvpInstrucao').textContent = data.convidados.length > 1 ? 'Toque no nome de cada pessoa que vai.' : 'Toque no seu nome para confirmar.';
@@ -1378,9 +1482,16 @@
   const heroCta = document.querySelector('.hero .pill');
   const rsvpSection = document.getElementById('rsvp');
   let heroVisible = true, rsvpVisible = false, rsvpRespondido = false;
+  // Sem o botão na capa (desligado no painel), o botão fixo aparece quando mais da metade da capa já saiu da tela
+  let capaVisivel = true;
   new IntersectionObserver(e=>{ heroVisible = e[e.length-1].isIntersecting; updateSticky(); },{threshold:0}).observe(heroCta);
+  new IntersectionObserver(e=>{ capaVisivel = e[e.length-1].intersectionRatio > 0.5; updateSticky(); },{threshold:[0,0.25,0.5,0.75,1]}).observe(document.getElementById('hero'));
   new IntersectionObserver(e=>{ rsvpVisible = e[e.length-1].isIntersecting; updateSticky(); },{threshold:0}).observe(rsvpSection);
-  function updateSticky(){ if(!heroVisible && !rsvpVisible && !rsvpRespondido) sticky.classList.add('show'); else sticky.classList.remove('show'); }
+  function updateSticky(){
+    const botaoDaCapaOculto = getComputedStyle(document.getElementById('heroCtaWrap')).display === 'none';
+    const capaEmFoco = botaoDaCapaOculto ? capaVisivel : heroVisible;
+    if(!capaEmFoco && !rsvpVisible && !rsvpRespondido) sticky.classList.add('show'); else sticky.classList.remove('show');
+  }
 </script>
 </body>
 </html>

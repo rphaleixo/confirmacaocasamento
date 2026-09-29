@@ -408,6 +408,23 @@
   .campo-checkbox label{margin:0;font-weight:500;font-size:13.5px;cursor:pointer;}
   .separador-campo{margin:24px 0 2px;padding-top:16px;border-top:1px solid var(--line-soft);font-weight:700;font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;}
   .sugestao{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;background:var(--info-bg);color:var(--info);border:none;border-radius:999px;padding:4px 11px;cursor:pointer;font-weight:600;}
+  /* mídia da capa (imagem ou vídeo) */
+  .midia-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--surface-2,#F1F4F9);border:1px solid var(--line);margin:4px 0 14px;}
+  .midia-tabs button{border:none;background:transparent;border-radius:9px;padding:9px 18px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;font-family:inherit;}
+  .midia-tabs button.on{background:var(--navy);color:#fff;}
+  .video-vazio{border:2px dashed var(--line);border-radius:14px;padding:22px;text-align:center;background:var(--surface-2,#F8F9FC);}
+  .video-vazio ul{text-align:left;margin:12px auto 0;padding-left:18px;max-width:440px;font-size:12.5px;color:var(--ink-soft);}
+  .video-atual{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  .video-atual video{width:150px;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:#000;border:1px solid var(--line);}
+  .video-info{flex:1;min-width:220px;font-size:13px;color:var(--ink-soft);}
+  .barra-envio{height:8px;border-radius:99px;background:#E4E9F1;overflow:hidden;margin:10px 0 4px;} .barra-envio i{display:block;height:100%;width:0;background:var(--navy);transition:width .15s;}
+  .aviso-midia{margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:500;}
+  .campo-liga{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .campo-liga:last-of-type{border-bottom:none;} .campo-liga .rot{font-size:13.5px;font-weight:600;color:var(--ink);} .campo-liga .sub{font-size:12px;color:var(--ink-soft);font-weight:400;display:block;}
+  .previas-capa{display:flex;gap:26px;align-items:flex-end;flex-wrap:wrap;margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2,#F8F9FC);}
+  .previas-capa .rot{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+  .mock-cel{border-radius:22px;border:6px solid #1B2433;overflow:hidden;box-shadow:0 10px 26px rgba(20,40,66,.25);background:#000;}
+  .mock-desk{border-radius:10px;border:1px solid #C9D1DE;overflow:hidden;box-shadow:0 10px 26px rgba(20,40,66,.18);position:relative;background:#EAF1FB;}
   .campo-foto{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap;}
   .campo-foto img,.campo-foto .sem-foto{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);flex-shrink:0;}
   .campo-foto .sem-foto{border-style:dashed;display:grid;place-items:center;font-size:11px;color:var(--ink-faint);text-align:center;padding:6px;}
@@ -2272,6 +2289,18 @@
 
   const GRUPOS_CONTEUDO = [
     { titulo: 'Capa', ancora: 'hero', campos: [
+      { chave: '__sep_midia__', tipo: 'separador', label: 'Imagem ou vídeo da capa' },
+      { chave: '__midia__', tipo: 'midia_capa' },
+      { chave: '__sep_textos__', tipo: 'separador', label: 'O que aparece sobre a imagem ou o vídeo' },
+      { chave: '__nota_textos__', tipo: 'nota', label: 'Desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
+      { chave: 'hero.mostrar_eyebrow', tipo: 'liga', label: 'Texto pequeno acima do nome' },
+      { chave: 'hero.mostrar_nomes', tipo: 'liga', label: 'Nomes (e idade, no aniversário)' },
+      { chave: 'hero.mostrar_data', tipo: 'liga', label: 'Data' },
+      { chave: 'hero.mostrar_horario', tipo: 'liga', label: 'Horário' },
+      { chave: 'hero.mostrar_botao', tipo: 'liga', label: 'Botão de confirmar e prazo', sub: 'Com o botão desligado, o botão fixo de confirmação aparece só depois que a capa sai da tela.' },
+      { chave: 'hero.mostrar_convite', tipo: 'liga', label: 'Saudação com o nome do grupo', sub: 'Ex.: "Convite para Família Lima". Só aparece em convites individuais.' },
+      { chave: '__previa_capa__', tipo: 'previa_capa' },
+      { chave: '__sep_nomes__', tipo: 'separador', label: 'Textos da capa' },
       { chave: 'hero.eyebrow', label: 'Texto pequeno acima do nome', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".' },
       { chave: 'hero.noiva', label: 'Nome da noiva' },
       { chave: 'hero.noivo', label: 'Nome do noivo', tipos: ['casamento'] },
@@ -2282,9 +2311,8 @@
       { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
       { chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Depois dessa data o site avisa que o prazo terminou, mas ainda aceita respostas.', sugere: { 'hero.prazo_display': 'curto' } },
       { chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
-      { chave: '__sep_capa__', tipo: 'separador', label: 'Botão e foto' },
+      { chave: '__sep_capa__', tipo: 'separador', label: 'Botão' },
       { chave: 'hero.cta_label', label: 'Texto do botão principal' },
-      { chave: 'hero.foto_url', label: 'Foto de capa', tipo: 'foto', aspecto: 3/4, dica: 'Tamanho ideal: 1200×1600px, na vertical. O site é visto no celular, então prefira fotos em pé.' },
     ]},
     { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
       { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
@@ -2579,8 +2607,252 @@
     return i;
   }
 
+  // ----- vídeo da capa: leitura do arquivo, quadro de apoio e envio com barra de progresso -----
+  function tipoDoVideo(file) {
+    const n = (file.name || '').toLowerCase();
+    if (file.type && /^video\//.test(file.type)) return file.type;
+    return n.endsWith('.webm') ? 'video/webm' : n.endsWith('.mov') ? 'video/quicktime' : 'video/mp4';
+  }
+  function lerVideo(file) {
+    // devolve { largura, altura, duracao, quadro (Blob JPEG) } ou { erro }
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.preload = 'metadata'; v.src = url;
+      let terminou = false;
+      const fim = (r) => { if (terminou) return; terminou = true; URL.revokeObjectURL(url); resolve(r); };
+      const limite = setTimeout(() => fim({ erro: 'Este navegador não conseguiu abrir o vídeo. Use um arquivo MP4 (H.264) ou WebM.' }), 9000);
+      v.onerror = () => { clearTimeout(limite); fim({ erro: 'Este navegador não conseguiu abrir o vídeo. Use um arquivo MP4 (H.264) ou WebM.' }); };
+      v.onloadedmetadata = () => {
+        const info = { largura: v.videoWidth, altura: v.videoHeight, duracao: v.duration };
+        v.onseeked = () => {
+          clearTimeout(limite);
+          try {
+            const esc = Math.min(1, 720 / (v.videoWidth || 720));
+            const c = document.createElement('canvas'); c.width = Math.round(v.videoWidth * esc); c.height = Math.round(v.videoHeight * esc);
+            c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+            c.toBlob((blob) => fim(Object.assign(info, { quadro: blob })), 'image/jpeg', 0.82);
+          } catch (e) { fim(info); }
+        };
+        try { v.currentTime = Math.min(0.4, (v.duration || 1) / 2); } catch (e) { clearTimeout(limite); fim(info); }
+      };
+    });
+  }
+  function enviarVideo(file, aoProgresso) {
+    return new Promise((resolve) => {
+      const x = new XMLHttpRequest();
+      x.open('POST', '/api/admin/upload?nome=' + encodeURIComponent(file.name || 'video.mp4'));
+      x.setRequestHeader('Content-Type', tipoDoVideo(file));
+      if (AUTH) x.setRequestHeader('Authorization', AUTH);
+      x.upload.onprogress = (e) => { if (e.lengthComputable) aoProgresso(e.loaded / e.total); };
+      x.onload = () => {
+        if (x.status === 401) { sessaoExpirada(); resolve({ erro: 'Sua sessão terminou. Entre de novo.' }); return; }
+        try { resolve(JSON.parse(x.responseText)); } catch (e) { resolve({ erro: (x.responseText || '').slice(0, 160) || ('Erro ' + x.status) }); }
+      };
+      x.onerror = () => resolve({ erro: 'Sem conexão com o servidor. Confira sua internet e tente de novo.' });
+      x.send(file);
+    });
+  }
+  const LIMITE_VIDEO_MB = 40;
+
+  // Miniatura da capa no tamanho real do site (460×900), reduzida por "escala". Serve para celular e para computador.
+  function criarCapaMock(escala) {
+    const CAT = window.FONTES_CATALOGO;
+    const raiz = h('div', { style: 'width:' + Math.round(460 * escala) + 'px;height:' + Math.round(900 * escala) + 'px;overflow:hidden;position:relative;flex-shrink:0;' });
+    const cap = h('div', { style: 'position:absolute;left:0;top:0;width:460px;height:900px;transform:scale(' + escala + ');transform-origin:0 0;overflow:hidden;color:#fff;font-family:system-ui,sans-serif;' });
+    const fundo = h('div', { style: 'position:absolute;inset:0;' });
+    const camadaMidia = h('div', { style: 'position:absolute;inset:0;' });
+    const veu = h('div', { style: 'position:absolute;inset:0;' });
+    const fade = h('div', { style: 'position:absolute;left:0;right:0;bottom:0;height:108px;' });
+    const eb = h('div', { style: 'font-size:12px;letter-spacing:.18em;text-transform:uppercase;' });
+    const nomes = h('div', { style: 'font-size:60px;line-height:.98;margin:10px 0 14px;' });
+    const data = h('div', { style: 'font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;' });
+    const hor = h('div', { style: 'font-size:15px;margin-bottom:26px;' });
+    const cta = h('div', { style: 'display:inline-block;background:#fff;padding:16px 26px;border-radius:999px;font-size:17px;width:100%;' });
+    const prazo = h('div', { style: 'font-size:12px;margin-top:10px;opacity:.85;' });
+    const botao = h('div', {}, cta, prazo);
+    const conteudo = h('div', { style: 'position:absolute;left:0;right:0;bottom:0;padding:0 28px 40px;text-align:center;' }, eb, nomes, data, hor, botao);
+    cap.append(fundo, camadaMidia, veu, fade, conteudo);
+    raiz.appendChild(cap);
+    let chaveMidia = '';
+    return {
+      el: raiz,
+      atualizar(e) {
+        const fTitulo = CAT.porId[e.fonteTitulo] || CAT.porId['cormorant-garamond'];
+        CAT.carregar(fTitulo);
+        const grad = 'linear-gradient(160deg,' + e.p + ' 0%,' + e.p + ' 60%,color-mix(in srgb,' + e.p + ' 70%,black 30%) 100%)';
+        cap.style.background = grad;
+        const base = e.tipo === 'video' ? e.poster : e.foto;
+        fundo.style.background = (e.ajuste === 'inteira' && base) ? 'center/cover url(' + base + ')' : 'transparent';
+        fundo.style.filter = e.ajuste === 'inteira' ? 'blur(26px) brightness(.8)' : 'none';
+        fundo.style.transform = e.ajuste === 'inteira' ? 'scale(1.18)' : 'none';
+        const nova = [e.tipo, e.tipo === 'video' ? e.video : e.foto, e.ajuste].join('|');
+        if (nova !== chaveMidia) {
+          chaveMidia = nova; camadaMidia.innerHTML = '';
+          const estilo = 'position:absolute;inset:0;width:100%;height:100%;object-fit:' + (e.ajuste === 'inteira' ? 'contain' : 'cover') + ';';
+          if (e.tipo === 'video' && e.video) {
+            const v = h('video', { style: estilo, muted: true, loop: true, autoplay: true, playsinline: true, preload: 'auto' });
+            v.muted = true; v.src = e.video; if (e.poster) v.poster = e.poster; camadaMidia.appendChild(v); v.play().catch(() => {});
+          } else if (e.tipo !== 'video' && e.foto) {
+            camadaMidia.appendChild(h('img', { style: estilo, src: e.foto, alt: '' }));
+          }
+        }
+        veu.style.background = e.veu ? 'linear-gradient(180deg,rgba(0,0,0,.35) 0%,transparent 14%,rgba(0,0,0,.72) 92%)' : 'transparent';
+        fade.style.background = 'linear-gradient(0deg,' + e.f + ' 0%,transparent 100%)';
+        const oc = (el, ligado) => { el.style.display = ligado ? '' : 'none'; };
+        eb.textContent = e.eyebrow; eb.style.color = e.d; oc(eb, e.mostrar.eyebrow);
+        nomes.textContent = e.nomes; nomes.style.fontFamily = CAT.familia(fTitulo); nomes.style.fontStyle = fTitulo.estiloTitulo; oc(nomes, e.mostrar.nomes);
+        data.textContent = e.data; oc(data, e.mostrar.data);
+        hor.textContent = e.horario; hor.style.fontFamily = CAT.familia(fTitulo); hor.style.fontStyle = fTitulo.estiloTitulo; oc(hor, e.mostrar.horario);
+        cta.textContent = e.cta; cta.style.color = e.p; prazo.textContent = e.prazo; oc(botao, e.mostrar.botao);
+      },
+    };
+  }
+
   function renderCampoConteudo(fs, campo) {
     if (campo.tipo === 'separador') { fs.appendChild(h('div', { class: 'separador-campo', text: campo.label })); return; }
+    if (campo.tipo === 'nota') { fs.appendChild(h('div', { class: 'dica-campo', style: 'margin:0 0 6px;', text: campo.label })); return; }
+    if (campo.tipo === 'liga') {
+      const chk = h('input', { type: 'checkbox', 'data-chave': campo.chave, id: 'liga-' + campo.chave.replace(/\W/g, '-') });
+      chk.checked = ctDados[campo.chave] !== '0'; // ligado, a não ser que tenha sido desligado
+      fs.appendChild(h('div', { class: 'campo-liga' },
+        h('label', { class: 'rot', for: chk.id }, campo.label, campo.sub ? h('span', { class: 'sub', text: campo.sub }) : null),
+        h('label', { class: 'switch', for: chk.id }, chk, h('span', { class: 'trilho' }))));
+      return;
+    }
+    if (campo.tipo === 'midia_capa') {
+      const emitir = (el) => el.dispatchEvent(new Event('input', { bubbles: true }));
+      const oculto = (chave, def) => { const i = h('input', { type: 'hidden', 'data-chave': chave }); i.value = ctDados[chave] || def || ''; return i; };
+      const hTipo = oculto('hero.midia_tipo', 'imagem'), hFoto = oculto('hero.foto_url'), hVideo = oculto('hero.video_url'), hPoster = oculto('hero.video_poster_url');
+      if (hTipo.value !== 'video') hTipo.value = 'imagem';
+      fs.append(hTipo, hFoto, hVideo, hPoster);
+      const painelImg = h('div'), painelVid = h('div');
+      const abas = h('div', { class: 'midia-tabs', role: 'tablist', 'aria-label': 'Tipo de mídia da capa' });
+      const bImg = h('button', { type: 'button', role: 'tab', text: 'Imagem' }), bVid = h('button', { type: 'button', role: 'tab', text: 'Vídeo' });
+      abas.append(bImg, bVid);
+      const mostrar = (tipo, avisar) => {
+        hTipo.value = tipo;
+        bImg.classList.toggle('on', tipo === 'imagem'); bVid.classList.toggle('on', tipo === 'video');
+        bImg.setAttribute('aria-selected', String(tipo === 'imagem')); bVid.setAttribute('aria-selected', String(tipo === 'video'));
+        painelImg.hidden = tipo !== 'imagem'; painelVid.hidden = tipo !== 'video';
+        if (avisar) emitir(hTipo);
+      };
+      bImg.addEventListener('click', () => mostrar('imagem', true));
+      bVid.addEventListener('click', () => mostrar('video', true));
+
+      // imagem
+      painelImg.append(
+        campoFotoUI(hFoto.value, 3 / 4, (url) => { hFoto.value = url; emitir(hFoto); }),
+        h('div', { class: 'dica-campo', text: 'Tamanho ideal: 1200×1600 px, na vertical. O site é visto no celular, então prefira fotos em pé. Se a imagem já tem nomes e data, desligue os textos abaixo.' }));
+
+      // vídeo
+      const avisos = h('div');
+      const desenharVideo = () => {
+        painelVid.innerHTML = '';
+        if (hVideo.value) {
+          const prev = h('video', { src: hVideo.value, muted: true, loop: true, playsinline: true, controls: true, preload: 'metadata' });
+          prev.muted = true; if (hPoster.value) prev.poster = hPoster.value;
+          const info = h('div', { class: 'video-info' },
+            h('div', { style: 'font-weight:700;color:var(--ink);margin-bottom:4px;', text: 'Vídeo enviado' }),
+            h('div', { text: hPoster.value ? 'Quadro de apoio criado automaticamente: aparece enquanto o vídeo carrega e forma o fundo desfocado em telas grandes.' : 'Sem quadro de apoio: em telas grandes o fundo usa a cor primária.' }),
+            h('div', { class: 'acoes', style: 'margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;' },
+              btn('Trocar vídeo', () => arquivo.click(), 'sm'),
+              btn('Remover vídeo', () => { hVideo.value = ''; hPoster.value = ''; emitir(hVideo); emitir(hPoster); desenharVideo(); }, 'sm fantasma')));
+          painelVid.appendChild(h('div', { class: 'video-atual' }, prev, info));
+        } else {
+          painelVid.appendChild(h('div', { class: 'video-vazio' },
+            h('div', { style: 'font-weight:700;color:var(--ink);margin-bottom:10px;', text: 'Nenhum vídeo ainda' }),
+            btn('Escolher vídeo', () => arquivo.click(), 'prim'),
+            h('ul', {},
+              h('li', { text: 'Formato: MP4 (H.264) ou WebM. Vídeos de iPhone (.mov) também servem.' }),
+              h('li', { text: 'Ideal na vertical (9:16), como 1080×1920. Em telas grandes ele aparece no meio, com fundo desfocado.' }),
+              h('li', { text: 'Até ' + LIMITE_VIDEO_MB + ' MB; o ideal é menos de 12 MB e de 5 a 15 segundos, para abrir rápido no celular.' }),
+              h('li', { text: 'O vídeo toca sem som e em repetição. O convidado pode pausar ou ativar o som.' }))));
+        }
+        painelVid.appendChild(avisos);
+      };
+      const arquivo = h('input', { type: 'file', accept: 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov', hidden: true });
+      arquivo.addEventListener('change', async () => {
+        const f = arquivo.files[0]; arquivo.value = '';
+        if (!f) return;
+        avisos.innerHTML = '';
+        const aviso = (txt, erro) => avisos.appendChild(h('div', { class: erro ? 'erro-campo' : 'aviso-midia', text: txt }));
+        if (f.size > LIMITE_VIDEO_MB * 1024 * 1024) { aviso('O vídeo tem ' + (f.size / 1048576).toFixed(0) + ' MB e o limite é ' + LIMITE_VIDEO_MB + ' MB. Comprima o vídeo (ou reduza para 720×1280) e tente de novo.', true); return; }
+        const progresso = h('i'); const barra = h('div', { class: 'barra-envio' }, progresso);
+        const rotulo = h('div', { style: 'font-size:12.5px;color:var(--ink-soft);', text: 'Lendo o vídeo…' });
+        avisos.append(barra, rotulo);
+        const meta = await lerVideo(f);
+        if (meta.erro) { avisos.innerHTML = ''; aviso(meta.erro, true); return; }
+        rotulo.textContent = 'Enviando o vídeo…';
+        const d = await enviarVideo(f, (x) => { progresso.style.width = Math.round(x * 100) + '%'; rotulo.textContent = 'Enviando o vídeo… ' + Math.round(x * 100) + '%'; });
+        if (d.erro) { avisos.innerHTML = ''; aviso(d.erro, true); return; }
+        let poster = '';
+        if (meta.quadro) { rotulo.textContent = 'Criando o quadro de apoio…'; const dp = await enviarImagem(meta.quadro); if (!dp.erro) poster = dp.url; }
+        barra.remove(); rotulo.remove(); // envio concluído
+        hVideo.value = d.url; hPoster.value = poster; hTipo.value = 'video';
+        desenharVideo(); mostrar('video', false);
+        emitir(hVideo); emitir(hPoster); emitir(hTipo);
+        if (meta.altura && meta.largura && meta.largura > meta.altura) aviso('O vídeo está na horizontal. No celular as laterais serão cortadas: grave na vertical (9:16) ou escolha "Mostrar inteira" abaixo.');
+        if (meta.duracao > 30) aviso('O vídeo tem ' + Math.round(meta.duracao) + ' segundos. Vídeos de 5 a 15 segundos em repetição funcionam melhor.');
+        if (f.size > 15 * 1048576) aviso('O arquivo tem ' + (f.size / 1048576).toFixed(0) + ' MB e pode demorar a abrir no celular. Se possível, reduza a resolução para 720×1280.');
+        toast('Vídeo enviado. Salve para publicar no site.');
+      });
+      desenharVideo();
+      mostrar(hTipo.value, false);
+
+      fs.append(abas, painelImg, painelVid, arquivo);
+
+      // ajustes comuns
+      const selAjuste = h('select', { 'data-chave': 'hero.enquadramento' });
+      [['preencher', 'Preencher a tela (corta o que passar das bordas)'], ['inteira', 'Mostrar inteira (com fundo desfocado ao redor)']].forEach(([v, r]) => { const o = new Option(r, v); if ((ctDados['hero.enquadramento'] || 'preencher') === v) o.selected = true; selAjuste.appendChild(o); });
+      const chkVeu = h('input', { type: 'checkbox', 'data-chave': 'hero.veu', id: 'liga-hero-veu' }); chkVeu.checked = ctDados['hero.veu'] !== '0';
+      fs.append(
+        h('label', { for: 'sel-enq', style: 'margin-top:16px;', text: 'Enquadramento' }), selAjuste,
+        h('div', { class: 'dica-campo', text: 'Vídeo ou foto na vertical combinam com "Preencher". Vídeo na horizontal fica melhor em "Mostrar inteira".' }),
+        h('div', { class: 'campo-liga', style: 'margin-top:8px;' },
+          h('label', { class: 'rot', for: 'liga-hero-veu' }, 'Escurecer a mídia para dar leitura ao texto', h('span', { class: 'sub', text: 'Desligue se a sua imagem ou vídeo já tem bom contraste ou já traz o texto.' })),
+          h('label', { class: 'switch', for: 'liga-hero-veu' }, chkVeu, h('span', { class: 'trilho' }))));
+      selAjuste.id = 'sel-enq';
+      return;
+    }
+    if (campo.tipo === 'previa_capa') {
+      const CAT = window.FONTES_CATALOGO;
+      const cel = criarCapaMock(200 / 460);
+      const deskAlt = 250, esc = deskAlt / 900;
+      const fundoD = h('div', { style: 'position:absolute;inset:-10%;filter:blur(14px) saturate(1.15) brightness(.72);' });
+      const colD = criarCapaMock(esc);
+      const desk = h('div', { class: 'mock-desk', style: 'width:420px;height:' + deskAlt + 'px;display:flex;justify-content:center;' }, fundoD, h('div', { style: 'position:relative;' }, colD.el));
+      fs.appendChild(h('div', { class: 'previas-capa' },
+        h('div', {}, h('div', { class: 'rot', text: 'No celular' }), h('div', { class: 'mock-cel' }, cel.el)),
+        h('div', {}, h('div', { class: 'rot', text: 'No computador' }), desk),
+        h('div', { class: 'dica-campo', style: 'flex-basis:100%;margin:0;', text: 'Prévia aproximada. No computador, a capa fica numa coluna no centro, com o fundo desfocado ao redor.' })));
+      const raiz = fs;
+      const ler = (k, def) => { const e = raiz.querySelector('[data-chave="' + k + '"]'); if (!e) return ctDados[k] !== undefined && ctDados[k] !== '' ? ctDados[k] : def; return e.type === 'checkbox' ? (e.checked ? '1' : '0') : (e.value !== '' ? e.value : def); };
+      const atualizar = () => {
+        const leg = CAT.legado[ctDados['aparencia.fontes']] || CAT.legado.classico;
+        const aniv = ctDados._tipo === 'aniversario';
+        const tipo = ler('hero.midia_tipo', 'imagem');
+        const estado = {
+          tipo, foto: ler('hero.foto_url', ''), video: ler('hero.video_url', ''), poster: ler('hero.video_poster_url', ''),
+          ajuste: ler('hero.enquadramento', 'preencher'), veu: ler('hero.veu', '1') !== '0',
+          p: ctDados['aparencia.cor_primaria'] || '#0B2545', d: ctDados['aparencia.cor_destaque'] || '#C9A227', f: ctDados['aparencia.cor_fundo'] || '#EAF1FB',
+          fonteTitulo: ctDados['aparencia.fonte_titulo'] || leg.titulo,
+          eyebrow: ler('hero.eyebrow', aniv ? 'Você é nosso convidado' : 'Nosso casamento'),
+          nomes: aniv ? ler('hero.noiva', 'Nome') : ler('hero.noiva', 'Noiva') + ' & ' + ler('hero.noivo', 'Noivo'),
+          data: ler('hero.data_display', '12 de junho de 2027'), horario: ler('hero.horario_display', 'às 15h00'),
+          cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio'),
+          mostrar: { eyebrow: ler('hero.mostrar_eyebrow', '1') !== '0', nomes: ler('hero.mostrar_nomes', '1') !== '0', data: ler('hero.mostrar_data', '1') !== '0', horario: ler('hero.mostrar_horario', '1') !== '0', botao: ler('hero.mostrar_botao', '1') !== '0' },
+        };
+        cel.atualizar(estado); colD.atualizar(estado);
+        const base = tipo === 'video' ? estado.poster : estado.foto;
+        fundoD.style.background = base ? 'center/cover url(' + base + ')' : 'linear-gradient(160deg,' + estado.p + ',color-mix(in srgb,' + estado.p + ' 70%, black 30%))';
+      };
+      setTimeout(atualizar, 0);
+      let agenda = null;
+      const agendar = () => { clearTimeout(agenda); agenda = setTimeout(atualizar, 60); };
+      fs.addEventListener('input', agendar); fs.addEventListener('change', agendar);
+      return;
+    }
 
     if (campo.tipo === 'paletas') {
       const aplicarCores = (cores) => {
