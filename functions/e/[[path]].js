@@ -1,3 +1,5 @@
+import { dadosDeCompartilhamento, tagsDeCompartilhamento } from '../_compartilhar.js';
+
 // Cada evento vive em /e/<slug> (site), /e/<slug>/presentes (lista de presentes) e /e/<slug>/admin (painel do anfitrião).
 // O HTML é o mesmo pra todos — a página lê o slug da URL e usa só os dados daquele evento.
 // Se o slug não existir, 404. Cada abertura do site conta uma visita (agregada por dia).
@@ -5,7 +7,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const url = new URL(request.url);
   const partes = url.pathname.split('/').filter(Boolean); // ['e', slug, 'admin'?]
   const slug = (partes[1] || '').toLowerCase();
-  const evento = slug ? await env.DB.prepare('SELECT id FROM eventos WHERE slug = ?').bind(slug).first() : null;
+  const evento = slug ? await env.DB.prepare('SELECT id, slug, nome, tipo FROM eventos WHERE slug = ?').bind(slug).first() : null;
   if (!evento) return new Response('Evento não encontrado.', { status: 404 });
 
   if (partes[2] !== 'admin' && partes[2] !== 'presentes' && url.searchParams.get('previa') !== '1') { // a prévia do painel não conta como visita
@@ -19,5 +21,22 @@ export async function onRequestGet({ request, env, waitUntil }) {
   }
 
   const destino = partes[2] === 'admin' ? '/admin/' : partes[2] === 'presentes' ? '/presentes/' : '/';
-  return env.ASSETS.fetch(new URL(destino, url));
+  const pagina = await env.ASSETS.fetch(new URL(destino, url));
+  if (partes[2]) return pagina;
+
+  // Site do convite: injeta título, descrição e imagem de compartilhamento (miniatura do WhatsApp) já no HTML,
+  // porque quem gera a prévia do link não executa JavaScript. Se algo falhar, a página segue sem as tags.
+  try {
+    const d = await dadosDeCompartilhamento(env.DB, evento, url.origin);
+    const tags = tagsDeCompartilhamento(d);
+    const saida = new HTMLRewriter()
+      .on('head', { element(el) { el.prepend(tags, { html: true }); } })
+      .on('title', { element(el) { el.setInnerContent(d.titulo); } })
+      .transform(pagina);
+    const cab = new Headers(saida.headers);
+    cab.delete('etag'); cab.set('cache-control', 'no-cache');
+    return new Response(saida.body, { status: saida.status, headers: cab });
+  } catch (e) {
+    return pagina;
+  }
 }

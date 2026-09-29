@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="/fontes.js"></script>
+<script src="/compartilhar.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
 <script src="/html-seguro.js"></script>
@@ -351,6 +352,13 @@
     .tabela-wrap.lb-wrap{background:none;border:none;overflow:visible;}
     .lb-bulk select{flex:1 1 140px;}
   }
+  /* ---------- compartilhamento (miniatura do link) ---------- */
+  .cp-bloco{margin:0 0 18px;} .cp-rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px;}
+  .cp-cartao{max-width:420px;background:#F0F2F5;border-radius:14px;overflow:hidden;border:1px solid var(--line);}
+  .cp-img{aspect-ratio:1200/630;background:var(--muted-bg);display:grid;place-items:center;overflow:hidden;} .cp-img canvas,.cp-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cp-espera{font-size:12.5px;color:var(--ink-soft);}
+  .cp-txt{padding:9px 12px 11px;background:#fff;} .cp-tit{font-size:14.5px;font-weight:600;color:#111B21;line-height:1.3;overflow-wrap:anywhere;} .cp-desc{font-size:13px;color:#667781;margin-top:2px;line-height:1.35;overflow-wrap:anywhere;} .cp-dom{font-size:12px;color:#8696A0;margin-top:4px;}
+  .cp-acoes{margin-top:10px;display:flex;gap:8px;}
   .tabela-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);}
   table{width:100%;border-collapse:collapse;}
   th,td{padding:11px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
@@ -1503,6 +1511,7 @@
     fetchOriginal('/api/conteudo?e=' + encodeURIComponent(eventoAtual)).then((r) => r.json()).then((d) => {
       const mods = modulosDoTipo(d);
       if (mods && mods.indexOf('presentes') === -1) { const bp = document.querySelector('#navEvento [data-area=presentes]'); if (bp) bp.hidden = true; }
+      agendarCompartilhar(Object.assign({}, d));
       if (d._nome) { document.getElementById('tituloAdmin').textContent = d._nome; document.title = d._nome + ' • Painel'; }
       const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
       sub.appendChild(h('span', { class: 'hd-badge', text: tipos[d._tipo] || d._tipo || '' }));
@@ -3106,6 +3115,78 @@
     ['destaque', 'Só os dias', 'Número gigante'], ['faixa', 'Faixa', 'Uma linha, compacta'], ['cartao', 'Cartão único', 'Um quadro com divisórias'],
   ].map(([valor, label, desc]) => ({ valor, label, desc, desenho: () => desenhoContagem(valor) }));
 
+  // =====================================================================
+  //  COMPARTILHAMENTO: imagem de miniatura do link (WhatsApp e outros)
+  // =====================================================================
+  // Monta o que a imagem precisa a partir do conteúdo do evento (mesmas regras de padrão do site).
+  function opCompartilhar(d) {
+    const CAT = window.FONTES_CATALOGO;
+    const v = (k, pad) => (d[k] === undefined || d[k] === null || String(d[k]).trim() === '' ? pad : String(d[k]).trim());
+    const aniv = d._tipo === 'aniversario';
+    const dataTxt = window.FORMATA_DATA(v('hero.data_iso', ''), d['hero.data_formato'] || 'texto', d['hero.dia_semana'] || 'nao', d['hero.data_display'] === undefined ? '12 de junho de 2027' : d['hero.data_display']);
+    const hor = d['hero.horario_display'] === undefined ? 'às 15h00' : String(d['hero.horario_display']).trim();
+    const foto = d['compartilhar.usar_foto'] === '0' ? '' : (d['hero.midia_tipo'] === 'video' ? d['hero.video_poster_url'] : d['hero.foto_url']) || '';
+    return {
+      estilo: v('compartilhar.estilo', 'foto'),
+      tipo: aniv ? 'aniversario' : 'casamento',
+      nome1: aniv ? v('hero.noiva', '') : v('hero.noiva', 'Noiva'),
+      nome2: aniv ? '' : v('hero.noivo', 'Noivo'),
+      data: dataTxt + (dataTxt && hor ? ' · ' + hor : ''),
+      eyebrow: v('compartilhar.frase_imagem', 'Você está convidado(a)'),
+      cores: { primaria: v('aparencia.cor_primaria', '#0B2545'), secundaria: v('aparencia.cor_secundaria', '#2F5D9A'), destaque: v('aparencia.cor_destaque', '#C9A227'), fundo: v('aparencia.cor_fundo', '#EAF1FB'), texto: v('aparencia.cor_texto', '#14213D') },
+      fonteTitulo: CAT.porId[d['aparencia.fonte_titulo']] || CAT.porId['cormorant-garamond'],
+      fonteTexto: CAT.porId[d['aparencia.fonte_texto']] || CAT.porId['inter'],
+      foto,
+    };
+  }
+  async function enviarImagemCompartilhar(blob) {
+    try {
+      const r = await fetch('/api/admin/upload?nome=compartilhar.jpg', { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      return await r.json();
+    } catch (e) { return { erro: 'Sem conexão.' }; }
+  }
+  // Devolve as chaves que precisam ser gravadas para o link mostrar a imagem certa (vazio = já está em dia).
+  async function sincronizarCompartilhar(dados, pronto) {
+    const op = opCompartilhar(dados), sig = window.COMPARTILHAR.assinatura(op);
+    const propria = String(dados['compartilhar.imagem_propria'] || '').trim();
+    const extras = {};
+    if (!propria && (sig !== dados['compartilhar.assinatura'] || !dados['compartilhar.imagem_url'])) {
+      const r = pronto && pronto.sig === sig ? pronto : await window.COMPARTILHAR.desenhar(op);
+      if (r.fontesOk) {
+        const blob = await window.COMPARTILHAR.paraJpeg(r.canvas);
+        const up = blob ? await enviarImagemCompartilhar(blob) : {};
+        if (up && up.url) { extras['compartilhar.imagem_url'] = up.url; extras['compartilhar.assinatura'] = sig; }
+      }
+    }
+    // a data por extenso acompanha a imagem: o servidor a usa na descrição da mensagem
+    if ((Object.keys(extras).length || propria) && dados['compartilhar.data_texto'] !== op.data) extras['compartilhar.data_texto'] = op.data;
+    return extras;
+  }
+  // Mantém a imagem em dia sozinha: depois de abrir o painel e de cada salvamento, confere se algo que aparece nela mudou.
+  let cpAgenda = null, cpRodando = false;
+  function agendarCompartilhar(dados) {
+    clearTimeout(cpAgenda);
+    cpAgenda = setTimeout(async () => {
+      const d = dados || ctDados;
+      if (cpRodando || !d || !d._tipo || !eventoAtual) return;
+      cpRodando = true;
+      try {
+        const extras = await sincronizarCompartilhar(d);
+        if (Object.keys(extras).length) {
+          const r = await api('/api/admin/conteudo', 'POST', extras);
+          if (!r.erro) Object.assign(ctDados, extras);
+        }
+      } catch (e) { /* tenta de novo no próximo salvamento */ } finally { cpRodando = false; }
+    }, 1500);
+  }
+
+  const DESENHO_COMPARTILHAR = {
+    foto: (d) => '<svg viewBox="0 0 100 52"><rect width="100" height="52" rx="5" fill="' + corEv(d, 'aparencia.cor_secundaria', '#2F5D9A') + '"/><rect width="100" height="52" rx="5" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '" opacity=".55"/><rect x="3" y="3" width="94" height="46" rx="2" fill="none" stroke="' + corEv(d, 'aparencia.cor_destaque', '#C9A227') + '"/><rect x="26" y="18" width="48" height="7" rx="3" fill="#fff"/><rect x="34" y="30" width="32" height="3" rx="1.5" fill="#fff" opacity=".8"/></svg>',
+    classico: (d) => '<svg viewBox="0 0 100 52"><rect width="100" height="52" rx="5" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/><rect x="3" y="3" width="94" height="46" rx="2" fill="none" stroke="' + corEv(d, 'aparencia.cor_destaque', '#C9A227') + '"/><circle cx="50" cy="12" r="5" fill="none" stroke="' + corEv(d, 'aparencia.cor_destaque', '#C9A227') + '"/><rect x="28" y="22" width="44" height="7" rx="3" fill="#fff"/><rect x="36" y="34" width="28" height="3" rx="1.5" fill="#fff" opacity=".8"/></svg>',
+    claro: (d) => '<svg viewBox="0 0 100 52"><rect width="100" height="52" rx="5" fill="' + corEv(d, 'aparencia.cor_fundo', '#EAF1FB') + '"/><path d="M0 12 C15 6 25 16 38 6" stroke="' + corEv(d, 'aparencia.cor_secundaria', '#2F5D9A') + '" fill="none" stroke-width="1.5"/><path d="M100 42 C85 48 75 38 62 46" stroke="' + corEv(d, 'aparencia.cor_secundaria', '#2F5D9A') + '" fill="none" stroke-width="1.5"/><rect x="26" y="18" width="48" height="7" rx="3" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/><rect x="34" y="30" width="32" height="3" rx="1.5" fill="' + corEv(d, 'aparencia.cor_destaque', '#C9A227') + '"/></svg>',
+    arco: (d) => '<svg viewBox="0 0 100 52"><rect width="100" height="52" rx="5" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/><path d="M66 48 V22 a14 14 0 0 1 28 0 V48 Z" fill="' + corEv(d, 'aparencia.cor_secundaria', '#2F5D9A') + '" stroke="' + corEv(d, 'aparencia.cor_destaque', '#C9A227') + '"/><rect x="8" y="16" width="44" height="6" rx="3" fill="#fff"/><rect x="8" y="26" width="30" height="6" rx="3" fill="#fff"/><rect x="8" y="37" width="34" height="3" rx="1.5" fill="#fff" opacity=".8"/></svg>',
+  };
+
   const CORES_DA_PALETA = [['aparencia.cor_primaria', 'Primária', '#0B2545'], ['aparencia.cor_secundaria', 'Secundária', '#2F5D9A'], ['aparencia.cor_destaque', 'Destaque', '#C9A227'], ['aparencia.cor_fundo', 'Fundo', '#EAF1FB'], ['aparencia.cor_texto', 'Texto', '#14213D']];
 
   const GRUPOS_CONTEUDO = [
@@ -3286,6 +3367,17 @@
       { chave: 'sticky.subtexto_template', label: 'Texto pequeno da barra', dica: 'Use {prazo} para mostrar o prazo de confirmação.' },
       { chave: 'sticky.cta_label', label: 'Texto do botão da barra' },
     ]},
+    { titulo: 'Compartilhamento (WhatsApp)', campos: [
+      { chave: '__compartilhar_previa__', tipo: 'compartilhar_previa' },
+      { chave: 'compartilhar.estilo', tipo: 'escolha_visual', label: 'Estilo da imagem', padrao: 'foto', colunas: 2, opcoes: (window.COMPARTILHAR ? window.COMPARTILHAR.ESTILOS : [{ id: 'foto', nome: 'Foto e véu', desc: '' }]).map((e) => ({ valor: e.id, label: e.nome, desc: e.desc, desenho: (d) => (DESENHO_COMPARTILHAR[e.id] || (() => ''))(d) })) },
+      { chave: 'compartilhar.frase_imagem', label: 'Frase pequena na imagem', dica: 'Em branco, a imagem usa "Você está convidado(a)".' },
+      { chave: 'compartilhar.usar_foto', tipo: 'liga', label: 'Usar a foto da capa na imagem', sub: 'Vale para os estilos "Foto e véu" e "Arco com foto". Sem foto na capa, a imagem usa as cores do site.' },
+      { chave: '__sep_cp_msg__', tipo: 'separador', label: 'Texto que acompanha a imagem' },
+      { chave: 'compartilhar.msg_titulo', label: 'Título', dica: 'Em branco, usa "Casamento de …" ou "Aniversário de …" com os nomes da capa.' },
+      { chave: 'compartilhar.msg_descricao', label: 'Descrição', tipo: 'textarea', dica: 'Em branco, usa a data e o convite para confirmar presença.' },
+      { chave: '__sep_cp_propria__', tipo: 'separador', label: 'Prefere usar uma imagem sua?' },
+      { chave: 'compartilhar.imagem_propria', label: 'Imagem própria (opcional)', tipo: 'foto', aspecto: 1200 / 630, dica: 'Ideal: 1200 × 630. Se você enviar, ela substitui a imagem criada automaticamente.' },
+    ]},
   ];
   // Cores próprias de cada módulo (etapa "Cores"): só aparecem os papéis que existem naquele módulo.
   const CORES_DOS_MODULOS = {
@@ -3351,12 +3443,13 @@
     if (d.erro) { subnav.innerHTML = ''; form.textContent = 'Não consegui carregar o conteúdo agora. Recarregue a página para tentar de novo.'; return; }
     ctDados = d;
     adaptarAoTipo(ctDados);
+    agendarCompartilhar();
     if (ctGrupoAtivo >= GRUPOS_ATIVOS.length) ctGrupoAtivo = 0;
     subnav.innerHTML = '';
     ctItens = []; ctSubs = [];
     let ultimaCategoria = '';
     GRUPOS_ATIVOS.forEach((grupo, i) => {
-      const categoria = (grupo.titulo === 'Capa' || grupo.especial) ? 'Início' : /Rodap/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
+      const categoria = (grupo.titulo === 'Capa' || grupo.especial) ? 'Início' : /Rodap|Compartilh/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
       if (categoria !== ultimaCategoria) { subnav.appendChild(h('div', { class: 'ct-tit', text: categoria })); ultimaCategoria = categoria; }
       const b = h('button', { type: 'button', class: 'ct-item' + (grupo.especial ? ' std' : '') }, h('span', { text: iconeDoGrupo(grupo), 'aria-hidden': 'true' }), h('span', { class: 'nm', text: grupo.titulo }));
       if (grupo.toggle) b.appendChild(h('span', { class: 'dot' }));
@@ -3395,6 +3488,7 @@
     if (g.toggle) return porToggle[g.toggle] || '▫️';
     if (g.titulo === 'Capa') return '🖼️';
     if (/Confirma/i.test(g.titulo)) return '✅';
+    if (/Compartilh/i.test(g.titulo)) return '📲';
     return '🔻';
   }
   // ---- Save the Date: estado, aviso global e atalhos ----
@@ -3703,6 +3797,52 @@
       };
       fs.addEventListener('input', atualizar); fs.addEventListener('change', atualizar);
       setTimeout(atualizar, 0);
+      return;
+    }
+    if (campo.tipo === 'compartilhar_previa') {
+      // simula o cartão de link do WhatsApp com a imagem e os textos como vão aparecer; a imagem é enviada ao salvar
+      const valor = (k) => { const e = fs.querySelector('[data-chave="' + CSS.escape(k) + '"]'); return e ? (e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value) : (ctDados[k] === undefined ? '' : ctDados[k]); };
+      const dadosAgora = () => { const d = Object.assign({}, ctDados); fs.querySelectorAll('[data-chave]').forEach((e) => { d[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; }); return d; };
+      const imgBox = h('div', { class: 'cp-img' }, h('div', { class: 'cp-espera', text: 'Desenhando a imagem…' }));
+      const titulo = h('div', { class: 'cp-tit' }), desc = h('div', { class: 'cp-desc' });
+      const dominio = h('div', { class: 'cp-dom', text: location.host });
+      const status = h('div', { class: 'dica-campo', 'aria-live': 'polite' });
+      const baixar = btn('Baixar imagem', async () => { if (!ultimo) return; const b = await window.COMPARTILHAR.paraJpeg(ultimo.canvas, 900 * 1024); if (!b) return; const a = h('a', { href: URL.createObjectURL(b), download: 'convite-' + (eventoAtual || 'evento') + '.jpg' }); document.body.appendChild(a); a.click(); a.remove(); }, 'sm');
+      fs.append(h('div', { class: 'cp-bloco' },
+        h('div', { class: 'cp-rot', text: 'Assim o link aparece no WhatsApp' }),
+        h('div', { class: 'cp-cartao' }, imgBox, h('div', { class: 'cp-txt' }, titulo, desc, dominio)),
+        h('div', { class: 'cp-acoes' }, baixar), status));
+      let ultimo = null, seq = 0, agenda = null;
+      const textos = (d) => {
+        const aniv = d._tipo === 'aniversario';
+        const n1 = String(d['hero.noiva'] === undefined ? (aniv ? '' : 'Noiva') : d['hero.noiva']).trim(), n2 = String(d['hero.noivo'] === undefined ? 'Noivo' : d['hero.noivo']).trim();
+        const nomes = aniv ? n1 : (n1 && n2 ? n1 + ' & ' + n2 : n1 || n2);
+        const t = String(d['compartilhar.msg_titulo'] || '').trim() || (nomes ? (aniv ? 'Aniversário de ' : 'Casamento de ') + nomes : (eventoAtual || 'Convite'));
+        const op = opCompartilhar(d);
+        const ds = String(d['compartilhar.msg_descricao'] || '').trim() || ((op.data ? op.data + ' · ' : '') + 'Abra o convite e confirme sua presença');
+        return [t, ds];
+      };
+      const atualizar = async () => {
+        const meu = ++seq, d = dadosAgora();
+        const [t, ds] = textos(d); titulo.textContent = t; desc.textContent = ds;
+        const propria = String(d['compartilhar.imagem_propria'] || '').trim();
+        if (propria) {
+          imgBox.innerHTML = ''; imgBox.appendChild(h('img', { src: propria, alt: 'Sua imagem de compartilhamento' }));
+          status.textContent = 'Usando a imagem que você enviou. Remova-a para voltar à imagem automática.'; ultimo = null; return;
+        }
+        const op = opCompartilhar(d);
+        const r = await window.COMPARTILHAR.desenhar(op);
+        if (meu !== seq) return;
+        r.sig = window.COMPARTILHAR.assinatura(op); ultimo = r;
+        r.canvas.className = 'cp-canvas'; r.canvas.setAttribute('role', 'img'); r.canvas.setAttribute('aria-label', 'Prévia da imagem de compartilhamento');
+        imgBox.innerHTML = ''; imgBox.appendChild(r.canvas);
+        status.textContent = r.fontesOk ? 'A imagem é criada com as cores, as fontes, os nomes, a data e a foto da capa. Ela é atualizada quando você salva.' : 'As fontes ainda estão carregando. A imagem final só é enviada quando elas estiverem prontas.';
+      };
+      const depois = () => { clearTimeout(agenda); agenda = setTimeout(atualizar, 350); };
+      fs.addEventListener('input', depois); fs.addEventListener('change', depois);
+      setTimeout(atualizar, 0);
+      // ao salvar, envia a imagem nova (se algo mudou) junto com os demais campos
+      (fs._antesDeSalvar = fs._antesDeSalvar || []).push(async (payload) => sincronizarCompartilhar(Object.assign({}, ctDados, payload), ultimo));
       return;
     }
     if (campo.tipo === 'separador') { fs.appendChild(h('div', { class: 'separador-campo', text: campo.label })); return; }
@@ -4998,6 +5138,8 @@
       form.querySelectorAll('[data-chave]').forEach((e) => {
         payload[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value;
       });
+      // campos que geram algo ao salvar (ex.: a imagem de compartilhamento) acrescentam suas chaves ao envio
+      for (const gancho of (fs._antesDeSalvar || [])) { try { Object.assign(payload, await gancho(payload)); } catch (e) { /* segue sem elas */ } }
       const d = await api('/api/admin/conteudo', 'POST', payload);
       btnSalvar.disabled = false; btnSalvar.textContent = opcoes.rotuloSalvar || 'Salvar alterações';
       if (d.erro) { msg(msgDiv.id, d.erro, false); return; }
@@ -5006,6 +5148,7 @@
       msgDiv.textContent = '';
       ficarSujo(false);
       toast(opcoes.msgSalvo || 'Salvo. O site já está atualizado.');
+      agendarCompartilhar();
     });
     const mexeu = (ev) => {
       const e = ev.target;
