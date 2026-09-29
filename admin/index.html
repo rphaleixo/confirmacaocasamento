@@ -186,6 +186,48 @@
     .busca{flex:1 1 100%;max-width:none;}
   }
   .busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
+  #rs-ferramentas .busca{min-width:230px;}
+  .rs-vista{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
+  .rs-vista button{border:none;background:none;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;}
+  .rs-vista button.on{background:var(--navy);color:#fff;}
+  .ferramentas select{height:38px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 10px;font-size:13px;color:var(--ink);max-width:200px;}
+  .rs-bulk{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--navy);color:#fff;padding:10px 14px;border-radius:12px;margin-bottom:10px;box-shadow:var(--shadow-lg);}
+  .rs-bulk[hidden]{display:none;} .rs-bulk b{margin-right:6px;}
+  .rs-bulk .btn{background:#fff;color:var(--ink);border-color:#fff;} .rs-bulk .btn.fantasma{background:transparent;color:#fff;border-color:rgba(255,255,255,.5);}
+  .rs-tabela{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;}
+  .rs-linha{display:grid;grid-template-columns:28px minmax(170px,1.3fr) minmax(120px,.9fr) 232px 132px 296px;gap:8px 14px;align-items:center;padding:10px 14px;border-top:1px solid var(--line-soft);}
+  .rs-tabela > .rs-linha:first-child{border-top:none;}
+  .rs-linha.cab{background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;}
+  .rs-linha.sem-grupo{grid-template-columns:28px minmax(170px,1.4fr) 232px 132px 296px;}
+  .rs-linha:hover:not(.cab){background:#FAFBFD;}
+  .rs-linha .nm{font-size:14px;font-weight:600;min-width:0;overflow-wrap:anywhere;} .rs-linha .nm small{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);}
+  .rs-linha .gr{background:none;border:none;padding:0;color:var(--info);font-size:13px;font-weight:600;text-align:left;cursor:pointer;overflow-wrap:anywhere;}
+  .rs-seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
+  .rs-seg button{border:none;border-left:1px solid var(--line);background:none;padding:7px 11px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:34px;}
+  .rs-seg button:first-child{border-left:none;}
+  .rs-seg button:hover{background:var(--muted-bg);}
+  .rs-seg button.on.sim{background:var(--ok);color:#fff;} .rs-seg button.on.nao_sei{background:#E8A400;color:#241700;} .rs-seg button.on.nao{background:#6B7488;color:#fff;} .rs-seg button.on.limpo{background:var(--muted-bg);color:var(--ink);}
+  .rs-acoes{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+  .rs-acoes .btn{padding:4px 9px;font-size:12px;min-height:30px;}
+  .rs-grupo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);margin-bottom:10px;overflow:hidden;}
+  .rs-grupo-topo{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;padding:12px 16px;}
+  .rs-grupo-topo .nome{font-size:15.5px;font-weight:700;} .rs-grupo-topo .cont{font-size:12.5px;color:var(--ink-soft);}
+  .rs-grupo-topo .esp{flex:1;}
+  .rs-grupo .rs-tabela{border:none;border-top:1px solid var(--line);border-radius:0;}
+  @media (max-width:900px){
+    .rs-linha,.rs-linha.sem-grupo{grid-template-columns:28px 1fr;} .rs-linha.cab{display:none;}
+    .rs-linha > *:not(:first-child):not(:nth-child(2)){grid-column:2;} .rs-acoes{justify-content:flex-start;}
+  }
+  .contagens{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;}
+  .contagem{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);}
+  .contagem .ico{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--info-bg);color:var(--info);font-size:20px;}
+  .contagem.prazo .ico{background:var(--warn-bg);color:var(--warn);}
+  .contagem.fim .ico{background:var(--muted-bg);color:var(--ink-soft);}
+  .contagem .lbl{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;}
+  .contagem .v{font-size:24px;font-weight:800;line-height:1.15;color:var(--ink);font-variant-numeric:tabular-nums;} .contagem .v small{font-size:13px;font-weight:600;color:var(--ink-soft);}
+  .contagem .det{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .contagem .txt{min-width:0;flex:1;} .contagem .btn{flex-shrink:0;}
+  @media (max-width:760px){.contagens{grid-template-columns:1fr;}}
   .filtros{display:flex;gap:6px;flex-wrap:wrap;}
   .filtros button{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;}
   .filtros button b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
@@ -686,6 +728,7 @@
 
   <!-- ===== EVENTO: PAINEL ===== -->
   <section id="tab-painel" class="tab">
+    <div class="contagens" id="p-contagens" aria-label="Contagens regressivas"></div>
     <div class="kpis" id="p-kpis">
       <div class="kpi destaque"><div class="lbl">Confirmados</div><div class="v"><span id="p-confirmados">--</span> <small>de <span id="p-cadastrados">--</span></small></div><div class="det" id="p-confirmados-lbl">&nbsp;</div><div class="barra"><i id="p-barra-conf" style="width:0"></i></div></div>
       <div class="kpi"><div class="lbl">Ocupação do local (adultos)</div><div class="v"><span id="p-ocupacao">--</span></div><div class="det">Meta: <b id="p-meta">--</b> convidados</div><div class="barra"><i id="p-barra-meta" style="width:0"></i></div></div>
@@ -724,6 +767,15 @@
   </section>
 
   <!-- ===== EVENTO: CONVIDADOS ===== -->
+  <section id="tab-respostas" class="tab">
+    <div class="pag-head"><div><h2>Respostas dos convidados</h2><p>Veja quem respondeu, filtre por situação e corrija a resposta de qualquer pessoa com um toque. Marque várias pessoas para mudar de uma vez.</p></div>
+      <div class="acoes"><button class="btn" id="rs-csv" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Baixar a lista filtrada</button></div></div>
+    <div class="filtros" id="rs-resumo" style="margin-bottom:12px;"></div>
+    <div class="ferramentas" id="rs-ferramentas"></div>
+    <div class="rs-bulk" id="rs-bulk" hidden></div>
+    <div id="rs-lista"><div class="carregando">Carregando convidados…</div></div>
+  </section>
+
   <section id="tab-importar" class="tab">
     <div class="pag-head"><div><h2>Importar lista</h2><p>Traga vários convidados de uma vez a partir de uma planilha. Grupos com nome novo são criados na hora; grupos que já existem recebem as pessoas.</p></div></div>
     <div class="imp-grid">
@@ -1183,6 +1235,7 @@
     anfitrioes: () => carregarAnfitrioes(),
     templates: () => carregarTemplates(),
     painel: () => carregarPainel(),
+    respostas: () => carregarPainel(),
     mesclar: () => carregarMesclar(),
     mover: () => carregarMover(),
     importar: () => carregarImportar(),
@@ -1196,7 +1249,7 @@
   // Menu do evento: 4 áreas, cada uma com suas abas no submenu.
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
-    { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
+    { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
     { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
@@ -1749,7 +1802,55 @@
     { id: 'naovao', rot: 'Não vão' },
   ];
 
+  // ---- contagens regressivas: até o evento e até o fim do prazo de confirmação ----
+  let contagemTimer = null;
+  function textoRestante(ms) {
+    const min = Math.floor(ms / 60000), dias = Math.floor(min / 1440), horas = Math.floor((min % 1440) / 60), mins = min % 60;
+    if (dias >= 1) return [dias + (dias === 1 ? ' dia' : ' dias'), horas ? 'e ' + horas + (horas === 1 ? ' hora' : ' horas') : ''];
+    if (horas >= 1) return [horas + 'h ' + String(mins).padStart(2, '0') + 'min', 'restantes hoje'];
+    return [Math.max(mins, 0) + (mins === 1 ? ' minuto' : ' minutos'), 'restantes'];
+  }
+  function quandoTexto(iso) {
+    const dia = window.FORMATA_DATA(iso, 'numerico', 'completo', '');
+    const hm = String(iso).match(/T(\d{2}):(\d{2})/);
+    return dia + (hm ? ' às ' + hm[1] + 'h' + hm[2] : '');
+  }
+  function irParaDatasDaCapa() {
+    ctGrupoAtivo = 0; etapaAtiva['Capa'] = 'data';
+    navegar('conteudo');
+  }
+  function desenharContagens(c) {
+    clearInterval(contagemTimer);
+    const box = document.getElementById('p-contagens');
+    if (!box) return;
+    const defs = [
+      { chave: 'hero.data_iso', cls: 'evento', icone: '🎉', rotulo: c && c._tipo === 'aniversario' ? 'Até a festa' : 'Até o grande dia', passado: 'Já aconteceu', vazio: 'Defina o dia e a hora do evento' },
+      { chave: 'hero.prazo_iso', cls: 'prazo', icone: '⏳', rotulo: 'Até o fim das confirmações', passado: 'Prazo encerrado', vazio: 'Sem prazo definido: as respostas ficam sempre abertas' },
+    ];
+    const pintar = () => {
+      box.innerHTML = '';
+      defs.forEach((d) => {
+        const iso = c && c[d.chave];
+        const alvo = iso ? new Date(iso).getTime() : NaN;
+        const restante = alvo - Date.now();
+        let valor, det, encerrado = false;
+        if (!Number.isFinite(alvo)) { valor = '—'; det = d.vazio; }
+        else if (restante <= 0) { valor = d.passado; det = quandoTexto(iso); encerrado = true; }
+        else { const [v, sub] = textoRestante(restante); valor = v; det = quandoTexto(iso); if (sub) valor = [v, sub]; }
+        box.appendChild(h('div', { class: 'contagem ' + d.cls + (encerrado ? ' fim' : '') },
+          h('div', { class: 'ico', 'aria-hidden': 'true', text: d.icone }),
+          h('div', { class: 'txt' }, h('div', { class: 'lbl', text: d.rotulo }),
+            h('div', { class: 'v' }, Array.isArray(valor) ? [valor[0], ' ', h('small', { text: valor[1] })] : valor),
+            h('div', { class: 'det', text: det })),
+          btn(Number.isFinite(alvo) ? 'Alterar' : 'Definir', irParaDatasDaCapa, 'sm')));
+      });
+    };
+    pintar();
+    contagemTimer = setInterval(() => { if (!document.getElementById('p-contagens') || abaAtual !== 'painel') { clearInterval(contagemTimer); return; } pintar(); }, 30000);
+  }
+
   async function carregarPainel() {
+    api('/api/conteudo').then((c) => { if (c && !c.erro) desenharContagens(c); });
     const d = await api('/api/admin/painel');
     if (d.erro) { document.getElementById('p-tbody').textContent = d.erro; return; }
     ultimoPainelDados = d;
@@ -1806,7 +1907,180 @@
     document.getElementById('p-filtros').hidden = !total;
     desenharFiltrosPainel();
     desenharGrupos();
+    if (abaAtual === 'respostas') desenharRespostas();
   }
+
+  // =====================================================================
+  //  RESPOSTAS (convidados › Respostas): gestão por pessoa e por grupo
+  // =====================================================================
+  const RS = { busca: '', resposta: 'todos', tipo: 'todos', convite: 'todos', grupo: '', vista: 'pessoas', sel: new Set(), abertos: new Set() };
+  const ROTULO_RESP = { sim: 'Vai', nao_sei: 'Não sei', nao: 'Não vai' };
+  const filtrosAtivosRS = () => !!(RS.busca || RS.resposta !== 'todos' || RS.tipo !== 'todos' || RS.convite !== 'todos' || RS.grupo);
+
+  function todasPessoas() { return gruposPainel.flatMap((g) => g.membros.map((c) => ({ c, g }))); }
+  function passaFiltroRS({ c, g }, ignorarResposta) {
+    if (RS.grupo && g.codigo !== RS.grupo) return false;
+    if (RS.tipo !== 'todos' && c.tipo !== RS.tipo) return false;
+    if (RS.convite === 'abriu' && g.statusAbertura !== 'Aberto') return false;
+    if (RS.convite === 'naoabriu' && g.statusAbertura === 'Aberto') return false;
+    if (!ignorarResposta && RS.resposta !== 'todos') { if (RS.resposta === 'sem' ? !!c.resposta : c.resposta !== RS.resposta) return false; }
+    const q = slugifyLocal(RS.busca);
+    if (q && slugifyLocal([c.nome, c.comoChamar, c.telefone, g.nome, g.codigo].join(' ')).indexOf(q) === -1) return false;
+    return true;
+  }
+
+  async function mudarResposta(ids, valor) {
+    if (!ids.length) return;
+    const r = await api('/api/admin/confirmar', 'POST', { ids, resposta: valor });
+    if (r.erro) { toast(r.erro, 'err'); return; }
+    const rot = valor === 'sim' ? 'vai' : valor === 'nao_sei' ? 'em dúvida' : valor === 'nao' ? 'não vai' : 'sem resposta';
+    toast(ids.length === 1 ? 'Resposta salva: ' + rot : plural(ids.length, 'pessoa marcada', 'pessoas marcadas') + ' como ' + rot);
+    RS.sel.clear();
+    await carregarPainel();
+  }
+
+  function segmentoResposta(c) {
+    const atual = c.resposta || '';
+    const seg = h('div', { class: 'rs-seg', role: 'group', 'aria-label': 'Resposta de ' + c.nome });
+    [['sim', 'Sim'], ['nao_sei', 'Não sei'], ['nao', 'Não'], ['', '—']].forEach(([v, r]) => {
+      const b = h('button', { type: 'button', class: (atual === v ? 'on ' : '') + (v || 'limpo'), 'aria-pressed': atual === v ? 'true' : 'false', title: v ? 'Marcar ' + r : 'Tirar a resposta (sem resposta)', text: r });
+      b.addEventListener('click', () => { if (atual !== v) mudarResposta([c.id], v); });
+      seg.appendChild(b);
+    });
+    return seg;
+  }
+
+  function linhaPessoaRS({ c, g }, mostrarGrupo) {
+    const chk = h('input', { type: 'checkbox', 'aria-label': 'Selecionar ' + c.nome }); chk.checked = RS.sel.has(c.id);
+    chk.addEventListener('change', () => { if (chk.checked) RS.sel.add(c.id); else RS.sel.delete(c.id); desenharBulkRS(); });
+    const chamar = nomeChamar(c);
+    const nm = h('div', { class: 'nm' }, c.nome, c.tipo === 'crianca' ? h('span', { class: 'tag', style: 'margin-left:6px;', text: 'criança' }) : null,
+      chamar !== primeiroNome(c.nome) ? h('small', { text: 'Chamado(a) de ' + chamar }) : null, c.telefone ? h('small', { text: c.telefone }) : null);
+    const aberto = g.statusAbertura === 'Aberto';
+    const convite = h('div', {}, h('span', { class: 'chip ' + (aberto ? 'info' : ''), text: aberto ? 'Abriu o convite' : 'Não abriu' }));
+    const tel = normalizarTelefoneWhatsapp(c.telefone);
+    const wa = tel ? h('a', { class: 'btn', href: linkWhatsapp(tel, mensagemPara(g, chamar)), target: '_blank', rel: 'noopener', title: 'Enviar o convite pelo WhatsApp', html: ICONES.wa + 'WhatsApp' })
+      : h('button', { type: 'button', class: 'btn', disabled: true, title: 'Sem telefone cadastrado', html: ICONES.wa + 'WhatsApp' });
+    const acoes = h('div', { class: 'rs-acoes' }, wa, btn('Editar', () => abrirEditarConvidado(c), ''), btn('Link', () => abrirLinkIndividual(c), ''), btn('Mover', () => abrirMoverConvidado(c), ''));
+    const linha = h('div', { class: 'rs-linha' + (mostrarGrupo ? '' : ' sem-grupo') }, chk, nm);
+    if (mostrarGrupo) {
+      const gr = h('button', { type: 'button', class: 'gr', title: 'Mostrar só este grupo', text: g.nome });
+      gr.addEventListener('click', () => { RS.grupo = g.codigo; desenharRespostas(); });
+      linha.appendChild(gr);
+    }
+    linha.append(segmentoResposta(c), convite, acoes);
+    return linha;
+  }
+
+  function cabecalhoTabelaRS(pessoas, mostrarGrupo) {
+    const chk = h('input', { type: 'checkbox', 'aria-label': 'Selecionar todos os que aparecem na lista' });
+    chk.checked = pessoas.length > 0 && pessoas.every(({ c }) => RS.sel.has(c.id));
+    chk.addEventListener('change', () => { pessoas.forEach(({ c }) => { if (chk.checked) RS.sel.add(c.id); else RS.sel.delete(c.id); }); desenharRespostas(); });
+    return h('div', { class: 'rs-linha cab' + (mostrarGrupo ? '' : ' sem-grupo') }, chk, h('div', { text: 'Convidado' }), mostrarGrupo ? h('div', { text: 'Grupo' }) : null, h('div', { text: 'Resposta' }), h('div', { text: 'Convite' }), h('div'));
+  }
+
+  function desenharBulkRS() {
+    const box = document.getElementById('rs-bulk');
+    box.innerHTML = '';
+    box.hidden = !RS.sel.size;
+    if (!RS.sel.size) return;
+    const ids = Array.from(RS.sel);
+    box.append(h('b', { text: plural(ids.length, 'pessoa selecionada', 'pessoas selecionadas') + ':' }),
+      btn('Vão', () => mudarResposta(ids, 'sim'), ''), btn('Não sei', () => mudarResposta(ids, 'nao_sei'), ''), btn('Não vão', () => mudarResposta(ids, 'nao'), ''), btn('Sem resposta', () => mudarResposta(ids, ''), ''),
+      btn('Limpar seleção', () => { RS.sel.clear(); desenharRespostas(); }, 'fantasma'));
+  }
+
+  function desenharRespostas() {
+    if (!ultimoPainelDados) return;
+    const todas = todasPessoas();
+    // resumo (chips): contagens já respeitam os outros filtros, para os números baterem com a lista
+    const base = todas.filter((x) => passaFiltroRS(x, true));
+    const conta = (f) => base.filter(f).length;
+    const resumo = document.getElementById('rs-resumo');
+    resumo.innerHTML = '';
+    [['todos', 'Todos', () => true], ['sim', 'Vão', (x) => x.c.resposta === 'sim'], ['nao_sei', 'Não sei', (x) => x.c.resposta === 'nao_sei'], ['nao', 'Não vão', (x) => x.c.resposta === 'nao'], ['sem', 'Sem resposta', (x) => !x.c.resposta]].forEach(([id, rot, f]) => {
+      const b = h('button', { type: 'button', class: RS.resposta === id ? 'active' : '', 'aria-pressed': RS.resposta === id ? 'true' : 'false' }, rot, h('b', { text: conta(f) }));
+      b.addEventListener('click', () => { RS.resposta = id; desenharRespostas(); });
+      resumo.appendChild(b);
+    });
+
+    // ferramentas: busca, grupo, tipo, convite e vista
+    const ferr = document.getElementById('rs-ferramentas');
+    if (!ferr.dataset.pronto) {
+      ferr.dataset.pronto = '1';
+      ferr.innerHTML = '<div class="busca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="rs-busca" placeholder="Buscar convidado ou grupo" aria-label="Buscar convidado"></div>';
+      const sel = (id, rotulo, opcoes) => { const e = h('select', { id, 'aria-label': rotulo }); opcoes.forEach(([v, r]) => e.appendChild(new Option(r, v))); ferr.appendChild(e); return e; };
+      sel('rs-grupo', 'Grupo', [['', 'Todos os grupos']]);
+      sel('rs-tipo', 'Tipo', [['todos', 'Adultos e crianças'], ['adulto', 'Só adultos'], ['crianca', 'Só crianças']]);
+      sel('rs-convite', 'Convite', [['todos', 'Convite: todos'], ['abriu', 'Abriram o convite'], ['naoabriu', 'Não abriram']]);
+      ferr.appendChild(h('span', { class: 'espaco' }));
+      const vista = h('div', { class: 'rs-vista', role: 'group', 'aria-label': 'Modo de exibição' });
+      [['pessoas', 'Por pessoa'], ['grupos', 'Por grupo']].forEach(([v, r]) => { const b = h('button', { type: 'button', 'data-vista': v, text: r }); b.addEventListener('click', () => { RS.vista = v; desenharRespostas(); }); vista.appendChild(b); });
+      ferr.appendChild(vista);
+      document.getElementById('rs-busca').addEventListener('input', (ev) => { RS.busca = ev.target.value; desenharRespostas(); });
+      document.getElementById('rs-grupo').addEventListener('change', (ev) => { RS.grupo = ev.target.value; desenharRespostas(); });
+      document.getElementById('rs-tipo').addEventListener('change', (ev) => { RS.tipo = ev.target.value; desenharRespostas(); });
+      document.getElementById('rs-convite').addEventListener('change', (ev) => { RS.convite = ev.target.value; desenharRespostas(); });
+    }
+    const selGrupo = document.getElementById('rs-grupo');
+    if (selGrupo.options.length - 1 !== gruposPainel.length) { selGrupo.innerHTML = ''; selGrupo.appendChild(new Option('Todos os grupos', '')); gruposPainel.forEach((g) => selGrupo.appendChild(new Option(g.nome, g.codigo))); }
+    selGrupo.value = RS.grupo;
+    document.getElementById('rs-tipo').value = RS.tipo; document.getElementById('rs-convite').value = RS.convite;
+    if (document.activeElement !== document.getElementById('rs-busca')) document.getElementById('rs-busca').value = RS.busca;
+    ferr.querySelectorAll('[data-vista]').forEach((b) => b.classList.toggle('on', b.dataset.vista === RS.vista));
+    if (filtrosAtivosRS() && !ferr.querySelector('.rs-limpar')) { /* botão criado abaixo */ }
+    ferr.querySelectorAll('.rs-limpar').forEach((x) => x.remove());
+    if (filtrosAtivosRS()) { const l = btn('Limpar filtros', () => { Object.assign(RS, { busca: '', resposta: 'todos', tipo: 'todos', convite: 'todos', grupo: '' }); desenharRespostas(); }, 'sm fantasma'); l.classList.add('rs-limpar'); ferr.insertBefore(l, ferr.querySelector('.espaco')); }
+
+    desenharBulkRS();
+    const caixa = document.getElementById('rs-lista');
+    caixa.innerHTML = '';
+    if (!todas.length) { caixa.appendChild(h('div', { class: 'caixa vazio' }, h('h3', { text: 'Nenhum convidado ainda' }), h('p', { text: 'Importe a lista ou crie os grupos para acompanhar as respostas aqui.' }), h('div', { class: 'acoes' }, btn('Importar lista', () => navegar('importar'), 'prim')))); return; }
+    const filtradas = todas.filter((x) => passaFiltroRS(x));
+    if (!filtradas.length) { caixa.appendChild(h('div', { class: 'caixa vazio', text: 'Ninguém encontrado com esses filtros.' })); return; }
+
+    if (RS.vista === 'pessoas') {
+      const tab = h('div', { class: 'rs-tabela' }, cabecalhoTabelaRS(filtradas, true));
+      filtradas.forEach((x) => tab.appendChild(linhaPessoaRS(x, true)));
+      caixa.appendChild(h('div', { class: 'hint', style: 'margin:0 0 8px;', text: plural(filtradas.length, 'pessoa', 'pessoas') + (filtrosAtivosRS() ? ' com estes filtros' : '') }));
+      caixa.appendChild(tab);
+      return;
+    }
+    // por grupo: resumo do grupo e, ao abrir, as pessoas dele
+    const porGrupo = new Map();
+    filtradas.forEach((x) => { if (!porGrupo.has(x.g.codigo)) porGrupo.set(x.g.codigo, { g: x.g, itens: [] }); porGrupo.get(x.g.codigo).itens.push(x); });
+    porGrupo.forEach(({ g, itens }) => {
+      const aberto = filtrosAtivosRS() || RS.abertos.has(g.codigo);
+      const vao = g.membros.filter((m) => m.resposta === 'sim').length, duvida = g.membros.filter((m) => m.resposta === 'nao_sei').length, nao = g.membros.filter((m) => m.resposta === 'nao').length, sem = g.membros.filter((m) => !m.resposta).length;
+      const partes = [vao + ' vão', duvida ? duvida + ' não sei' : '', nao ? nao + ' não vão' : '', sem ? sem + ' sem resposta' : ''].filter(Boolean).join(' · ');
+      const idsGrupo = g.membros.map((m) => m.id);
+      const dest = destinatariosDoGrupo(g);
+      const wa = dest.length === 1 ? h('a', { class: 'btn sm wa', href: linkWhatsapp(dest[0].tel, mensagemPara(g, dest[0].chamar)), target: '_blank', rel: 'noopener', html: ICONES.wa + 'WhatsApp' })
+        : btn('WhatsApp', dest.length ? () => escolherWhatsapp(g, dest) : null, 'sm wa', 'wa');
+      if (!dest.length) { wa.disabled = true; wa.title = 'Nenhum telefone cadastrado neste grupo'; }
+      const alterna = btn(aberto ? 'Fechar' : 'Ver pessoas (' + g.membros.length + ')', () => { if (RS.abertos.has(g.codigo)) RS.abertos.delete(g.codigo); else RS.abertos.add(g.codigo); desenharRespostas(); }, 'sm');
+      if (filtrosAtivosRS()) alterna.hidden = true;
+      const topo = h('div', { class: 'rs-grupo-topo' },
+        h('span', { class: 'nome', text: g.nome }), h('span', { class: 'chip ' + g.sit.cls, text: g.sit.rot }), h('span', { class: 'codigo', title: 'Código do link', text: g.codigo }),
+        h('span', { class: 'cont', text: partes }), h('span', { class: 'esp' }),
+        btn('Todos vão', () => mudarResposta(idsGrupo, 'sim'), 'sm'), btn('Todos não vão', () => mudarResposta(idsGrupo, 'nao'), 'sm'),
+        wa, btn('Link', () => copiar(linkConvite(g.codigo), 'Link do convite'), 'sm', 'link'), alterna);
+      const card = h('div', { class: 'rs-grupo' }, topo);
+      if (aberto) { const tab = h('div', { class: 'rs-tabela' }); itens.forEach((x) => tab.appendChild(linhaPessoaRS(x, false))); card.appendChild(tab); }
+      caixa.appendChild(card);
+    });
+  }
+
+  function baixarRespostasCsv() {
+    const escapar = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const linhas = [['Nome', 'Tratamento', 'Como chamar', 'Grupo', 'Tipo', 'Telefone', 'Resposta', 'Convite', 'Respondido em', 'Link do grupo', 'Link individual'].map(escapar).join(',')];
+    todasPessoas().filter((x) => passaFiltroRS(x)).forEach(({ c, g }) => {
+      linhas.push([c.nome, c.tratamento || '', c.comoChamar || '', g.nome, c.tipo === 'crianca' ? 'criança' : 'adulto', c.telefone || '', ROTULO_RESP[c.resposta] || 'Sem resposta', g.statusAbertura === 'Aberto' ? 'Abriu' : 'Não abriu',
+        g.dataConfirmacao || '', linkConvite(g.codigo), c.codigoIndividual ? linkConvite(c.codigoIndividual) : ''].map(escapar).join(','));
+    });
+    baixarArquivo('\ufeff' + linhas.join('\n'), 'respostas-' + (eventoAtual || 'evento') + '.csv', 'text/csv;charset=utf-8;');
+  }
+  document.getElementById('rs-csv').addEventListener('click', baixarRespostasCsv);
 
   function aplicarFiltro(id) { filtroPainel = id; desenharFiltrosPainel(); desenharGrupos(); document.getElementById('p-filtros').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   function desenharFiltrosPainel() {
