@@ -187,6 +187,18 @@
   }
   .busca svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);}
   #rs-ferramentas .busca{min-width:230px;}
+  .fila-prog{height:8px;border-radius:99px;background:var(--muted-bg);overflow:hidden;margin:0 0 6px;} .fila-prog i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .3s;}
+  .fila-atual{border:2px solid var(--navy);border-radius:14px;padding:16px 18px;margin:10px 0 14px;background:var(--surface);}
+  .fila-atual .nome{font-size:19px;font-weight:800;} .fila-atual .meta{font-size:13px;color:var(--ink-soft);margin:2px 0 10px;}
+  .fila-bolha{background:#E7FFDB;border:1px solid #CDEFB9;border-radius:12px 12px 12px 2px;padding:10px 12px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:#1A2B14;max-height:180px;overflow:auto;}
+  .fila-lista{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
+  .fila-lista button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--line-soft);padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .fila-lista button:first-child{border-top:none;} .fila-lista button.atual{background:var(--info-bg);font-weight:700;}
+  .fila-lista .st{width:20px;text-align:center;flex-shrink:0;} .fila-lista .gr{margin-left:auto;color:var(--ink-faint);font-size:12px;}
+  .fila-cfg label.rot{display:block;font-size:13px;font-weight:700;margin:12px 0 5px;}
+  .fila-cfg textarea{width:100%;min-height:110px;}
+  .fila-opcoes{display:flex;gap:8px;flex-wrap:wrap;} .fila-opcoes label{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);}
+  .fila-opcoes label.on{border-color:var(--navy);background:var(--info-bg);}
   .rs-vista{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
   .rs-vista button{border:none;background:none;padding:8px 14px;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;}
   .rs-vista button.on{background:var(--navy);color:#fff;}
@@ -404,6 +416,15 @@
   .ct-item.active{background:var(--navy);color:#fff;font-weight:600;}
   .ct-item .nm{flex:1;min-width:0;}
   .ct-item .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;}
+  .ct-sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 6px 14px;padding-left:10px;border-left:2px solid var(--line);}
+  .ct-sub[hidden]{display:none;}
+  .ct-sub button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:7px 9px;font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:500;font-family:inherit;}
+  .ct-sub button:hover{background:var(--surface-2);color:var(--ink);}
+  .ct-sub button .n{width:20px;height:20px;border-radius:50%;background:var(--muted-bg);display:inline-grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .ct-sub button.on{background:var(--info-bg);color:var(--navy);font-weight:700;} .ct-sub button.on .n{background:var(--navy);color:#fff;}
+  /* com as etapas na lateral, as abas de dentro do módulo saem (no celular a lateral vira uma faixa: as abas voltam) */
+  @media (min-width:1001px){.etapas-layout .etapas-abas{display:none;}}
+  @media (max-width:1000px){.ct-sub{display:none;}}
   .ct-item.off .nm{opacity:.55;}
   .ct-item.off .dot{background:#B7BFCC;}
   @media (max-width:820px){
@@ -764,6 +785,7 @@
     <div class="ferramentas">
       <div class="busca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="p-busca" placeholder="Buscar pessoa ou grupo" aria-label="Buscar convidado"></div>
       <span class="espaco"></span>
+      <button class="btn" id="btn-fila" type="button" title="Envia o convite pelo WhatsApp, um a um, numa única aba"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Enviar em fila</button>
       <button class="btn prim" id="btn-abrir-novo-grupo" type="button">+ Novo grupo</button>
       <button class="btn" id="btn-abrir-adicionar" type="button">+ Convidado</button>
       <button class="btn" id="btn-baixar-csv" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Planilha (CSV)</button>
@@ -775,7 +797,7 @@
   <!-- ===== EVENTO: CONVIDADOS ===== -->
   <section id="tab-respostas" class="tab">
     <div class="pag-head"><div><h2>Respostas dos convidados</h2><p>Veja quem respondeu, filtre por situação e corrija a resposta de qualquer pessoa com um toque. Marque várias pessoas para mudar de uma vez.</p></div>
-      <div class="acoes"><button class="btn" id="rs-csv" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Baixar a lista filtrada</button></div></div>
+      <div class="acoes"><button class="btn prim" id="rs-lembrar" type="button" title="Monta uma fila de WhatsApp com quem ainda não respondeu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Lembrar quem não respondeu</button><button class="btn" id="rs-csv" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Baixar a lista filtrada</button></div></div>
     <div class="filtros" id="rs-resumo" style="margin-bottom:12px;"></div>
     <div class="ferramentas" id="rs-ferramentas"></div>
     <div class="rs-bulk" id="rs-bulk" hidden></div>
@@ -1782,7 +1804,12 @@
     return digitos;
   }
   function linkConvite(codigo) { return urlSite() + '?c=' + codigo; }
-  function preencherMensagem(modelo, nome, link) { return String(modelo || '').split('{nome}').join(nome).split('{link}').join(link); }
+  function preencherMensagem(modelo, nome, link) { return String(modelo || '').split('{nome}').join(nome).split('{link}').join(link).split('{prazo}').join(prazoTextoAdmin() || 'em breve'); }
+  let conteudoPainel = null;
+  function prazoTextoAdmin() {
+    const c = conteudoPainel || {};
+    return ((c['hero.prazo_display'] || '') + ' ' + (c['hero.prazo_horario_display'] || '')).trim();
+  }
 
   // Situação do grupo, do jeito que o anfitrião entende
   // Respondeu = tem data de confirmação ou alguém já tem resposta (sim, não sei ou não)
@@ -1856,7 +1883,7 @@
   }
 
   async function carregarPainel() {
-    api('/api/conteudo').then((c) => { if (c && !c.erro) desenharContagens(c); });
+    api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); } });
     const d = await api('/api/admin/painel');
     if (d.erro) { document.getElementById('p-tbody').textContent = d.erro; return; }
     ultimoPainelDados = d;
@@ -1915,6 +1942,179 @@
     desenharGrupos();
     if (abaAtual === 'respostas') desenharRespostas();
   }
+
+  // =====================================================================
+  //  FILA DE ENVIO PELO WHATSAPP: uma janela, um destinatário de cada vez, "enviar e ir para o próximo"
+  // =====================================================================
+  const LEMBRETE_PADRAO = 'Oi {nome}! Falta pouco para o prazo de confirmação ({prazo}). Confirme sua presença por este link: {link}';
+  const lerLS = (k, pad) => { try { const v = localStorage.getItem(k); return v === null ? pad : v; } catch (e) { return pad; } };
+  const gravarLS = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* segue sem lembrar */ } };
+  const logFila = () => { try { return JSON.parse(lerLS('fila-envio:' + (eventoAtual || ''), '{}')); } catch (e) { return {}; } };
+  const marcarEnviadoFila = (chave) => { const l = logFila(); l[chave] = Date.now(); gravarLS('fila-envio:' + (eventoAtual || ''), JSON.stringify(l)); };
+  const recenteFila = (chave) => { const t = logFila()[chave]; return t && Date.now() - t < 24 * 3600 * 1000 ? t : 0; };
+
+  // Quem entra na fila: uma mensagem por pessoa ou uma por grupo (para uma pessoa do grupo que tenha telefone)
+  function montarItensFila(entradas, opc) {
+    const itens = [], semTel = [];
+    if (!opc.porGrupo) {
+      entradas.forEach(({ c, g }) => {
+        const tel = normalizarTelefoneWhatsapp(c.telefone);
+        if (!tel) { semTel.push(c.nome); return; }
+        itens.push({ chave: opc.tipo + ':p' + c.id, nome: c.nome, chamar: nomeChamar(c), tel, bruto: c.telefone, g });
+      });
+      return { itens, semTel };
+    }
+    const grupos = new Map();
+    entradas.forEach(({ c, g }) => { if (!grupos.has(g.codigo)) grupos.set(g.codigo, { g, membros: [] }); grupos.get(g.codigo).membros.push(c); });
+    grupos.forEach(({ g, membros }) => {
+      const ordem = membros.slice().sort((a, b) => (opc.preferirSemResposta ? Number(!!a.resposta) - Number(!!b.resposta) : 0));
+      const c = ordem.find((m) => normalizarTelefoneWhatsapp(m.telefone));
+      if (c) { itens.push({ chave: opc.tipo + ':g' + g.codigo, nome: c.nome, chamar: nomeChamar(c), tel: normalizarTelefoneWhatsapp(c.telefone), bruto: c.telefone, g }); return; }
+      const d = destinatariosDoGrupo(g)[0];
+      if (d) itens.push({ chave: opc.tipo + ':g' + g.codigo, nome: d.nome, chamar: d.chamar, tel: d.tel, bruto: d.bruto, g });
+      else semTel.push(g.nome);
+    });
+    return { itens, semTel };
+  }
+
+  function abrirWhatsappDaFila(item, texto) {
+    const enc = encodeURIComponent(String(texto).normalize('NFC'));
+    if (lerLS('fila-metodo', 'web') === 'app') {
+      const a = document.createElement('a'); a.href = 'whatsapp://send?phone=' + item.tel + '&text=' + enc; document.body.appendChild(a); a.click(); a.remove();
+      return true;
+    }
+    // sempre a mesma janela (nome fixo): a segunda mensagem em diante reaproveita a aba do WhatsApp Web
+    const w = window.open('https://web.whatsapp.com/send?phone=' + item.tel + '&text=' + enc, 'whatsapp_fila');
+    if (!w) { toast('O navegador bloqueou a nova aba. Permita pop-ups para este site e tente de novo.', 'err'); return false; }
+    try { w.focus(); } catch (e) { /* segue */ }
+    return true;
+  }
+
+  function abrirFilaEnvio(opc) {
+    const st = {
+      fase: 'config', tipo: opc.tipoInicial || 'convite', porGrupo: !!opc.porGrupoPadrao, incluirRecentes: false, guardarLembrete: false,
+      texto: '', itens: [], semTel: [], i: 0, estado: {},
+    };
+    const modelo = (tipo) => (tipo === 'lembrete' ? (ultimoPainelDados.mensagemLembrete || LEMBRETE_PADRAO) : ultimoPainelDados.mensagemTemplate);
+    st.texto = modelo(st.tipo);
+    const montar = () => {
+      const r = montarItensFila(opc.entradas, { porGrupo: st.porGrupo, tipo: st.tipo, preferirSemResposta: !!opc.preferirSemResposta });
+      st.semTel = r.semTel;
+      st.itens = r.itens.filter((it) => st.incluirRecentes || !recenteFila(it.chave));
+      st.recentes = r.itens.length - st.itens.length;
+    };
+    const textoDe = (it) => preencherMensagem(st.texto, it.chamar, linkConvite(it.g.codigo));
+    const foco = () => setTimeout(() => { const b = document.querySelector('#me-foot .prim'); if (b) b.focus(); }, 40);
+
+    const telaConfig = () => {
+      montar();
+      montarPassos(0, []); dlgEvento.dataset.fixo = '1';
+      const corpo = corpoDialogo(); corpo.classList.add('fila-cfg');
+      const tipos = h('div', { class: 'fila-opcoes' });
+      [['convite', 'Convite'], ['lembrete', 'Lembrete']].forEach(([v, r]) => {
+        const rad = h('input', { type: 'radio', name: 'fila-tipo', value: v }); rad.checked = st.tipo === v;
+        const lab = h('label', { class: st.tipo === v ? 'on' : '' }, rad, r);
+        rad.addEventListener('change', () => { st.tipo = v; st.texto = modelo(v); telaConfig(); });
+        tipos.appendChild(lab);
+      });
+      const ta = h('textarea', { 'aria-label': 'Texto da mensagem' }); ta.value = st.texto;
+      ta.addEventListener('input', () => { st.texto = ta.value; atualizarResumo(); });
+      const grupoChk = h('input', { type: 'checkbox', id: 'fila-por-grupo' }); grupoChk.checked = st.porGrupo;
+      grupoChk.addEventListener('change', () => { st.porGrupo = grupoChk.checked; telaConfig(); });
+      const recChk = h('input', { type: 'checkbox', id: 'fila-recentes' }); recChk.checked = st.incluirRecentes;
+      recChk.addEventListener('change', () => { st.incluirRecentes = recChk.checked; telaConfig(); });
+      const guardarChk = h('input', { type: 'checkbox', id: 'fila-guardar' }); guardarChk.checked = st.guardarLembrete;
+      guardarChk.addEventListener('change', () => { st.guardarLembrete = guardarChk.checked; });
+      const metodo = h('div', { class: 'fila-opcoes' });
+      const met = lerLS('fila-metodo', 'web');
+      [['web', 'WhatsApp Web (mesma aba)'], ['app', 'Aplicativo do WhatsApp']].forEach(([v, r]) => {
+        const rad = h('input', { type: 'radio', name: 'fila-metodo', value: v }); rad.checked = met === v;
+        rad.addEventListener('change', () => { gravarLS('fila-metodo', v); telaConfig(); });
+        metodo.appendChild(h('label', { class: met === v ? 'on' : '' }, rad, r));
+      });
+      const resumo = h('div', { class: 'hint', 'aria-live': 'polite', style: 'margin-top:12px;' });
+      const atualizarResumo = () => {
+        const partes = [plural(st.itens.length, 'mensagem na fila', 'mensagens na fila')];
+        if (st.recentes) partes.push(plural(st.recentes, 'já recebeu nas últimas 24 horas', 'já receberam nas últimas 24 horas') + ' (fora da fila)');
+        if (st.semTel.length) partes.push(plural(st.semTel.length, 'sem telefone', 'sem telefone') + ': ' + st.semTel.slice(0, 4).join(', ') + (st.semTel.length > 4 ? '…' : ''));
+        resumo.textContent = partes.join(' · ');
+      };
+      corpo.append(
+        h('p', { style: 'margin:0 0 4px;color:var(--ink-soft);font-size:13.5px;', text: 'Cada envio abre o WhatsApp com a mensagem pronta para a pessoa. Você aperta enviar lá, volta para cá e segue para o próximo, sem abrir uma aba nova a cada vez.' }),
+        h('label', { class: 'rot', text: 'Tipo de mensagem' }), tipos,
+        h('label', { class: 'rot', text: 'Texto (use {nome}, {link} e {prazo})' }), ta,
+        st.tipo === 'lembrete' ? h('label', { class: 'check', for: 'fila-guardar', style: 'margin-top:6px;' }, guardarChk, 'Guardar este texto como o lembrete padrão') : document.createTextNode(''),
+        h('label', { class: 'rot', text: 'Como enviar' }), metodo,
+        h('div', { class: 'dica-campo', text: met === 'app' ? 'Mais rápido (não recarrega nada), mas exige o WhatsApp instalado no computador. Em algumas versões do aplicativo para computador, emojis podem não chegar; se acontecer, use o WhatsApp Web.' : 'Funciona em qualquer computador. Cada mensagem recarrega o WhatsApp Web na mesma aba.' }),
+        h('label', { class: 'check', for: 'fila-por-grupo', style: 'margin-top:12px;' }, grupoChk, 'Uma mensagem por grupo (para uma pessoa de cada grupo)'),
+        h('label', { class: 'check', for: 'fila-recentes' }, recChk, 'Incluir quem já recebeu nas últimas 24 horas'),
+        resumo);
+      atualizarResumo();
+      montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: st.itens.length ? 'Iniciar envio (' + st.itens.length + ')' : 'Nada para enviar', prim: true, desativado: !st.itens.length, fn: async () => {
+        if (st.tipo === 'lembrete' && st.guardarLembrete) { const d = await api('/api/admin/conteudo', 'POST', { 'config.mensagem_lembrete': st.texto }); if (!d.erro) { ultimoPainelDados.mensagemLembrete = st.texto; toast('Lembrete padrão guardado'); } }
+        st.fase = 'envio'; st.i = 0; st.estado = {}; telaEnvio();
+      } }]);
+    };
+
+    const proximoPendente = (de) => {
+      for (let k = de + 1; k < st.itens.length; k++) if (!st.estado[k]) return k;
+      for (let k = 0; k < st.itens.length; k++) if (!st.estado[k]) return k;
+      return -1;
+    };
+    const telaEnvio = () => {
+      montarPassos(0, []); dlgEvento.dataset.fixo = '1';
+      const corpo = corpoDialogo(); corpo.classList.remove('fila-cfg');
+      const feitos = Object.values(st.estado).length;
+      const it = st.itens[st.i];
+      corpo.appendChild(h('div', { class: 'hint', style: 'margin:0 0 4px;font-weight:700;', text: 'Mensagem ' + (st.i + 1) + ' de ' + st.itens.length + ' · ' + feitos + ' já tratadas' }));
+      corpo.appendChild(h('div', { class: 'fila-prog' }, h('i', { style: 'width:' + Math.round((feitos / st.itens.length) * 100) + '%' })));
+      corpo.appendChild(h('div', { class: 'fila-atual' },
+        h('div', { class: 'nome', text: it.nome }), h('div', { class: 'meta', text: it.bruto + ' · ' + it.g.nome + (st.estado[st.i] === 'enviado' ? ' · já aberto' : '') }),
+        h('div', { class: 'fila-bolha', text: textoDe(it) })));
+      const lista = h('div', { class: 'fila-lista', role: 'list' });
+      st.itens.forEach((x, k) => {
+        const marca = st.estado[k] === 'enviado' ? '✓' : st.estado[k] === 'pulado' ? '⏭' : k === st.i ? '●' : '○';
+        const b = h('button', { type: 'button', class: k === st.i ? 'atual' : '', role: 'listitem' }, h('span', { class: 'st', text: marca }), x.nome, h('span', { class: 'gr', text: x.g.nome }));
+        b.addEventListener('click', () => { st.i = k; telaEnvio(); });
+        lista.appendChild(b);
+      });
+      corpo.appendChild(lista);
+      const avancar = () => { const n = proximoPendente(st.i); if (n === -1) { st.fase = 'fim'; telaFim(); } else { st.i = n; telaEnvio(); } };
+      montarRodape([
+        { rotulo: '← Voltar', esquerda: true, desativado: st.i === 0, fn: () => { st.i = Math.max(0, st.i - 1); telaEnvio(); } },
+        { rotulo: 'Pular', esquerda: true, fn: () => { st.estado[st.i] = st.estado[st.i] || 'pulado'; avancar(); } },
+        { rotulo: 'Fechar', fn: fecharDialogo },
+        { rotulo: 'Abrir no WhatsApp e ir para o próximo →', prim: true, fn: () => {
+          if (!abrirWhatsappDaFila(it, textoDe(it))) return;
+          st.estado[st.i] = 'enviado'; marcarEnviadoFila(it.chave);
+          setTimeout(avancar, 500);
+        } },
+      ]);
+      foco();
+    };
+    const telaFim = () => {
+      montarPassos(0, []); delete dlgEvento.dataset.fixo;
+      const corpo = corpoDialogo(); corpo.classList.remove('fila-cfg');
+      const env = Object.values(st.estado).filter((x) => x === 'enviado').length, pul = Object.values(st.estado).filter((x) => x === 'pulado').length;
+      corpo.append(h('div', { class: 'sucesso-selo', html: ICONES.ok }),
+        h('p', { style: 'text-align:center;font-size:16px;font-weight:700;margin:0 0 6px;', text: 'Fila concluída' }),
+        h('p', { style: 'text-align:center;color:var(--ink-soft);margin:0;', text: plural(env, 'mensagem aberta no WhatsApp', 'mensagens abertas no WhatsApp') + (pul ? ' · ' + plural(pul, 'pulada', 'puladas') : '') + '. Quem recebeu fica fora das próximas filas por 24 horas.' }));
+      montarRodape([{ rotulo: 'Fechar', prim: true, fn: fecharDialogo }]);
+    };
+    abrirDialogo({ titulo: opc.titulo || 'Enviar pelo WhatsApp', largura: '560px', aoFechar: () => { delete dlgEvento.dataset.fixo; carregarPainel(); } });
+    telaConfig();
+  }
+
+  function gruposVisiveisPainel() {
+    const q = slugifyLocal(document.getElementById('p-busca').value);
+    return gruposPainel.filter((g) => (filtroPainel === 'todos' || g.sit.id === filtroPainel) && (!q || slugifyLocal(g.nome + ' ' + g.codigo + ' ' + g.membros.map((m) => m.nome).join(' ')).indexOf(q) !== -1));
+  }
+  document.getElementById('btn-fila').addEventListener('click', () => {
+    if (!ultimoPainelDados) return;
+    const grupos = gruposVisiveisPainel();
+    if (!grupos.length) { toast('Nenhum grupo na lista para enviar.', 'err'); return; }
+    abrirFilaEnvio({ titulo: 'Enviar em fila (' + plural(grupos.length, 'grupo', 'grupos') + ')', entradas: grupos.flatMap((g) => g.membros.map((c) => ({ c, g }))), porGrupoPadrao: true, tipoInicial: 'convite' });
+  });
 
   // =====================================================================
   //  RESPOSTAS (convidados › Respostas): gestão por pessoa e por grupo
@@ -1993,6 +2193,7 @@
     const ids = Array.from(RS.sel);
     box.append(h('b', { text: plural(ids.length, 'pessoa selecionada', 'pessoas selecionadas') + ':' }),
       btn('Vão', () => mudarResposta(ids, 'sim'), ''), btn('Não sei', () => mudarResposta(ids, 'nao_sei'), ''), btn('Não vão', () => mudarResposta(ids, 'nao'), ''), btn('Sem resposta', () => mudarResposta(ids, ''), ''),
+      btn('Enviar por WhatsApp', () => abrirFilaEnvio({ titulo: 'Enviar para ' + plural(ids.length, 'pessoa selecionada', 'pessoas selecionadas'), entradas: todasPessoas().filter((x) => RS.sel.has(x.c.id)), porGrupoPadrao: false, tipoInicial: 'convite' }), ''),
       btn('Limpar seleção', () => { RS.sel.clear(); desenharRespostas(); }, 'fantasma'));
   }
 
@@ -2087,6 +2288,12 @@
     baixarArquivo('\ufeff' + linhas.join('\n'), 'respostas-' + (eventoAtual || 'evento') + '.csv', 'text/csv;charset=utf-8;');
   }
   document.getElementById('rs-csv').addEventListener('click', baixarRespostasCsv);
+  document.getElementById('rs-lembrar').addEventListener('click', () => {
+    if (!ultimoPainelDados) return;
+    const entradas = todasPessoas().filter((x) => passaFiltroRS(x, true) && !x.c.resposta);
+    if (!entradas.length) { toast('Todo mundo dessa lista já respondeu.'); return; }
+    abrirFilaEnvio({ titulo: 'Lembrete: quem ainda não respondeu', entradas, porGrupoPadrao: true, tipoInicial: 'lembrete', preferirSemResposta: true });
+  });
 
   function aplicarFiltro(id) { filtroPainel = id; desenharFiltrosPainel(); desenharGrupos(); document.getElementById('p-filtros').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   function desenharFiltrosPainel() {
@@ -2941,6 +3148,8 @@
   let ctDados = null;
   let ctGrupoAtivo = 0;
   let ctItens = [];
+  let ctSubs = [];              // etapas de cada módulo, mostradas abaixo dele na lateral
+  let abrirEtapaAtual = null;   // abre uma etapa do módulo que está aberto
 
   // O tipo do evento decide quais módulos e campos aparecem (casamento x aniversário...).
   let GRUPOS_ATIVOS = GRUPOS_CONTEUDO;
@@ -2978,7 +3187,7 @@
     adaptarAoTipo(ctDados);
     if (ctGrupoAtivo >= GRUPOS_ATIVOS.length) ctGrupoAtivo = 0;
     subnav.innerHTML = '';
-    ctItens = [];
+    ctItens = []; ctSubs = [];
     let ultimaCategoria = '';
     GRUPOS_ATIVOS.forEach((grupo, i) => {
       const categoria = (grupo.titulo === 'Capa' || grupo.especial) ? 'Início' : /Rodap/i.test(grupo.titulo) ? 'Outros' : 'Módulos do site';
@@ -2999,6 +3208,17 @@
       });
       subnav.appendChild(b);
       ctItens.push(b);
+      // etapas do módulo: aparecem embaixo dele enquanto ele está aberto
+      if (grupo.etapas) {
+        const sub = h('div', { class: 'ct-sub', role: 'group', 'aria-label': 'Etapas de ' + grupo.titulo, hidden: true });
+        grupo.etapas.forEach((et, n) => {
+          const eb = h('button', { type: 'button', 'data-etapa': et.id }, h('span', { class: 'n', text: String(n + 1) }), et.titulo);
+          eb.addEventListener('click', () => { if (abrirEtapaAtual) abrirEtapaAtual(et.id); });
+          sub.appendChild(eb);
+        });
+        subnav.appendChild(sub);
+        ctSubs[i] = sub;
+      }
       atualizarEstadoItem(i);
     });
     renderConteudoGrupo();
@@ -4212,6 +4432,8 @@
     });
     function abrir(id) {
       etapaAtiva[grupo.titulo] = id;
+      const sub = ctSubs[GRUPOS_ATIVOS.indexOf(grupo)];
+      if (sub) sub.querySelectorAll('button').forEach((b) => { const on = b.dataset.etapa === id; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
       grupo.etapas.forEach((et) => {
         const on = et.id === id;
         paineis[et.id].hidden = !on;
@@ -4220,11 +4442,14 @@
       });
     }
     fs.appendChild(h('div', { class: 'etapas-layout' }, h('div', { class: 'etapas-principal' }, abas, ...Object.values(paineis)), lado));
+    abrirEtapaAtual = abrir;
     abrir(grupo.etapas.some((e) => e.id === etapaAtiva[grupo.titulo]) ? etapaAtiva[grupo.titulo] : grupo.etapas[0].id);
   }
 
   function renderConteudoGrupo() {
     ctItens.forEach((b, i) => { b.classList.toggle('active', i === ctGrupoAtivo); b.setAttribute('aria-current', i === ctGrupoAtivo ? 'true' : 'false'); });
+    ctSubs.forEach((sub, i) => { if (sub) sub.hidden = i !== ctGrupoAtivo; });
+    abrirEtapaAtual = null;
     const grupo = GRUPOS_ATIVOS[ctGrupoAtivo];
     renderGrupoEm(grupo, document.getElementById('ct-form'), {
       msgId: 'ct-msg', onde: 'conteudo',

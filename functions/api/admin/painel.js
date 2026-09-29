@@ -24,7 +24,7 @@ export async function onRequestGet({ request, env }) {
     .all();
 
   const config = await db
-    .prepare("SELECT chave, valor FROM conteudo WHERE evento_id = ? AND chave IN ('config.meta_convidados', 'config.mensagem_template')")
+    .prepare("SELECT chave, valor FROM conteudo WHERE evento_id = ? AND chave IN ('config.meta_convidados', 'config.mensagem_template', 'config.mensagem_lembrete')")
     .bind(evento.id)
     .all();
   const configMap = {};
@@ -42,6 +42,7 @@ export async function onRequestGet({ request, env }) {
   return jsonResponse({
     metaConvidados,
     mensagemTemplate,
+    mensagemLembrete: configMap['config.mensagem_lembrete'] || '',
     totalCadastrados,
     totalConfirmados,
     adultosConfirmados,
