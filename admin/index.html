@@ -4085,30 +4085,43 @@
       const ELEMENTOS = [
         { id: 'todos', rot: 'Todos os textos' }, { id: 'convite', rot: 'Saudação' }, { id: 'eyebrow', rot: 'Texto pequeno' }, { id: 'nomes', rot: 'Nomes' },
         { id: 'idade', rot: 'Idade', tipos: ['aniversario'] }, { id: 'data', rot: 'Data' }, { id: 'horario', rot: 'Horário' }, { id: 'botao', rot: 'Botão e prazo', semCor: true },
+        { id: 'cartao', rot: 'Fundo do cartão', soCartao: true },
       ].filter((e) => !e.tipos || e.tipos.includes(ctDados._tipo || 'casamento'));
       const PADROES = { al: 'padrao', dy: '0', esc: '100', cor: 'padrao' };
       // chaves: "todos" usa as chaves gerais de antes; cada elemento tem as suas (hero.el.<elemento>.<propriedade>)
-      const chaveDe = (el, prop) => (el === 'todos' ? { al: 'hero.texto_alinhamento', dy: 'hero.texto_dy', esc: 'hero.texto_escala', cor: 'hero.texto_cor' }[prop] : 'hero.el.' + el + '.' + prop);
-      const padraoDe = (el, prop) => (el === 'todos' && prop === 'cor' ? 'claro' : PADROES[prop]);
+      const chaveDe = (el, prop) => (el === 'cartao' ? 'hero.cartao_transparencia' : el === 'todos' ? { al: 'hero.texto_alinhamento', dy: 'hero.texto_dy', esc: 'hero.texto_escala', cor: 'hero.texto_cor' }[prop] : 'hero.el.' + el + '.' + prop);
+      const padraoDe = (el, prop) => (el === 'cartao' ? '54' : el === 'todos' && prop === 'cor' ? 'claro' : PADROES[prop]);
+      const layoutAtual = () => { const l = fs.querySelector('[data-chave="hero.layout"]'); return l ? l.value : 'classico'; };
       const ocultos = {};
       const emitir = (i) => i.dispatchEvent(new Event('input', { bubbles: true }));
-      ELEMENTOS.forEach((e) => ['al', 'dy', 'esc', 'cor'].forEach((prop) => {
+      ELEMENTOS.forEach((e) => (e.soCartao ? ['transp'] : ['al', 'dy', 'esc', 'cor']).forEach((prop) => {
         const k = chaveDe(e.id, prop);
         const i = h('input', { type: 'hidden', 'data-chave': k });
         i.value = ctDados[k] !== undefined && ctDados[k] !== '' ? ctDados[k] : padraoDe(e.id, prop);
         fs.appendChild(i); ocultos[e.id + '.' + prop] = i;
       }));
-      const alterado = (el) => ['al', 'dy', 'esc', 'cor'].some((prop) => ocultos[el + '.' + prop].value !== padraoDe(el, prop));
+      const propsDe = (el) => (el === 'cartao' ? ['transp'] : ['al', 'dy', 'esc', 'cor']);
+      const alterado = (el) => (el === 'cartao' && layoutAtual() !== 'cartao' ? false : propsDe(el).some((prop) => ocultos[el + '.' + prop].value !== padraoDe(el, prop)));
       const temAjustes = () => ELEMENTOS.some((e) => alterado(e.id));
       const avisarPersonalizado = () => { fs.dataset.personalizado = temAjustes() ? '1' : '0'; fs.dispatchEvent(new CustomEvent('ajuste-personalizado', { detail: temAjustes() })); };
       let atual = 'todos';
       const chips = h('div', { class: 'af-chips', role: 'tablist', 'aria-label': 'Elemento a ajustar' });
       const controles = h('div', { class: 'af-controles' });
-      const pintarChips = () => Array.from(chips.children).forEach((b) => { const id = b.dataset.el; b.classList.toggle('on', id === atual); b.classList.toggle('mod', alterado(id)); b.setAttribute('aria-selected', String(id === atual)); });
+      const pintarChips = () => Array.from(chips.children).forEach((b) => { const id = b.dataset.el; if (id === 'cartao') { b.hidden = layoutAtual() !== 'cartao'; if (b.hidden && atual === 'cartao') { atual = 'todos'; desenharControles(); } } b.classList.toggle('on', id === atual); b.classList.toggle('mod', alterado(id)); b.setAttribute('aria-selected', String(id === atual)); });
       const desenharControles = () => {
         controles.innerHTML = '';
         const el = ELEMENTOS.find((e) => e.id === atual);
         const oc = (prop) => ocultos[atual + '.' + prop];
+        if (atual === 'cartao') {
+          // transparência do painel de vidro atrás dos textos (0% = bem escuro, 100% = sem fundo)
+          const r = h('input', { type: 'range', min: 0, max: 100, step: 5, 'aria-label': 'Transparência do fundo do cartão' }); r.value = oc('transp').value;
+          const v = h('output', { text: Number(r.value) + '%' });
+          const aplicar = (val) => { oc('transp').value = String(val); v.textContent = val + '%'; emitir(oc('transp')); pintarChips(); avisarPersonalizado(); };
+          r.addEventListener('input', () => aplicar(r.value));
+          controles.appendChild(h('div', { class: 'af-linha' }, h('label', { text: 'Transparência do fundo do cartão' }), h('div', { class: 'af-slider' }, h('small', { text: 'Mais opaco' }), r, h('small', { text: 'Mais transparente' }), v, btn('Padrão', () => { r.value = padraoDe('cartao'); aplicar(padraoDe('cartao')); }, 'sm fantasma'))));
+          controles.appendChild(h('p', { class: 'dica-campo', text: 'Vale só para o modelo Cartão: é o painel de vidro que fica atrás dos textos.' }));
+          return;
+        }
         const segmento = (rotulo, prop, opcoes) => {
           const wrap = h('div', { class: 'af-seg', role: 'radiogroup', 'aria-label': rotulo });
           const bs = opcoes.map(([v, r]) => { const b = h('button', { type: 'button', role: 'radio', text: r }); b.addEventListener('click', () => { oc(prop).value = v; pintar(); emitir(oc(prop)); pintarChips(); avisarPersonalizado(); }); wrap.appendChild(b); return [v, b]; });
@@ -4128,11 +4141,12 @@
         deslizante('Subir ou descer', 'dy', -200, 200, 5, (x) => (Number(x) > 0 ? '+' : '') + Number(x) + ' px', '↑ Mais alto', 'Mais baixo ↓');
         deslizante('Tamanho', 'esc', 50, 200, 5, (x) => Number(x) + '%', 'Menor', 'Maior');
         if (!el.semCor) segmento('Cor', 'cor', atual === 'todos' ? [['claro', 'Clara (fundos escuros)'], ['escuro', 'Escura (fundos claros)']] : [['padrao', 'Igual aos outros'], ['claro', 'Clara'], ['escuro', 'Escura'], ['destaque', 'Cor de destaque']]);
-        controles.appendChild(h('div', { style: 'margin-top:6px;' }, btn('Restaurar ' + (atual === 'todos' ? 'os ajustes gerais' : 'este elemento'), () => { ['al', 'dy', 'esc', 'cor'].forEach((prop) => { oc(prop).value = padraoDe(atual, prop); emitir(oc(prop)); }); desenharControles(); pintarChips(); avisarPersonalizado(); }, 'sm fantasma')));
+        controles.appendChild(h('div', { style: 'margin-top:6px;' }, btn('Restaurar ' + (atual === 'todos' ? 'os ajustes gerais' : 'este elemento'), () => { propsDe(atual).forEach((prop) => { oc(prop).value = padraoDe(atual, prop); emitir(oc(prop)); }); desenharControles(); pintarChips(); avisarPersonalizado(); }, 'sm fantasma')));
       };
       ELEMENTOS.forEach((e) => { const b = h('button', { type: 'button', role: 'tab', 'data-el': e.id, text: e.rot }); b.addEventListener('click', () => { atual = e.id; desenharControles(); pintarChips(); }); chips.appendChild(b); });
       const restaurarTudo = () => { Object.entries(ocultos).forEach(([k, i]) => { const [el, prop] = k.split('.'); i.value = padraoDe(el, prop); emitir(i); }); desenharControles(); pintarChips(); avisarPersonalizado(); };
       fs.addEventListener('ajuste-restaurar', restaurarTudo);
+      fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.layout') { pintarChips(); avisarPersonalizado(); } });
       fs.appendChild(h('div', { class: 'ajuste-fino' },
         h('p', { class: 'dica-campo', style: 'margin:0 0 10px;', text: 'Escolha o elemento e ajuste só ele: alinhamento, altura, tamanho e cor. "Todos os textos" mexe no conjunto. Assim que você ajustar algo, o modelo passa a se chamar "Personalizado". Vale para o convite e para o Save the Date.' }),
         chips, controles));
