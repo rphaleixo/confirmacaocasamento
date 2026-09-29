@@ -4,14 +4,14 @@
 
 export const MODULOS = {
   countdown: 'Contagem regressiva',
-  presente_teaser: 'Presentes (pequeno)',
+  presente_teaser: 'Presentes (chamada)',
   timeline: 'Linha do Tempo',
   padrinhos: 'Padrinhos e Madrinhas',
   madrinhas_pais: 'Pais e Daminhas',
   mapa: 'Localização',
   galeria: 'Galeria',
   rsvp: 'Confirmação de presença',
-  presentes: 'Presentes (grande)',
+  presentes: 'Presentes',
   recados: 'Recados',
 };
 
@@ -96,8 +96,15 @@ export function padroesIniciais(tipoId, agora = new Date()) {
     'rsvp.sucesso_texto': 'Presença confirmada! Obrigado 💛',
     'rsvp.cta_label': 'Confirmar Presença →',
     'presentes.eyebrow': 'Lista de presentes',
-    'presentes.cta_label': 'Escolher Presente →',
+    'presentes.cta_label': 'Abrir lista de presentes →',
     'presentes.itens': '[]',
+    'presentes.mostrar_lista': '0',
+    'presentes.mostrar_externa': '0',
+    'presentes.mostrar_infos': '0',
+    'presentes.mostrar_pix': '0',
+    'presente_teaser.destino': 'secao',
+    'presente_teaser.layout': 'medio',
+    'presente_teaser.fundo': 'suave',
     'recados.eyebrow': 'Recados',
     'recados.titulo': 'Deixe seu recado',
     'recados.texto': 'Escreva uma mensagem carinhosa pra guardarmos para sempre',

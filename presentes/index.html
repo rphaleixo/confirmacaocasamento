@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F2F3F5">
+<meta name="robots" content="noindex">
+<title>Lista de presentes</title>
+<link rel="icon" href="data:,">
+<style>
+  /* Enquanto o conteúdo do evento não chega, só um fundo neutro: nada da página base */
+  html:not(.pronto){background:#F2F3F5;}
+  html:not(.pronto) body{background:#F2F3F5 !important;}
+  html:not(.pronto) body > *{visibility:hidden;}
+</style>
+<script>
+  // Já começa a buscar o conteúdo do evento (a página é /e/<slug>/presentes)
+  (function () {
+    var m = location.pathname.match(/^\/e\/([^\/]+)/);
+    var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
+    window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    setTimeout(function () { document.documentElement.classList.add('pronto'); }, 15000);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="/fontes.js"></script>
+<style>
+  :root{
+    /* ===== paleta editável pela aba Site › Cores do painel — os 5 tokens abaixo ===== */
+    --wine:#0B2545;         /* Primária */
+    --wine-soft:#2F5D9A;    /* Secundária */
+    --gold:#C9A227;         /* Destaque */
+    --blush:#EAF1FB;        /* Fundo */
+    --ink:#14213D;          /* Texto */
+    /* ===== tudo abaixo é DERIVADO dos 5 tokens acima — nenhuma cor solta no site ===== */
+    --wine-pale: color-mix(in srgb, var(--wine) 25%, white 75%);
+    --wine-deep: color-mix(in srgb, var(--wine) 75%, black 25%);
+    --blush-deep: color-mix(in srgb, var(--blush) 78%, var(--wine) 12%);
+    --cream: color-mix(in srgb, white 97%, var(--blush) 3%);
+    --cream-2: color-mix(in srgb, white 94%, var(--blush) 6%);
+    --ink-soft: color-mix(in srgb, var(--ink) 62%, white 38%);
+    --border: color-mix(in srgb, var(--blush) 50%, var(--wine-soft) 30%);
+    --on-wine: var(--cream);
+    --focus: color-mix(in srgb, var(--gold) 70%, var(--wine) 30%);
+    --shadow-soft:0 12px 40px -14px color-mix(in srgb, var(--wine-soft) 28%, transparent);
+    --shadow-romance:0 25px 60px -25px color-mix(in srgb, var(--wine) 38%, transparent);
+    --font-display:'Cormorant Garamond',serif;
+    --font-body:'Inter',sans-serif;
+    --display-style:italic; /* itálico nos títulos só quando a fonte escolhida fica bonita assim */
+    --radius:16px;
+    --gutter:24px;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{margin:0;background:linear-gradient(180deg,var(--cream-2),var(--blush));color:var(--ink);font-family:var(--font-body);font-weight:400;-webkit-font-smoothing:antialiased;}
+  .frame{max-width:460px;margin:0 auto;background:var(--cream);position:relative;overflow:hidden;box-shadow:0 0 60px color-mix(in srgb, var(--ink) 10%, transparent);min-height:100vh;}
+  .display{font-family:var(--font-display);font-style:var(--display-style);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;color:inherit;}
+  p{line-height:1.7;}
+  h1,h2,h3{text-wrap:balance;}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:6px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--wine-soft);font-weight:500;}
+  .flanked{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .flanked .ln{height:1px;width:26px;background:currentColor;opacity:.5;}
+
+  /* ---------- BOTÕES ---------- */
+  .pill{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--cream);color:var(--wine);
+    border:none;border-radius:999px;min-height:52px;
+    padding:15px 26px;font-family:var(--font-display);font-size:18px;letter-spacing:.01em;font-weight:500;
+    box-shadow:var(--shadow-romance);
+    transition:transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease;
+    width:100%;text-align:center;
+  }
+  .pill:hover{transform:translateY(-1px);background:var(--gold);color:color-mix(in srgb, var(--gold) 12%, black);}
+  .pill:active{transform:scale(.98);}
+  .pill:disabled{opacity:.6;cursor:default;transform:none;}
+  .pill.solid{background:var(--wine);color:var(--on-wine);box-shadow:0 10px 26px -10px color-mix(in srgb, var(--wine) 55%, transparent);}
+  .pill.solid:hover{background:var(--wine-deep);color:var(--on-wine);}
+  .pill.outline{background:transparent;color:var(--wine);border:1px solid var(--wine-soft);box-shadow:none;}
+  .pill.outline:hover{background:var(--wine);color:var(--on-wine);}
+  .pill.on-dark{background:var(--cream);color:var(--wine);}
+  .pill.ghost-dark{background:transparent;color:var(--cream);border:1px solid color-mix(in srgb, var(--wine-pale) 55%, transparent);box-shadow:none;}
+  .pill.ghost-dark:hover{background:color-mix(in srgb, var(--wine-pale) 14%, transparent);color:var(--cream);}
+  .pill.small{min-height:44px;font-size:15px;padding:10px 18px;}
+  .link-btn{background:none;border:none;padding:6px 2px;font-size:12.5px;color:var(--wine-soft);text-decoration:underline;text-underline-offset:3px;}
+
+  body{margin:0;background:var(--cream);}
+  .pag{max-width:760px;margin:0 auto;padding:28px var(--gutter) 64px;min-height:100vh;}
+  .voltar{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--wine-soft);padding:8px 0;min-height:44px;}
+  .voltar:hover{text-decoration:underline;text-underline-offset:3px;}
+  .pag-topo{text-align:center;padding:10px 0 22px;}
+  .pag-topo h1{font-size:34px;font-weight:500;line-height:1.15;margin:8px 0 10px;color:var(--wine);}
+  .pag-topo p{font-size:14.5px;color:var(--ink-soft);margin:0 auto;max-width:520px;}
+  .pag-resumo{text-align:center;font-size:12.5px;color:var(--ink-soft);margin:0 0 14px;}
+
+  .gift-filtro{display:flex;justify-content:center;gap:6px;margin:0 0 18px;}
+  .gift-filtro button{border:1px solid var(--border);background:transparent;color:var(--wine);border-radius:999px;padding:8px 16px;font-size:13px;min-height:40px;}
+  .gift-filtro button[aria-pressed=true]{background:var(--wine);color:var(--on-wine);border-color:var(--wine);}
+  .gift-itens{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 26px;text-align:left;}
+  @media (min-width:640px){.gift-itens{grid-template-columns:1fr 1fr;}}
+  .gift-item{background:#fff;color:var(--ink);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;transition:opacity .3s;}
+  .gift-item img,.gift-item .sem-img{width:64px;height:64px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--blush-deep);display:grid;place-items:center;color:var(--wine-soft);}
+  .gift-item-info{flex:1;min-width:0;}
+  .gift-item-nome{font-family:var(--font-display);font-style:var(--display-style);font-size:17px;color:var(--wine);line-height:1.25;overflow-wrap:anywhere;}
+  .gift-item-desc{font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.45;}
+  .gift-item-valor{font-size:12px;color:var(--ink);margin-top:3px;font-weight:600;}
+  .gift-item button{font-size:12.5px;min-height:40px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--wine);background:var(--wine);color:var(--on-wine);white-space:nowrap;flex-shrink:0;font-weight:500;}
+  .gift-item.reservado{opacity:.72;}
+  .gift-item.reservado button{background:transparent;color:var(--wine);border-color:var(--border);}
+  .gift-item.reservado .gift-item-nome{text-decoration:line-through;text-decoration-thickness:1px;}
+  .gift-pix{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;text-align:left;font-size:13px;color:var(--ink-soft);margin:0 0 18px;padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:#fff;}
+  .gift-pix .rot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
+  .gift-pix b{color:var(--ink);font-weight:600;overflow-wrap:anywhere;font-size:14px;}
+  .gift-pix button{font-size:12.5px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--wine);background:var(--wine);color:var(--on-wine);font-weight:500;}
+  .vazio-msg{text-align:center;color:var(--ink-soft);font-size:14px;padding:30px 10px;grid-column:1/-1;}
+  .indisponivel{text-align:center;padding:60px 10px;}
+  .indisponivel h2{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:26px;color:var(--wine);margin:0 0 8px;}
+  .indisponivel p{color:var(--ink-soft);font-size:14.5px;margin:0 0 20px;}
+  .indisponivel .pill{max-width:280px;margin:0 auto;}
+
+  /* ---------- AVISO RÁPIDO (toast) ---------- */
+  .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,20px);background:var(--ink);color:var(--cream);font-size:13.5px;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px color-mix(in srgb, black 25%, transparent);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:80;max-width:calc(100% - 32px);text-align:center;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- JANELA INFERIOR (presentes) ---------- */
+  .sheet-fundo{position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 55%, transparent);z-index:70;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .sheet-fundo.show{opacity:1;pointer-events:auto;}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;background:var(--cream);color:var(--ink);border-radius:22px 22px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom, 0px));z-index:71;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);max-height:88vh;overflow-y:auto;}
+  .sheet.show{transform:translateY(0);}
+  .sheet .alca{width:40px;height:4px;border-radius:4px;background:var(--border);margin:0 auto 16px;}
+  .sheet h3{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:24px;color:var(--wine);margin:0 0 6px;text-align:center;line-height:1.2;}
+  .sheet p{font-size:13.5px;color:var(--ink-soft);text-align:center;margin:0 0 18px;line-height:1.6;}
+  .sheet .item-resumo{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:14px;margin-bottom:16px;}
+  .sheet .item-resumo img{width:54px;height:54px;border-radius:10px;object-fit:cover;}
+  .sheet .item-resumo b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:17px;color:var(--wine);}
+  .sheet .item-resumo span{font-size:12.5px;color:var(--ink-soft);}
+  .sheet .acoes{display:grid;gap:8px;}
+  .sheet .pix-box{border:1.5px dashed var(--wine-soft);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;}
+  .sheet .pix-box small{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);}
+  .sheet .pix-box b{display:block;font-size:16px;margin:4px 0 10px;overflow-wrap:anywhere;color:var(--ink);}
+
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+<main class="pag" id="pag">
+  <a class="voltar" id="voltar" href="/">← Voltar ao convite</a>
+  <div id="conteudo" hidden>
+    <header class="pag-topo">
+      <div class="eyebrow" id="pgEyebrow">Lista de presentes</div>
+      <h1 class="display" id="pgTitulo">Lista de presentes</h1>
+      <p id="pgTexto" hidden></p>
+    </header>
+    <div class="pag-resumo" id="pgResumo"></div>
+    <div class="gift-filtro" id="pgFiltro" hidden>
+      <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
+      <button type="button" data-filtro="livres" aria-pressed="false">Disponíveis</button>
+    </div>
+    <div class="gift-itens" id="pgLista"></div>
+    <div class="gift-pix" id="pgPix" hidden><div><span class="rot">Prefere enviar um PIX?</span><b id="pgPixChave"></b></div><button type="button" id="pgPixCopiar">Copiar chave</button></div>
+  </div>
+  <div class="indisponivel" id="pgIndisponivel" hidden>
+    <h2 id="indTitulo">Lista de presentes indisponível</h2>
+    <p id="indTexto">A lista de presentes não está disponível no momento.</p>
+    <a class="pill solid" id="indVoltar" href="/">Voltar ao convite</a>
+  </div>
+</main>
+
+<div class="sheet-fundo" id="sheetFundo"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitulo" hidden>
+  <div class="alca"></div>
+  <div id="sheetCorpo"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let conteudo = {};
+  function t(chave, def) { return (conteudo[chave] !== undefined && conteudo[chave] !== '') ? conteudo[chave] : def; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  const FONTES = {
+    classico: { link: null, display: "'Cormorant Garamond',serif", body: "'Inter',sans-serif" },
+    moderno: { link: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=Work+Sans:wght@300;400;500;600&display=swap', display: "'Playfair Display',serif", body: "'Work Sans',sans-serif" },
+    elegante: { link: 'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;1,500&family=Jost:wght@300;400;500;600&display=swap', display: "'Fraunces',serif", body: "'Jost',sans-serif" },
+    minimal: { link: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@300;400;500;600&display=swap', display: "'Cormorant Garamond',serif", body: "'Montserrat',sans-serif" },
+  };
+
+  const eventoMatch = window.location.pathname.match(/^\/e\/([^\/]+)/);
+  const EVENTO_QS = eventoMatch ? 'e=' + encodeURIComponent(eventoMatch[1]) : '';
+  function api(caminho) { return '/api/' + caminho + (EVENTO_QS ? '?' + EVENTO_QS : ''); }
+  const codigo = new URLSearchParams(location.search).get('c');
+  // volta para a seção de presentes do convite, mantendo o link pessoal do convidado
+  const urlConvite = (eventoMatch ? '/e/' + eventoMatch[1] + '/' : '/') + (codigo ? '?c=' + encodeURIComponent(codigo) : '') + '#presentes';
+  $('voltar').href = urlConvite; $('indVoltar').href = urlConvite;
+
+  let toastTimer;
+  function avisar(texto) { const el = $('toast'); el.textContent = texto; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400); }
+  function copiar(texto, mensagem) {
+    const ok = function () { avisar(mensagem || 'Copiado'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texto).then(ok).catch(function () { copiarFallback(texto); ok(); });
+    else { copiarFallback(texto); ok(); }
+  }
+  function copiarFallback(texto) {
+    const ta = document.createElement('textarea'); ta.value = texto; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove();
+  }
+  function revelar() { document.documentElement.classList.add('pronto'); }
+
+  function aplicarTema() {
+    const root = document.documentElement.style;
+    if (t('aparencia.cor_primaria', '')) root.setProperty('--wine', t('aparencia.cor_primaria', ''));
+    if (t('aparencia.cor_secundaria', '')) root.setProperty('--wine-soft', t('aparencia.cor_secundaria', ''));
+    if (t('aparencia.cor_destaque', '')) root.setProperty('--gold', t('aparencia.cor_destaque', ''));
+    if (t('aparencia.cor_fundo', '')) root.setProperty('--blush', t('aparencia.cor_fundo', ''));
+    if (t('aparencia.cor_texto', '')) root.setProperty('--ink', t('aparencia.cor_texto', ''));
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta && t('aparencia.cor_primaria', '')) meta.content = t('aparencia.cor_primaria', '');
+    const CAT = window.FONTES_CATALOGO;
+    const idTitulo = t('aparencia.fonte_titulo', ''), idTexto = t('aparencia.fonte_texto', '');
+    if (CAT && (CAT.porId[idTitulo] || CAT.porId[idTexto])) {
+      const fTitulo = CAT.porId[idTitulo] || CAT.porId['cormorant-garamond'];
+      const fTexto = CAT.porId[idTexto] || CAT.porId['inter'];
+      CAT.carregar(fTitulo); CAT.carregar(fTexto);
+      root.setProperty('--font-display', CAT.familia(fTitulo));
+      root.setProperty('--font-body', CAT.familia(fTexto));
+      root.setProperty('--display-style', fTitulo.estiloTitulo);
+    } else {
+      const preset = FONTES[t('aparencia.fontes', 'classico')] || FONTES.classico;
+      if (preset.link) { const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = preset.link; document.head.appendChild(link); }
+      root.setProperty('--font-display', preset.display);
+      root.setProperty('--font-body', preset.body);
+    }
+  }
+  function nomeDoEvento() {
+    if (conteudo._tipo === 'aniversario') return t('hero.noiva', conteudo._nome || '');
+    const n = [t('hero.noiva', ''), t('hero.noivo', '')].filter(Boolean).join(' & ');
+    return n || conteudo._nome || '';
+  }
+  function indisponivel(titulo, texto) {
+    $('conteudo').hidden = true; $('pgIndisponivel').hidden = false;
+    if (titulo) $('indTitulo').textContent = titulo;
+    if (texto) $('indTexto').textContent = texto;
+    revelar();
+  }
+
+  let itens = [];
+  let filtro = 'todos';
+  function secaoPresentesAtiva() {
+    try { const m = JSON.parse(conteudo._modulos || 'null'); if (Array.isArray(m) && m.indexOf('presentes') === -1) return false; } catch (e) {}
+    return conteudo['secao.presentes.ativa'] !== '0';
+  }
+
+  (window.__conteudo).then(function (dados) {
+    if (!dados || dados.erro) {
+      indisponivel(dados && dados.rede ? 'Não conseguimos carregar agora' : 'Convite não encontrado',
+        dados && dados.rede ? 'Confira sua internet e tente de novo.' : 'Confira o link que você recebeu ou peça um novo para quem enviou o convite.');
+      return;
+    }
+    conteudo = dados;
+    aplicarTema();
+    const nome = nomeDoEvento();
+    document.title = 'Lista de presentes' + (nome ? ' • ' + nome : '');
+    try { itens = JSON.parse(t('presentes.itens', '[]')); } catch (e) { itens = []; }
+    if (!Array.isArray(itens)) itens = [];
+    itens = itens.filter(function (it) { return it && String(it.nome || '').trim(); });
+
+    if (t('config.modo_save_the_date', '0') === '1' || !secaoPresentesAtiva() || t('presentes.mostrar_lista', '0') === '0') {
+      indisponivel('Lista de presentes indisponível', 'A lista de presentes não está disponível no momento.'); return;
+    }
+    if (!itens.length) { indisponivel('A lista ainda está sendo preparada', 'Volte em breve para escolher um presente.'); return; }
+
+    $('pgEyebrow').textContent = nome || 'Lista de presentes';
+    $('pgTitulo').textContent = t('presentes.lista_titulo', 'Lista de presentes');
+    const texto = t('presentes.lista_texto', '');
+    $('pgTexto').textContent = texto; $('pgTexto').hidden = !texto;
+    $('pgFiltro').hidden = itens.length < 5;
+    const pix = t('presentes.chave_pix', '');
+    if (pix && t('presentes.mostrar_pix', '0') !== '0') {
+      $('pgPix').hidden = false; $('pgPixChave').textContent = pix;
+      $('pgPixCopiar').onclick = function () { copiar(pix, 'Chave PIX copiada'); };
+    }
+    $('conteudo').hidden = false;
+    desenhar();
+    revelar();
+  }, function () { indisponivel('Não conseguimos carregar agora', 'Confira sua internet e tente de novo.'); });
+
+  document.querySelectorAll('#pgFiltro button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      filtro = b.dataset.filtro;
+      document.querySelectorAll('#pgFiltro button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      desenhar();
+    });
+  });
+  const ICONE_PRESENTE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/></svg>';
+  function desenhar() {
+    const wrap = $('pgLista');
+    wrap.innerHTML = '';
+    const escolhidos = itens.filter(function (it) { return it.reservado; }).length;
+    $('pgResumo').textContent = itens.length + (itens.length === 1 ? ' presente' : ' presentes') + (escolhidos ? ' · ' + escolhidos + (escolhidos === 1 ? ' já escolhido' : ' já escolhidos') : '');
+    itens.filter(function (it) { return filtro === 'todos' || !it.reservado; }).forEach(function (item) {
+      const card = document.createElement('div');
+      card.className = 'gift-item' + (item.reservado ? ' reservado' : '');
+      if (item.foto) { const img = document.createElement('img'); img.src = item.foto; img.alt = ''; img.loading = 'lazy'; card.appendChild(img); }
+      else { const s = document.createElement('div'); s.className = 'sem-img'; s.innerHTML = ICONE_PRESENTE; card.appendChild(s); }
+      const info = document.createElement('div'); info.className = 'gift-item-info';
+      const nome = document.createElement('div'); nome.className = 'gift-item-nome'; nome.textContent = item.nome || '';
+      info.appendChild(nome);
+      if (item.descricao) { const d = document.createElement('div'); d.className = 'gift-item-desc'; d.textContent = item.descricao; info.appendChild(d); }
+      if (item.valor) { const v = document.createElement('div'); v.className = 'gift-item-valor'; v.textContent = item.valor; info.appendChild(v); }
+      card.appendChild(info);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = item.reservado ? 'Escolhido ✓' : 'Escolher';
+      btn.setAttribute('aria-label', (item.reservado ? 'Já escolhido: ' : 'Escolher ') + (item.nome || 'presente'));
+      btn.addEventListener('click', function () { abrirSheetPresente(item); });
+      card.appendChild(btn);
+      wrap.appendChild(card);
+    });
+    if (!wrap.children.length) {
+      const vazio = document.createElement('p'); vazio.className = 'vazio-msg';
+      vazio.textContent = 'Todos os presentes já foram escolhidos.' + ($('pgPix').hidden ? '' : ' A chave PIX continua disponível abaixo.');
+      wrap.appendChild(vazio);
+    }
+  }
+
+  // ---- janela inferior (confirmar escolha do presente / desfazer) ----
+  let sheetOrigem = null;
+  function abrirSheet(conteudoHtml, montar) {
+    const sheet = $('sheet'), fundo = $('sheetFundo');
+    sheetOrigem = document.activeElement;
+    $('sheetCorpo').innerHTML = conteudoHtml;
+    if (montar) montar($('sheetCorpo'));
+    sheet.hidden = false;
+    requestAnimationFrame(function () { sheet.classList.add('show'); fundo.classList.add('show'); });
+    const foco = sheet.querySelector('button'); if (foco) setTimeout(function () { foco.focus(); }, 60);
+  }
+  function fecharSheet() {
+    const sheet = $('sheet');
+    sheet.classList.remove('show'); $('sheetFundo').classList.remove('show');
+    setTimeout(function () { sheet.hidden = true; }, 300);
+    if (sheetOrigem && sheetOrigem.focus) sheetOrigem.focus();
+  }
+  $('sheetFundo').addEventListener('click', fecharSheet);
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('sheet').hidden) fecharSheet(); });
+
+  function chavePix() { return t('presentes.mostrar_pix', '0') !== '0' ? t('presentes.chave_pix', '') : ''; }
+  function abrirSheetPresente(item) {
+    const pix = chavePix();
+    const resumo = '<div class="item-resumo">' + (item.foto ? '<img src="' + esc(item.foto) + '" alt="">' : '') +
+      '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, item.valor].filter(Boolean).join(' · ')) + '</span></div></div>';
+    if (item.reservado) {
+      abrirSheet('<h3 id="sheetTitulo">Este presente já foi escolhido</h3><p>Se foi você e mudou de ideia, dá para desfazer a escolha e liberar o presente para outra pessoa.</p>' + resumo +
+        '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Manter escolhido</button><button type="button" class="pill solid small" data-acao="desfazer">Desfazer minha escolha</button></div>',
+        function (corpo) {
+          corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
+          corpo.querySelector('[data-acao=desfazer]').addEventListener('click', function (ev) { reservar(item, false, ev.currentTarget); });
+        });
+      return;
+    }
+    abrirSheet('<h3 id="sheetTitulo">Vai dar este presente?</h3><p>Ao confirmar, ele aparece como "escolhido" para os outros convidados não repetirem.</p>' + resumo +
+      '<div class="acoes"><button type="button" class="pill solid small" data-acao="sim">Sim, vou dar este presente</button><button type="button" class="pill outline small" data-acao="fechar">Voltar</button></div>',
+      function (corpo) {
+        corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
+        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) { reservar(item, true, ev.currentTarget, pix); });
+      });
+  }
+  function reservar(item, reservado, btn, pix) {
+    btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
+    fetch(api('presentes/reservar'), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); return; }
+        item.reservado = reservado;
+        desenhar();
+        if (!reservado) { fecharSheet(); avisar('Escolha desfeita. O presente voltou para a lista.'); return; }
+        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + (pix ? ' Se quiser enviar o valor por PIX, a chave está aqui:' : '') + '</p>' +
+          (pix ? '<div class="pix-box"><small>Chave PIX</small><b>' + esc(pix) + '</b><button type="button" class="pill solid small" data-acao="pix">Copiar chave PIX</button></div>' : '') +
+          '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Fechar</button></div>',
+          function (corpo) {
+            corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
+            const b = corpo.querySelector('[data-acao=pix]'); if (b) b.addEventListener('click', function () { copiar(pix, 'Chave PIX copiada'); });
+          });
+      })
+      .catch(function () { btn.disabled = false; btn.textContent = rotulo; avisar('Sem conexão agora. Tente de novo em instantes.'); });
+  }
+</script>
+</body>
+</html>

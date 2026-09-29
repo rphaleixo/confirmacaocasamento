@@ -434,6 +434,14 @@
   .lugar-ok .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .lugar-aviso{border:1px solid #F2DDB0;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:13px;font-weight:500;}
   .lugar-link{margin-top:14px;} .lugar-link label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;} .lugar-link input{flex:1;min-width:0;}
+  .escolha-visual{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px;}
+  .ev-op{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 8px;cursor:pointer;font:inherit;color:var(--ink);}
+  .ev-op b{font-size:13px;} .ev-op span{font-size:11.5px;color:var(--ink-soft);line-height:1.35;}
+  .ev-op:hover{border-color:var(--navy);} .ev-op.on{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 18%,transparent);background:var(--surface-2,#F6F8FB);}
+  .ev-desenho{width:100%;height:58px;display:flex;align-items:center;justify-content:center;} .ev-desenho svg{width:100%;height:100%;}
+  .rot-campo{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;}
+  .atalho-lista{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:12px 14px;}
+  .atalho-lista b{display:block;font-size:13.5px;} .atalho-lista span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:420px;}
   .lugar-ajuda{margin:12px 0 4px;border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--ink-soft);}
   .lugar-ajuda b{display:block;color:var(--ink);margin-bottom:6px;font-size:13px;} .lugar-ajuda ol{margin:0 0 10px;padding-left:18px;line-height:1.5;}
   .lugar-info{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);color:var(--ink-soft);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:12.5px;}
@@ -446,6 +454,8 @@
   .bloco-corpo{padding:4px 16px 14px;transition:opacity .15s;}
   .bloco-texto.off .bloco-estado{color:var(--ink-faint);} .bloco-texto.off .bloco-corpo{opacity:.5;}
   .bloco-texto.off .bloco-cab{background:#F1F2F5;}
+  .bloco-texto.recolhe.off .bloco-corpo{display:none;} .bloco-texto.recolhe.off .bloco-cab{border-bottom:none;}
+  .campo-cond[hidden]{display:none;}
   .campo-liga{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);}
   .campo-liga:last-of-type{border-bottom:none;} .campo-liga .rot{font-size:13.5px;font-weight:600;color:var(--ink);} .campo-liga .sub{font-size:12px;color:var(--ink-soft);font-weight:400;display:block;}
   .previa-tela{position:relative;} .previa-carregando{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-faint);font-size:12.5px;background:#F2F3F5;}
@@ -788,6 +798,12 @@
       <div class="ordem-fixo" id="ordem-rodape"><span class="pos">↓</span><span>Rodapé: sempre o último <small id="ordem-rodape-estado" style="color:var(--ink-faint);"></small></span><label class="mini-switch lado-fixo" title="Mostrar o rodapé no site" style="margin-left:auto;margin-right:86px;"><input type="checkbox" id="ord-rodape" aria-label="Mostrar o rodapé no site"><span></span></label></div>
       <div class="savebar" id="ordem-savebar"><span class="estado" id="ordem-estado">Tudo salvo</span><div class="msg" id="ordem-msg"></div><button class="action" id="ordem-btn" type="button">Salvar ordem</button></div>
     </div>
+  </section>
+
+  <!-- ===== EVENTO: PRESENTES ===== -->
+  <section id="tab-presentes" class="tab">
+    <div class="pag-head"><div><h2>Lista de presentes</h2><p>Cadastre os presentes aqui. Eles aparecem numa página própria do evento, sem ocupar espaço no convite. No convite, a seção Presentes mostra um botão que leva até esta página.</p></div></div>
+    <div id="pr-form" style="max-width:820px;"><div class="carregando">Carregando...</div></div>
   </section>
 
   <!-- ===== EVENTO: RECADOS ===== -->
@@ -1170,6 +1186,7 @@
     tipografia: () => carregarAparencia('tipografia'),
     conteudo: () => carregarConteudo(),
     ordem: () => carregarOrdem(),
+    presentes: () => carregarPresentes(),
     recados: () => carregarRecados(),
   };
   // Menu do evento: 4 áreas, cada uma com suas abas no submenu.
@@ -1177,6 +1194,7 @@
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
     { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
   ];
   const ABAS_MASTER = ['visao', 'eventos', 'anfitrioes', 'templates'];
@@ -1267,6 +1285,8 @@
     montarNavEvento();
     // nome e tipo reais do evento no cabeçalho
     fetchOriginal('/api/conteudo?e=' + encodeURIComponent(eventoAtual)).then((r) => r.json()).then((d) => {
+      const mods = modulosDoTipo(d);
+      if (mods && mods.indexOf('presentes') === -1) { const bp = document.querySelector('#navEvento [data-area=presentes]'); if (bp) bp.hidden = true; }
       if (d._nome) { document.getElementById('tituloAdmin').textContent = d._nome; document.title = d._nome + ' • Painel'; }
       const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
       sub.appendChild(h('span', { class: 'hd-badge', text: tipos[d._tipo] || d._tipo || '' }));
@@ -2324,6 +2344,19 @@
     { chave: '__fontes__', label: 'Fontes', tipo: 'fontes' },
   ]};
 
+  // Desenhos dos cartões de "Tamanho" e "Fundo" da chamada de presentes (usam as cores do evento)
+  const corEv = (d, k, p) => (d && d[k]) || p;
+  const DESENHO_LAYOUT = {
+    pequeno: () => '<svg viewBox="0 0 100 58"><rect x="6" y="19" width="88" height="20" rx="8" fill="#fff" stroke="#B9C3D3"/><circle cx="19" cy="29" r="5" fill="#E7DDB8"/><rect x="29" y="24" width="30" height="4" rx="2" fill="#8A94A6"/><rect x="29" y="31" width="22" height="3" rx="1.5" fill="#C3CBD8"/><rect x="66" y="23" width="22" height="12" rx="6" fill="#1F3A5F"/></svg>',
+    medio: () => '<svg viewBox="0 0 100 58"><rect x="12" y="4" width="76" height="50" rx="9" fill="#fff" stroke="#B9C3D3"/><circle cx="50" cy="15" r="5" fill="#E7DDB8"/><rect x="32" y="24" width="36" height="4" rx="2" fill="#8A94A6"/><rect x="26" y="31" width="48" height="3" rx="1.5" fill="#C3CBD8"/><rect x="28" y="40" width="44" height="9" rx="4.5" fill="#1F3A5F"/></svg>',
+    grande: () => '<svg viewBox="0 0 100 58"><rect x="2" y="2" width="96" height="54" rx="6" fill="#1F3A5F"/><circle cx="50" cy="15" r="6" fill="#ffffff33"/><rect x="26" y="26" width="48" height="5" rx="2.5" fill="#fff"/><rect x="20" y="34" width="60" height="3" rx="1.5" fill="#ffffff99"/><rect x="24" y="42" width="52" height="10" rx="5" fill="#fff"/></svg>',
+  };
+  const DESENHO_FUNDO = {
+    claro: (d) => '<svg viewBox="0 0 100 58"><rect x="2" y="2" width="96" height="54" rx="6" fill="#FFFFFF" stroke="#B9C3D3"/><rect x="24" y="20" width="52" height="5" rx="2.5" fill="' + corEv(d, 'aparencia.cor_texto', '#14213D') + '"/><rect x="30" y="30" width="40" height="10" rx="5" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/></svg>',
+    suave: (d) => '<svg viewBox="0 0 100 58"><rect x="2" y="2" width="96" height="54" rx="6" fill="' + corEv(d, 'aparencia.cor_fundo', '#EAF1FB') + '" stroke="#B9C3D3"/><rect x="24" y="20" width="52" height="5" rx="2.5" fill="' + corEv(d, 'aparencia.cor_texto', '#14213D') + '"/><rect x="30" y="30" width="40" height="10" rx="5" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/></svg>',
+    marca: (d) => '<svg viewBox="0 0 100 58"><rect x="2" y="2" width="96" height="54" rx="6" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/><rect x="24" y="20" width="52" height="5" rx="2.5" fill="#fff"/><rect x="30" y="30" width="40" height="10" rx="5" fill="#fff"/></svg>',
+  };
+
   const GRUPOS_CONTEUDO = [
     { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem ou vídeo' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
       { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
@@ -2366,12 +2399,31 @@
         { valor: '3', label: 'Frase única' },
       ]},
     ]},
-    { titulo: 'Presentes (chamada)', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', campos: [
-      { chave: 'presente_teaser.titulo', label: 'Título' },
-      { chave: 'presente_teaser.texto', label: 'Texto', tipo: 'textarea' },
-      { chave: '__bloco_teaser_botao__', tipo: 'bloco_texto', liga: 'presente_teaser.mostrar_botao', label: 'Botão', sub: 'Leva o convidado até a lista ou as dicas de presente. Desligue se quiser só o texto.', campos: [
+    { titulo: 'Presentes (chamada)', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', etapas: [{ id: 'conteudo', titulo: 'Texto e destino' }, { id: 'visual', titulo: 'Aparência' }], campos: [
+      { etapa: 'conteudo', chave: '__aviso_chamada__', tipo: 'aviso_chamada' },
+      { etapa: 'conteudo', chave: 'presente_teaser.destino', label: 'Para onde o botão leva', tipo: 'select', opcoes: [
+        { valor: 'secao', label: 'A seção de presentes deste site' },
+        { valor: 'externo', label: 'Um link externo (outra loja, página...)' },
+      ], dica: 'Se levar à seção de presentes e ela estiver desligada, a chamada também some do site.' },
+      { etapa: 'conteudo', chave: 'presente_teaser.url_externa', label: 'Link externo', se: { chave: 'presente_teaser.destino', valor: 'externo' }, dica: 'Ex.: https://www.minhaloja.com.br/lista. Sem link, a chamada não aparece.' },
+      { etapa: 'conteudo', chave: 'presente_teaser.titulo', label: 'Título' },
+      { etapa: 'conteudo', chave: 'presente_teaser.texto', label: 'Texto', tipo: 'textarea' },
+      { etapa: 'conteudo', chave: '__bloco_teaser_botao__', tipo: 'bloco_texto', liga: 'presente_teaser.mostrar_botao', label: 'Botão', sub: 'Desligue se quiser só o texto.', campos: [
         { chave: 'presente_teaser.cta_label', label: 'Texto do botão' },
       ]},
+      { etapa: 'visual', chave: 'presente_teaser.layout', tipo: 'escolha_visual', label: 'Tamanho', padrao: 'medio', opcoes: [
+        { valor: 'pequeno', label: 'Pequeno', desc: 'Faixa discreta, com botão ao lado', desenho: DESENHO_LAYOUT.pequeno },
+        { valor: 'medio', label: 'Médio', desc: 'Cartão centralizado', desenho: DESENHO_LAYOUT.medio },
+        { valor: 'grande', label: 'Grande', desc: 'Bloco de destaque, com foto opcional', desenho: DESENHO_LAYOUT.grande },
+      ]},
+      { etapa: 'visual', chave: 'presente_teaser.fundo', tipo: 'escolha_visual', label: 'Fundo do bloco', padrao: 'suave', opcoes: [
+        { valor: 'claro', label: 'Claro', desc: 'Branco', desenho: DESENHO_FUNDO.claro },
+        { valor: 'suave', label: 'Suave', desc: 'Cor de fundo do site', desenho: DESENHO_FUNDO.suave },
+        { valor: 'marca', label: 'Destaque', desc: 'Cor primária', desenho: DESENHO_FUNDO.marca },
+      ], dica: 'O bloco tem fundo próprio e não se mistura com a contagem regressiva.' },
+      { etapa: 'visual', chave: 'presente_teaser.mostrar_icone', tipo: 'liga', label: 'Mostrar o ícone de presente' },
+      { etapa: 'visual', chave: 'presente_teaser.foto_url', label: 'Foto de fundo (só no tamanho Grande)', tipo: 'foto', aspecto: 1.2, se: { chave: 'presente_teaser.layout', valor: 'grande' }, dica: 'Opcional. A foto ganha um véu escuro para o texto continuar legível.' },
+      { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Linha do tempo', toggle: 'timeline', ancora: 'secTimeline', campos: [
       { chave: 'timeline.eyebrow', label: 'Texto pequeno' },
@@ -2414,18 +2466,25 @@
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },
     ]},
-    { titulo: 'Presentes (lista e dicas)', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'lista', titulo: 'Lista de presentes' }, { id: 'dicas', titulo: 'Dicas e informações' }, { id: 'textos', titulo: 'Textos e PIX' }], campos: [
-      { etapa: 'lista', chave: 'presentes.mostrar_lista', tipo: 'liga', label: 'Mostrar a lista de presentes', sub: 'Desligue se o evento não tem lista, por exemplo quando só há dicas de tamanho de roupa e brinquedos. A lista fica guardada.' },
-      { etapa: 'lista', chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
-      { etapa: 'lista', chave: '__sep_presentes_fallback__', tipo: 'separador', label: 'Ou: link para uma lista em outra loja' },
-      { etapa: 'lista', chave: 'presentes.cta_url', label: 'Link da lista de presentes', dica: 'Usado só quando não há nenhum item cadastrado acima.' },
-      { etapa: 'lista', chave: 'presentes.cta_label', label: 'Texto do botão' },
-      { etapa: 'dicas', chave: 'presentes.mostrar_infos', tipo: 'liga', label: 'Mostrar dicas e informações', sub: 'Ideal para aniversários sem lista: tamanho de roupa, brinquedos de interesse, cores e personagens favoritos.' },
-      { etapa: 'dicas', chave: 'presentes.infos', label: 'Dicas e informações', tipo: 'lista_infos' },
+    { titulo: 'Presentes', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'como', titulo: 'Como presentear' }], campos: [
       { etapa: 'textos', chave: 'presentes.eyebrow', label: 'Texto pequeno' },
       { etapa: 'textos', chave: 'presentes.titulo', label: 'Título' },
-      { etapa: 'textos', chave: 'presentes.texto', label: 'Texto', tipo: 'textarea' },
-      { etapa: 'textos', chave: 'presentes.chave_pix', label: 'Chave PIX (opcional)', dica: 'Aparece no site com um botão "Copiar". Não processamos pagamento: é só para facilitar o PIX. Funciona com ou sem lista.' },
+      { etapa: 'textos', chave: 'presentes.texto', label: 'Texto', tipo: 'textarea', dica: 'É a primeira coisa que o convidado lê nesta seção. Abaixo aparecem só as formas de presentear que você ligar na próxima etapa.' },
+      { etapa: 'como', chave: '__nota_como__', tipo: 'nota', label: 'Ligue as formas de presentear que fazem sentido para o seu evento. Elas podem aparecer juntas. Cada uma só mostra as configurações quando está ligada.' },
+      { etapa: 'como', chave: '__bloco_lista__', tipo: 'bloco_texto', liga: 'presentes.mostrar_lista', padrao: '0', recolhe: true, label: 'Lista de presentes', sub: 'Os presentes ficam numa página própria, sem poluir o convite. O convidado vê um botão que leva até ela.', campos: [
+        { chave: '__atalho_lista__', tipo: 'atalho_lista' },
+        { chave: 'presentes.lista_cta_label', label: 'Texto do botão', placeholder: 'Ver lista de presentes →' },
+      ]},
+      { etapa: 'como', chave: '__bloco_externa__', tipo: 'bloco_texto', liga: 'presentes.mostrar_externa', padrao: '0', recolhe: true, label: 'Lista em outra loja', sub: 'Um botão que leva até uma lista que você criou em outro site.', campos: [
+        { chave: 'presentes.cta_url', label: 'Link da lista', dica: 'Ex.: https://www.minhaloja.com.br/lista. Sem link, esta opção não aparece.' },
+        { chave: 'presentes.cta_label', label: 'Texto do botão' },
+      ]},
+      { etapa: 'como', chave: '__bloco_infos__', tipo: 'bloco_texto', liga: 'presentes.mostrar_infos', padrao: '0', recolhe: true, label: 'Dicas e informações', sub: 'Ideal para aniversários sem lista: tamanho de roupa, brinquedos de interesse, cores e personagens favoritos.', campos: [
+        { chave: 'presentes.infos', label: 'Dicas e informações', tipo: 'lista_infos' },
+      ]},
+      { etapa: 'como', chave: '__bloco_pix__', tipo: 'bloco_texto', liga: 'presentes.mostrar_pix', padrao: '0', recolhe: true, label: 'PIX', sub: 'Mostra a chave com um botão "Copiar". Não processamos pagamento: é só para facilitar o PIX.', campos: [
+        { chave: 'presentes.chave_pix', label: 'Chave PIX' },
+      ]},
       { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Recados', toggle: 'recados', ancora: 'secRecados', campos: [
@@ -2531,14 +2590,19 @@
     await navegar('conteudo');
     if (abaAtual === 'conteudo' && GRUPOS_ATIVOS[ctGrupoAtivo] && !GRUPOS_ATIVOS[ctGrupoAtivo].especial) { ctGrupoAtivo = GRUPOS_ATIVOS.findIndex((g) => g.especial); renderConteudoGrupo(); }
   }
-  function moduloLigado(g) { return !g.toggle || ctDados['secao.' + g.toggle + '.ativa'] !== '0'; }
+  // A chamada de presentes que leva à seção do site some junto com a seção
+  function chamadaDependeDeSecaoOff(d) { return (d['presente_teaser.destino'] || 'secao') !== 'externo' && d['secao.presentes.ativa'] === '0'; }
+  function moduloLigado(g) {
+    if (g.toggle === 'presente_teaser' && chamadaDependeDeSecaoOff(ctDados)) return false;
+    return !g.toggle || ctDados['secao.' + g.toggle + '.ativa'] !== '0';
+  }
   function atualizarEstadoItem(i) {
     const g = GRUPOS_ATIVOS[i]; const b = ctItens[i];
     if (b && g.especial) { const pl = b.querySelector('[data-std-pill]'); const on = modoSTD(); pl.textContent = on ? 'Ligado' : 'Desligado'; pl.classList.toggle('off', !on); return; }
     if (!b || !g.toggle) return;
     const ligado = moduloLigado(g);
     b.classList.toggle('off', !ligado);
-    b.title = ligado ? 'Módulo aparece no site' : 'Módulo escondido (não aparece no site)';
+    b.title = ligado ? 'Módulo aparece no site' : (g.toggle === 'presente_teaser' && chamadaDependeDeSecaoOff(ctDados) && ctDados['secao.presente_teaser.ativa'] !== '0' ? 'Escondida: leva à seção de presentes, que está desligada' : 'Módulo escondido (não aparece no site)');
   }
 
   function isoParaDataHora(iso) {
@@ -2803,6 +2867,22 @@
   }
 
   function renderCampoConteudo(fs, campo) {
+    // campo condicional: só aparece quando outro campo do mesmo formulário tem o valor pedido (ex.: link só se o destino for "externo")
+    if (campo.se) {
+      const antes = fs.children.length;
+      renderCampoConteudo(fs, { ...campo, se: null });
+      const caixa = h('div', { class: 'campo-cond' });
+      Array.from(fs.children).slice(antes).forEach((n) => caixa.appendChild(n));
+      fs.appendChild(caixa);
+      const atualizar = () => {
+        const c = fs.querySelector('[data-chave="' + campo.se.chave + '"]');
+        const v = c ? (c.type === 'checkbox' ? (c.checked ? '1' : '0') : c.value) : '';
+        caixa.hidden = v !== campo.se.valor;
+      };
+      fs.addEventListener('input', atualizar); fs.addEventListener('change', atualizar);
+      setTimeout(atualizar, 0);
+      return;
+    }
     if (campo.tipo === 'separador') { fs.appendChild(h('div', { class: 'separador-campo', text: campo.label })); return; }
     if (campo.tipo === 'nota') { fs.appendChild(h('div', { class: 'dica-campo', style: 'margin:0 0 6px;', text: campo.label })); return; }
     if (campo.tipo === 'lugar') {
@@ -2963,14 +3043,14 @@
       // texto + interruptor num bloco só: o interruptor liga/desliga o que aparece no site; o texto fica logo abaixo
       const idLiga = 'liga-' + campo.liga.replace(/\W/g, '-');
       const chk = h('input', { type: 'checkbox', 'data-chave': campo.liga, id: idLiga });
-      chk.checked = ctDados[campo.liga] !== '0';
+      chk.checked = (ctDados[campo.liga] === undefined || ctDados[campo.liga] === '' ? (campo.padrao || '1') : ctDados[campo.liga]) !== '0';
       const estado = h('span', { class: 'bloco-estado' });
       const corpo = h('div', { class: 'bloco-corpo' });
       const cab = h('div', { class: 'bloco-cab' },
         h('label', { class: 'rot', for: idLiga }, campo.label, campo.sub ? h('span', { class: 'sub', text: campo.sub }) : null),
         estado,
         h('label', { class: 'switch', for: idLiga, 'aria-label': 'Mostrar ' + campo.label + ' no site' }, chk, h('span', { class: 'trilho' })));
-      const caixa = h('div', { class: 'bloco-texto' }, cab, corpo);
+      const caixa = h('div', { class: 'bloco-texto' + (campo.recolhe ? ' recolhe' : '') }, cab, corpo);
       const pintar = () => { caixa.classList.toggle('off', !chk.checked); estado.textContent = chk.checked ? 'Aparece no site' : 'Escondido do site'; };
       chk.addEventListener('change', pintar); pintar();
       fs.appendChild(caixa);
@@ -3208,6 +3288,50 @@
       campoLista(fs, campo, () => ({ nome: '', texto: '', foto: '' }), (p, campos, mudou) => {
         campos.append(inputLigado(p.nome, 'Nome', (v) => { p.nome = v; mudou(); }), inputLigado(p.texto, 'Papel (ex.: Madrinha, Pai do noivo)', (v) => { p.texto = v; mudou(); }));
       }, 'Adicionar pessoa');
+      return;
+    }
+
+    if (campo.tipo === 'escolha_visual') {
+      // opções em cartões com um desenho: grava o valor escolhido num campo escondido
+      const oculto = h('input', { type: 'hidden', 'data-chave': campo.chave });
+      oculto.value = ctDados[campo.chave] || campo.padrao || campo.opcoes[0].valor;
+      const grade = h('div', { class: 'escolha-visual', role: 'radiogroup', 'aria-label': campo.label });
+      const botoes = campo.opcoes.map((op) => {
+        const b = h('button', { type: 'button', role: 'radio', class: 'ev-op' }, h('div', { class: 'ev-desenho', html: op.desenho ? op.desenho(ctDados) : '' }), h('b', { text: op.label }), op.desc ? h('span', { text: op.desc }) : null);
+        b.addEventListener('click', () => { oculto.value = op.valor; pintar(); oculto.dispatchEvent(new Event('input', { bubbles: true })); });
+        grade.appendChild(b);
+        return { op, b };
+      });
+      const pintar = () => botoes.forEach(({ op, b }) => { const on = oculto.value === op.valor; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+      pintar();
+      fs.append(h('label', { class: 'rot-campo', text: campo.label }), grade, oculto);
+      if (campo.dica) fs.appendChild(h('div', { class: 'dica-campo', text: campo.dica }));
+      return;
+    }
+
+    if (campo.tipo === 'aviso_chamada') {
+      // avisa quando a chamada fica escondida por depender da seção de presentes
+      const caixa = h('div', { class: 'aviso-midia', hidden: true, style: 'margin:0 0 14px;' });
+      const atualizar = () => {
+        const dest = fs.querySelector('[data-chave="presente_teaser.destino"]');
+        const off = (dest ? dest.value : (ctDados['presente_teaser.destino'] || 'secao')) !== 'externo' && ctDados['secao.presentes.ativa'] === '0';
+        caixa.hidden = !off;
+        caixa.textContent = off ? 'Esta chamada está escondida no site: ela leva à seção de presentes, que está desligada. Ligue a seção Presentes ou troque o destino para um link externo.' : '';
+      };
+      fs.appendChild(caixa);
+      fs.addEventListener('change', atualizar);
+      setTimeout(atualizar, 0);
+      return;
+    }
+
+    if (campo.tipo === 'atalho_lista') {
+      let itens = []; try { itens = JSON.parse(ctDados['presentes.itens'] || '[]'); } catch (e) { itens = []; }
+      itens = (Array.isArray(itens) ? itens : []).filter((it) => it && String(it.nome || '').trim());
+      const escolhidos = itens.filter((it) => it.reservado).length;
+      fs.appendChild(h('div', { class: 'atalho-lista' },
+        h('div', {}, h('b', { text: itens.length ? plural(itens.length, 'presente cadastrado', 'presentes cadastrados') : 'Nenhum presente cadastrado ainda' }),
+          h('span', { text: itens.length ? (escolhidos ? plural(escolhidos, 'já foi escolhido', 'já foram escolhidos') + ' pelos convidados.' : 'Nenhum foi escolhido ainda.') : 'Cadastre os presentes na aba Presentes: a lista ganha uma página própria, sem poluir o convite.' })),
+        btn('Gerenciar lista de presentes', () => navegar('presentes'), 'sm prim')));
       return;
     }
 
@@ -3450,6 +3574,7 @@
       fs.appendChild(sugestoes);
     } else {
       const input = h('input', { type: 'text', 'data-chave': campo.chave, id: idCampo }); input.value = ctDados[campo.chave] || '';
+      if (campo.placeholder) input.placeholder = campo.placeholder;
       fs.appendChild(input);
       if (campo.avisoSTD && modoSTD()) {
         // com o Save the Date ligado, o site troca este texto pelo título do Save the Date: avisa para não parecer erro
@@ -3494,6 +3619,7 @@
       const d = Object.assign({}, ctDados);
       form.querySelectorAll('[data-chave]').forEach((e) => { d[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
       if (grupo.toggle) d['secao.' + grupo.toggle + '.ativa'] = '1';   // mostra o módulo mesmo desligado
+      if (grupo.toggle === 'presente_teaser') d['secao.presentes.ativa'] = '1';
       if (!grupo.especial) d['config.modo_save_the_date'] = '0';        // sem Save the Date, para o módulo aparecer
       return d;
     };
@@ -3578,7 +3704,11 @@
     renderGrupoEm(grupo, document.getElementById('ct-form'), {
       msgId: 'ct-msg', onde: 'conteudo',
       topo: grupo.especial === 'savethedate' ? cartaoSaveTheDate : null,
-      aoAlternar: (ligado) => ctItens[ctGrupoAtivo].classList.toggle('off', !ligado),
+      aoAlternar: (ligado) => {
+        const g = GRUPOS_ATIVOS[ctGrupoAtivo];
+        if (g.toggle) ctDados['secao.' + g.toggle + '.ativa'] = ligado ? '1' : '0';
+        GRUPOS_ATIVOS.forEach((_, i) => atualizarEstadoItem(i));
+      },
     });
   }
 
@@ -3904,12 +4034,24 @@
     { chave: 'mapa', nome: 'Localização', toggle: true },
     { chave: 'galeria', nome: 'Galeria', toggle: true },
     { chave: 'rsvp', nome: 'Confirmação de presença', toggle: false },
-    { chave: 'presentes', nome: 'Presentes (lista e dicas)', toggle: true },
+    { chave: 'presentes', nome: 'Presentes', toggle: true },
     { chave: 'recados', nome: 'Recados', toggle: true },
   ];
   let ordemAtual = [];
   let ordemRodape = true; // rodapé do site ligado?
   let ordemVisivel = {};
+  let ordemDestinoChamada = 'secao';
+  const chamadaEscondidaNaOrdem = () => ordemDestinoChamada !== 'externo' && ordemVisivel.presentes === false;
+  function estadoOrdem(chave) {
+    if (chave === 'presente_teaser' && ordemVisivel[chave] && chamadaEscondidaNaOrdem()) return 'Escondida: leva à seção Presentes, que está desligada';
+    return ordemVisivel[chave] ? 'Aparece no site' : 'Escondido do site';
+  }
+  function atualizarDependenciasOrdem() {
+    const item = document.querySelector('#ordem-lista .ordem-item[data-chave="presente_teaser"]');
+    if (!item) return;
+    item.querySelector('.nome small').textContent = estadoOrdem('presente_teaser');
+    item.classList.toggle('off', !ordemVisivel.presente_teaser || chamadaEscondidaNaOrdem());
+  }
   let ordemSortable = null;
 
   async function carregarOrdem() {
@@ -3922,6 +4064,7 @@
     ordemAtual = salva.filter((c) => chavesValidas.includes(c));
     chavesValidas.forEach((c) => { if (!ordemAtual.includes(c)) ordemAtual.push(c); });
     ordemVisivel = {};
+    ordemDestinoChamada = dados['presente_teaser.destino'] || 'secao';
     chavesValidas.forEach((c) => { ordemVisivel[c] = dados['secao.' + c + '.ativa'] !== '0'; });
     ordemRodape = dados['footer.mostrar'] !== '0';
     const chkRodape = document.getElementById('ord-rodape');
@@ -3942,7 +4085,7 @@
     lista.innerHTML = '';
     ordemAtual.forEach((chave, i) => {
       const bloco = BLOCOS_ORDENAVEIS.find((b) => b.chave === chave);
-      const item = h('div', { class: 'ordem-item' + (ordemVisivel[chave] ? '' : ' off'), 'data-chave': chave });
+      const item = h('div', { class: 'ordem-item' + (ordemVisivel[chave] && !(chave === 'presente_teaser' && chamadaEscondidaNaOrdem()) ? '' : ' off'), 'data-chave': chave });
       const subir = h('button', { type: 'button', class: 'icone-btn', title: 'Subir', 'aria-label': 'Subir ' + bloco.nome, html: ICONES.subir, disabled: i === 0 });
       const descer = h('button', { type: 'button', class: 'icone-btn', title: 'Descer', 'aria-label': 'Descer ' + bloco.nome, html: ICONES.descer, disabled: i === ordemAtual.length - 1 });
       subir.addEventListener('click', () => { ordemAtual.splice(i - 1, 0, ordemAtual.splice(i, 1)[0]); ordemSujo(true); renderOrdem(); });
@@ -3950,11 +4093,11 @@
       let lado;
       if (bloco.toggle) {
         const chk = h('input', { type: 'checkbox', id: 'ord-' + chave, 'aria-label': 'Mostrar ' + bloco.nome + ' no site' }); chk.checked = ordemVisivel[chave];
-        chk.addEventListener('change', () => { ordemVisivel[chave] = chk.checked; item.classList.toggle('off', !chk.checked); item.querySelector('.nome small').textContent = chk.checked ? 'Aparece no site' : 'Escondido do site'; ordemSujo(true); });
+        chk.addEventListener('change', () => { ordemVisivel[chave] = chk.checked; item.classList.toggle('off', !chk.checked); item.querySelector('.nome small').textContent = estadoOrdem(chave); atualizarDependenciasOrdem(); ordemSujo(true); });
         lado = h('label', { class: 'mini-switch', title: 'Mostrar no site' }, chk, h('span'));
       } else lado = h('span', { class: 'tag', title: 'A confirmação sempre aparece', text: 'sempre visível' });
       item.append(h('button', { type: 'button', class: 'arrasta', title: 'Arraste para mudar a ordem', 'aria-label': 'Arrastar ' + bloco.nome, html: ICONES.alca }), h('span', { class: 'pos', text: i + 1 }),
-        h('div', { class: 'nome' }, bloco.nome, h('small', { text: ordemVisivel[chave] ? 'Aparece no site' : 'Escondido do site' })), lado, subir, descer);
+        h('div', { class: 'nome' }, bloco.nome, h('small', { text: estadoOrdem(chave) })), lado, subir, descer);
       lista.appendChild(item);
     });
     if (ordemSortable) ordemSortable.destroy();
@@ -3976,6 +4119,44 @@
     ordemSujo(false);
     toast('Ordem salva. O site já reflete a mudança.');
   });
+
+  // =====================================================================
+  //  PRESENTES (lista em página própria: /e/<slug>/presentes)
+  // =====================================================================
+  const GRUPO_LISTA_PRESENTES = { titulo: 'Lista de presentes', campos: [
+    { chave: 'presentes.lista_texto', label: 'Texto de apresentação da página (opcional)', tipo: 'textarea', dica: 'Aparece no alto da página da lista. Ex.: "Escolha com carinho. Se preferir, também aceitamos PIX."' },
+    { chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
+  ]};
+  function urlListaPresentesAdmin() { return urlSite() + 'presentes'; }
+  async function carregarPresentes() {
+    const form = document.getElementById('pr-form');
+    const d = await api('/api/conteudo');
+    if (d.erro) { form.textContent = 'Não consegui carregar agora. Recarregue a página para tentar de novo.'; return; }
+    ctDados = d;
+    renderGrupoEm(GRUPO_LISTA_PRESENTES, form, {
+      msgId: 'pr-msg', semCabecalho: true, semMoldura: true, onde: 'presentes',
+      rotuloSalvar: 'Salvar lista', msgSalvo: 'Lista salva. A página de presentes já está atualizada.',
+      topo: (caixa) => {
+        const secaoOff = ctDados['secao.presentes.ativa'] === '0';
+        const listaOff = (ctDados['presentes.mostrar_lista'] || '0') === '0';
+        const url = urlListaPresentesAdmin();
+        if (secaoOff || listaOff) {
+          caixa.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 14px;' },
+            h('div', { text: secaoOff ? 'A seção Presentes está desligada no site, então a página da lista também fica indisponível para os convidados.' : 'A lista de presentes ainda não está ligada no convite: os convidados não veem o botão que leva até ela e a página fica indisponível.' }),
+            h('div', { style: 'margin-top:8px;' }, btn(secaoOff ? 'Ligar em Site › Conteúdo › Presentes' : 'Ligar em Site › Conteúdo › Presentes › Como presentear', async () => {
+              ctGrupoAtivo = Math.max(0, GRUPOS_CONTEUDO.findIndex((g) => g.toggle === 'presentes'));
+              await navegar('conteudo');
+              if (abaAtual === 'conteudo') { const i = GRUPOS_ATIVOS.findIndex((g) => g.toggle === 'presentes'); if (i >= 0) { ctGrupoAtivo = i; renderConteudoGrupo(); } }
+            }, 'sm'))));
+        }
+        caixa.appendChild(h('div', { class: 'atalho-lista', style: 'margin-bottom:16px;' },
+          h('div', { style: 'min-width:0;' }, h('b', { text: 'Página da lista' }), h('span', { style: 'overflow-wrap:anywhere;', text: url })),
+          h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;' },
+            h('a', { class: 'btn sm', href: url, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir página' }),
+            btn('Copiar link', () => copiar(url, 'Link da lista de presentes'), 'sm', 'link'))));
+      },
+    });
+  }
 
   // =====================================================================
   //  RECADOS

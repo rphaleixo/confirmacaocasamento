@@ -62,6 +62,28 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '003-presentes-opcoes',
+    // Presentes: as formas de presentear (lista, lista externa, dicas, PIX) passam a ter interruptor próprio e a
+    // chamada de presentes ganha destino e layout. Eventos existentes ficam com o mesmo comportamento de antes.
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos')) || !(await tabelaExiste(db, 'conteudo'))) return null;
+      const valor = (chave) => `(SELECT valor FROM conteudo c WHERE c.evento_id = e.id AND c.chave = '${chave}')`;
+      const semItens = `(${valor('presentes.itens')} IS NULL OR ${valor('presentes.itens')} NOT LIKE '%"nome"%')`;
+      const temUrl = `(COALESCE(${valor('presentes.cta_url')}, '') NOT IN ('', '#'))`;
+      const secaoDesligada = `(COALESCE(${valor('secao.presentes.ativa')}, '1') = '0')`;
+      const ins = (chave, expr) => `INSERT OR IGNORE INTO conteudo (evento_id, chave, valor) SELECT e.id, '${chave}', ${expr} FROM eventos e`;
+      return [
+        ins('presentes.mostrar_lista', "'1'"),
+        ins('presentes.mostrar_infos', "'1'"),
+        ins('presentes.mostrar_externa', `CASE WHEN ${temUrl} AND ${semItens} AND COALESCE(${valor('presentes.mostrar_lista')}, '1') <> '0' THEN '1' ELSE '0' END`),
+        ins('presentes.mostrar_pix', `CASE WHEN COALESCE(${valor('presentes.chave_pix')}, '') <> '' THEN '1' ELSE '0' END`),
+        ins('presente_teaser.destino', `CASE WHEN ${secaoDesligada} AND ${temUrl} THEN 'externo' ELSE 'secao' END`),
+        ins('presente_teaser.url_externa', `CASE WHEN ${secaoDesligada} AND ${temUrl} THEN ${valor('presentes.cta_url')} ELSE '' END`),
+        ins('presente_teaser.layout', "'medio'"),
+      ];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

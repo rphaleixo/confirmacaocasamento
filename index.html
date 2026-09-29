@@ -168,11 +168,47 @@
   .divider{position:relative;height:46px;margin-top:-1px;line-height:0;}
   .divider svg{width:100%;height:100%;display:block;}
 
-  /* ---------- PRESENTE (chamada pequena) ---------- */
-  .gift-box{background:var(--cream);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;box-shadow:var(--shadow-soft);}
-  .gift-box-icon{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 10px;border-radius:50%;background:color-mix(in srgb, var(--gold) 16%, var(--cream));color:var(--wine);}
-  .gift-box-title{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:22px;color:var(--ink);margin:0 0 8px;}
-  .gift-box-text{font-size:13.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 18px;}
+  /* ---------- PRESENTES (chamada): tamanho, fundo e foto vêm do painel ---------- */
+  #secPresenteTeaser{position:relative;text-align:center;overflow:hidden;}
+  #secPresenteTeaser.f-claro{background:var(--cream);}
+  #secPresenteTeaser.f-suave{background:var(--blush-deep);}
+  #secPresenteTeaser.f-marca{background:linear-gradient(165deg, var(--wine) 0%, var(--wine-deep) 100%);}
+  .chamada-foto{position:absolute;inset:0;background-size:cover;background-position:center;}
+  .chamada-foto::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 52%, transparent), color-mix(in srgb, var(--wine-deep) 84%, transparent));}
+  .gift-box{position:relative;background:var(--cream);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-soft);}
+  .gift-box-icon{display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:color-mix(in srgb, var(--gold) 16%, var(--cream));color:var(--wine);}
+  .gift-box-title{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;color:var(--ink);margin:0;text-wrap:balance;}
+  .gift-box-text{color:var(--ink-soft);margin:0;line-height:1.6;}
+  /* fundo de destaque ou foto: sem cartão, letras claras */
+  .f-marca .gift-box,.tem-foto .gift-box{background:transparent;border-color:transparent;box-shadow:none;}
+  .f-marca .gift-box-title,.tem-foto .gift-box-title{color:var(--cream);}
+  .f-marca .gift-box-text,.tem-foto .gift-box-text{color:var(--wine-pale);}
+  .f-marca .gift-box-icon,.tem-foto .gift-box-icon{background:color-mix(in srgb, var(--cream) 14%, transparent);color:var(--cream);}
+  .f-marca .pill.solid,.tem-foto .pill.solid{background:var(--cream);color:var(--wine);}
+  .f-marca .pill.solid:hover,.tem-foto .pill.solid:hover{background:var(--gold);color:color-mix(in srgb, var(--gold) 12%, black);}
+  /* pequeno: uma faixa discreta */
+  .l-pequeno{padding:18px var(--gutter);}
+  .l-pequeno .gift-box{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;}
+  .l-pequeno .gift-box-icon{width:38px;height:38px;}
+  .l-pequeno .gift-box-corpo{flex:1;min-width:0;}
+  .l-pequeno .gift-box-title{font-size:16px;line-height:1.25;}
+  .l-pequeno .gift-box-text{font-size:12px;line-height:1.4;margin-top:2px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+  .l-pequeno .pill{width:auto;max-width:44%;min-height:40px;padding:8px 14px;font-size:13.5px;line-height:1.2;flex-shrink:0;}
+  /* médio: cartão centralizado */
+  .l-medio{padding:40px var(--gutter);}
+  .l-medio .gift-box{padding:28px 24px;}
+  .l-medio .gift-box-icon{width:46px;height:46px;margin:0 auto 10px;}
+  .l-medio .gift-box-title{font-size:22px;margin-bottom:8px;}
+  .l-medio .gift-box-text{font-size:13.5px;margin-bottom:18px;}
+  /* grande: bloco de destaque, com foto opcional */
+  .l-grande{padding:68px var(--gutter);min-height:380px;display:flex;align-items:center;justify-content:center;}
+  .l-grande .gift-box{background:transparent;border:none;box-shadow:none;padding:0;width:100%;}
+  .l-grande .gift-box-icon{width:64px;height:64px;margin:0 auto 16px;}
+  .l-grande .gift-box-title{font-size:34px;line-height:1.15;margin-bottom:12px;}
+  .l-grande .gift-box-text{font-size:15px;margin-bottom:28px;}
+  .l-grande .pill{min-height:56px;font-size:19px;}
+  .gift-box .pill{margin:0;}
+  .gift-box-icon[hidden],.gift-box .pill[hidden]{display:none;}
 
   /* ---------- CONTAGEM ---------- */
   .countdown{background:var(--blush);padding:44px var(--gutter);text-align:center;position:relative;}
@@ -311,25 +347,17 @@
   .gift-section > p{font-size:14px;color:var(--wine-pale);margin:0 0 24px;}
   .ancora-mod{display:block;height:0;width:0;overflow:hidden;scroll-margin-top:0;}
   #hero > .ancora-mod{position:absolute;top:0;left:0;} /* a capa é uma coluna flex alinhada embaixo: a âncora fixa no topo */
-  .gift-infos{display:flex;flex-direction:column;gap:10px;margin:0 0 22px;text-align:left;}
+  .gift-infos{display:flex;flex-direction:column;gap:10px;margin:0;text-align:left;}
   .gift-info{background:var(--cream);color:var(--ink);border-radius:14px;padding:14px 16px;}
   .gift-info b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:16px;color:var(--wine);margin-bottom:3px;}
   .gift-info span{display:block;font-size:13.5px;line-height:1.5;color:var(--ink-soft);white-space:pre-line;}
-  .gift-itens{display:flex;flex-direction:column;gap:10px;margin:0 0 22px;text-align:left;}
-  .gift-item{background:var(--cream);color:var(--ink);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;transition:opacity .3s;}
-  .gift-item img,.gift-item .sem-img{width:60px;height:60px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--blush-deep);display:grid;place-items:center;color:var(--wine-soft);}
-  .gift-item-info{flex:1;min-width:0;}
-  .gift-item-nome{font-family:var(--font-display);font-style:var(--display-style);font-size:17px;color:var(--wine);line-height:1.25;overflow-wrap:anywhere;}
-  .gift-item-desc{font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.45;}
-  .gift-item-valor{font-size:12px;color:var(--ink);margin-top:3px;font-weight:600;}
-  .gift-item button{font-size:12.5px;min-height:40px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--wine);background:var(--wine);color:var(--on-wine);white-space:nowrap;flex-shrink:0;font-weight:500;}
-  .gift-item.reservado{opacity:.72;}
-  .gift-item.reservado button{background:transparent;color:var(--wine);border-color:var(--border);}
-  .gift-item.reservado .gift-item-nome{text-decoration:line-through;text-decoration-thickness:1px;}
-  .gift-filtro{display:flex;justify-content:center;gap:6px;margin:0 0 16px;}
-  .gift-filtro button{border:1px solid color-mix(in srgb, var(--wine-pale) 45%, transparent);background:transparent;color:var(--wine-pale);border-radius:999px;padding:7px 14px;font-size:12.5px;}
-  .gift-filtro button[aria-pressed=true]{background:var(--cream);color:var(--wine);border-color:var(--cream);}
-  .gift-pix{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;text-align:left;font-size:13px;color:var(--wine-pale);margin:0 0 18px;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);}
+  .gift-como{display:flex;flex-direction:column;gap:14px;margin:0;text-align:left;}
+  .gift-como-tit{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--wine-pale);text-align:center;margin:8px 0 -2px;}
+  .gift-opcao{background:var(--cream);color:var(--ink);border-radius:16px;padding:22px 20px;text-align:center;}
+  .gift-opcao h3{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:21px;color:var(--wine);margin:0 0 6px;}
+  .gift-opcao p{font-size:13.5px;line-height:1.55;color:var(--ink-soft);margin:0 0 16px;}
+  .gift-opcao .pill{width:100%;}
+  .gift-pix{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;text-align:left;font-size:13px;color:var(--wine-pale);margin:0;padding:14px 16px;border-radius:14px;border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);}
   .gift-pix .rot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:2px;}
   .gift-pix b{color:var(--cream);font-weight:600;overflow-wrap:anywhere;font-size:14px;}
   .gift-pix button{font-size:12.5px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--cream);background:var(--cream);color:var(--wine);font-weight:500;}
@@ -377,23 +405,6 @@
   /* ---------- AVISO RÁPIDO (toast) ---------- */
   .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,20px);background:var(--ink);color:var(--cream);font-size:13.5px;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px color-mix(in srgb, black 25%, transparent);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:80;max-width:calc(100% - 32px);text-align:center;}
   .toast.show{opacity:1;transform:translate(-50%,0);}
-
-  /* ---------- JANELA INFERIOR (presentes) ---------- */
-  .sheet-fundo{position:fixed;inset:0;background:color-mix(in srgb, var(--ink) 55%, transparent);z-index:70;opacity:0;pointer-events:none;transition:opacity .25s;}
-  .sheet-fundo.show{opacity:1;pointer-events:auto;}
-  .sheet{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;background:var(--cream);color:var(--ink);border-radius:22px 22px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom, 0px));z-index:71;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);max-height:88vh;overflow-y:auto;}
-  .sheet.show{transform:translateY(0);}
-  .sheet .alca{width:40px;height:4px;border-radius:4px;background:var(--border);margin:0 auto 16px;}
-  .sheet h3{font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:24px;color:var(--wine);margin:0 0 6px;text-align:center;line-height:1.2;}
-  .sheet p{font-size:13.5px;color:var(--ink-soft);text-align:center;margin:0 0 18px;line-height:1.6;}
-  .sheet .item-resumo{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:14px;margin-bottom:16px;}
-  .sheet .item-resumo img{width:54px;height:54px;border-radius:10px;object-fit:cover;}
-  .sheet .item-resumo b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:17px;color:var(--wine);}
-  .sheet .item-resumo span{font-size:12.5px;color:var(--ink-soft);}
-  .sheet .acoes{display:grid;gap:8px;}
-  .sheet .pix-box{border:1.5px dashed var(--wine-soft);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center;}
-  .sheet .pix-box small{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);}
-  .sheet .pix-box b{display:block;font-size:16px;margin:4px 0 10px;overflow-wrap:anywhere;color:var(--ink);}
 
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}
@@ -446,12 +457,15 @@
     <div class="cd-sentence" id="cd-sentence"></div>
   </section>
 
-  <!-- PRESENTES (chamada pequena) -->
-  <section style="background:var(--blush);padding:6px var(--gutter) 48px;text-align:center;" id="secPresenteTeaser" data-modulo="presente_teaser" data-bg-top="var(--blush)" data-bg-bottom="var(--blush)">
+  <!-- PRESENTES (chamada): tamanho pequeno, médio ou grande; leva à seção de presentes ou a um link externo -->
+  <section class="l-medio f-suave" id="secPresenteTeaser" data-modulo="presente_teaser" data-bg-top="var(--blush-deep)" data-bg-bottom="var(--blush-deep)">
+    <div class="chamada-foto" id="chamadaFoto" hidden></div>
     <div class="gift-box">
-      <span class="gift-box-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span>
-      <h3 class="gift-box-title" id="presenteTeaserTitulo">Um mimo pra gente?</h3>
-      <p class="gift-box-text" id="presenteTeaserTexto">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
+      <span class="gift-box-icon" id="presenteTeaserIcone" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span>
+      <div class="gift-box-corpo">
+        <h3 class="gift-box-title" id="presenteTeaserTitulo">Um mimo pra gente?</h3>
+        <p class="gift-box-text" id="presenteTeaserTexto">Se quiser fazer parte desse momento, escolha um presente especial com muito carinho pra gente.</p>
+      </div>
       <a href="#presentes" class="pill solid" id="presenteTeaserCta">Ver lista de presentes →</a>
     </div>
   </section>
@@ -602,14 +616,21 @@
     <div class="eyebrow" id="presentesEyebrow">Lista de presentes</div>
     <h2 class="display" id="presentesTitulo">Seja protagonista da nossa história</h2>
     <p id="presentesTexto">Escolha o presente que você gostaria de nos dar e deixe uma mensagem carinhosa — cada gesto vai morar com a gente para sempre.</p>
-    <div class="gift-infos" id="presentesInfos" hidden></div>
-    <div class="gift-filtro" id="presentesFiltro" hidden>
-      <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
-      <button type="button" data-filtro="livres" aria-pressed="false">Disponíveis</button>
+    <div class="gift-como" id="presentesComo">
+      <div class="gift-opcao" id="presentesOptLista" hidden>
+        <h3>Escolha na nossa lista</h3>
+        <p id="presentesListaTexto">Veja os presentes e marque o que você vai dar, para ninguém repetir.</p>
+        <a href="#" class="pill solid" id="presentesListaCta">Ver lista de presentes →</a>
+      </div>
+      <div class="gift-opcao" id="presentesOptExterna" hidden>
+        <h3>Lista em outra loja</h3>
+        <p>Nossa lista está em outro site. Você será levado até lá.</p>
+        <a href="#" class="pill solid" id="presentesCta" target="_blank" rel="noopener">Abrir lista de presentes →</a>
+      </div>
+      <div class="gift-como-tit" id="presentesInfosTit" hidden>Dicas para presentear</div>
+      <div class="gift-infos" id="presentesInfos" hidden></div>
+      <div class="gift-pix" id="presentesPix" hidden><div><span class="rot">Prefere enviar um PIX?</span><b id="presentesPixChave"></b></div><button type="button" id="presentesPixCopiar">Copiar chave</button></div>
     </div>
-    <div class="gift-itens" id="presentesLista" hidden></div>
-    <div class="gift-pix" id="presentesPix" hidden><div><span class="rot">Chave PIX</span><b id="presentesPixChave"></b></div><button type="button" id="presentesPixCopiar">Copiar chave</button></div>
-    <a href="#" class="pill on-dark" id="presentesCta" rel="noopener">Escolher Presente →</a>
   </section>
 
   <!-- RECADOS -->
@@ -663,13 +684,6 @@
     <a href="#rsvp" class="sticky-cta" id="stickyCta">Confirmar →</a>
   </div>
 
-</div>
-
-<!-- janela inferior da lista de presentes -->
-<div class="sheet-fundo" id="sheetFundo"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitulo" hidden>
-  <div class="alca"></div>
-  <div id="sheetCorpo"></div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -995,11 +1009,7 @@
     document.getElementById('secCountdown').classList.add('layout-' + t('countdown.layout', '1'));
     escondeSeInativa('countdown', 'secCountdown');
 
-    aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');
-    aplicar('presenteTeaserTexto', 'presente_teaser.texto');
-    aplicar('presenteTeaserCta', 'presente_teaser.cta_label');
-    document.getElementById('presenteTeaserCta').style.display = t('presente_teaser.mostrar_botao', '1') === '0' ? 'none' : '';
-    escondeSeInativa('presente_teaser', 'secPresenteTeaser');
+    aplicarChamadaPresentes();
 
     aplicar('timelineEyebrow', 'timeline.eyebrow');
     aplicar('timelineTitulo', 'timeline.titulo');
@@ -1062,8 +1072,6 @@
     aplicar('presentesEyebrow', 'presentes.eyebrow');
     aplicar('presentesTitulo', 'presentes.titulo');
     aplicar('presentesTexto', 'presentes.texto');
-    aplicar('presentesCta', 'presentes.cta_label');
-    document.getElementById('presentesCta').href = t('presentes.cta_url', '#');
     renderPresentes();
     escondeSeInativa('presentes', 'presentes');
 
@@ -1179,8 +1187,6 @@
     }
     if (!modulosVisiveis.some(function (el) { return el.id === 'presentes'; })) {
       document.querySelector('footer .flinks a[href="#presentes"]').style.display = 'none';
-      const teaserCta = document.getElementById('presenteTeaserCta');
-      if (teaserCta.getAttribute('href') === '#presentes' && t('presentes.cta_url', '#') !== '#') { teaserCta.href = t('presentes.cta_url', '#'); teaserCta.target = '_blank'; }
     }
     if (!modulosVisiveis.some(function (el) { return el.id === 'map'; })) document.getElementById('rsvpComoChegar').hidden = true;
 
@@ -1225,25 +1231,79 @@
   }).then(function (r) { if (r !== 'erro') revelarPagina(); }, function () { revelarPagina(); });
   let modoSaveTheDate = false;
 
-  // ======= LISTA DE PRESENTES =======
-  // Itens nomeados (com foto/valor) + chave PIX. Sem itens cadastrados, vale o link único (presentes.cta_url).
-  let presentesItens = [];
-  let presentesFiltro = 'todos';
-  function renderPresentes() {
-    try { presentesItens = JSON.parse(t('presentes.itens', '[]')); } catch (e) { presentesItens = []; }
-    if (!Array.isArray(presentesItens)) presentesItens = [];
-    presentesItens = presentesItens.filter(function (it) { return it && String(it.nome || '').trim(); });
-    const wrap = document.getElementById('presentesLista');
-    const ctaFallback = document.getElementById('presentesCta');
-    const pixBox = document.getElementById('presentesPix');
-    const filtro = document.getElementById('presentesFiltro');
+  // ======= PRESENTES =======
+  // Chamada: leva à seção de presentes deste site ou a um link externo (e some se o destino não existe).
+  // Seção: textos no alto e, abaixo, só as formas de presentear que o anfitrião ligou (lista em página própria,
+  // lista em outra loja, dicas e PIX). A lista de itens fica em /e/<slug>/presentes.
+  function urlExterna(u) {
+    u = String(u || '').trim();
+    if (!u || u === '#') return '';
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+    return /^https?:\/\//i.test(u) ? u : '';
+  }
+  function urlListaPresentes() {
+    const c = new URLSearchParams(window.location.search).get('c');
+    return (eventoMatch ? '/e/' + eventoMatch[1] + '/presentes' : '/presentes/') + (c ? '?c=' + encodeURIComponent(c) : '');
+  }
+  function aplicarChamadaPresentes() {
+    const sec = $('secPresenteTeaser');
+    aplicar('presenteTeaserTitulo', 'presente_teaser.titulo');
+    aplicar('presenteTeaserTexto', 'presente_teaser.texto');
+    aplicar('presenteTeaserCta', 'presente_teaser.cta_label');
+    const layout = ['pequeno', 'medio', 'grande'].indexOf(t('presente_teaser.layout', 'medio')) !== -1 ? t('presente_teaser.layout', 'medio') : 'medio';
+    const fundo = ['claro', 'suave', 'marca'].indexOf(t('presente_teaser.fundo', 'suave')) !== -1 ? t('presente_teaser.fundo', 'suave') : 'suave';
+    const foto = layout === 'grande' ? t('presente_teaser.foto_url', '') : '';
+    sec.className = 'l-' + layout + ' f-' + fundo + (foto ? ' tem-foto' : '');
+    // cada bloco tem a própria cor: as divisórias entre módulos usam estes valores
+    const marca = fundo === 'marca' || !!foto;
+    sec.dataset.bgTop = marca ? 'var(--wine)' : fundo === 'claro' ? 'var(--cream)' : 'var(--blush-deep)';
+    sec.dataset.bgBottom = marca ? 'var(--wine-deep)' : sec.dataset.bgTop;
+    const fotoEl = $('chamadaFoto');
+    fotoEl.hidden = !foto;
+    if (foto) fotoEl.style.backgroundImage = 'url("' + foto.replace(/"/g, '%22') + '")';
+    $('presenteTeaserIcone').hidden = t('presente_teaser.mostrar_icone', '1') === '0';
+    const cta = $('presenteTeaserCta');
+    cta.hidden = t('presente_teaser.mostrar_botao', '1') === '0';
+    // destino: a seção de presentes deste site (some junto com ela) ou um link externo (some se não houver link)
+    if (t('presente_teaser.destino', 'secao') === 'externo') {
+      const u = urlExterna(t('presente_teaser.url_externa', ''));
+      if (u) { cta.href = u; cta.target = '_blank'; cta.rel = 'noopener'; }
+      else sec.style.display = 'none';
+    } else {
+      cta.href = '#presentes'; cta.removeAttribute('target');
+      if (!secaoAtiva('presentes')) sec.style.display = 'none';
+    }
+    escondeSeInativa('presente_teaser', 'secPresenteTeaser');
+  }
 
-    // dicas e informações (tamanho de roupa, brinquedos de interesse...): funcionam com ou sem lista de presentes
+  function renderPresentes() {
+    const ligado = function (k) { return t('presentes.mostrar_' + k, '0') !== '0'; };
+    let itens = [];
+    try { itens = JSON.parse(t('presentes.itens', '[]')); } catch (e) { itens = []; }
+    if (!Array.isArray(itens)) itens = [];
+    itens = itens.filter(function (it) { return it && String(it.nome || '').trim(); });
+
+    // 1) lista de presentes: página própria, com botão para ela
+    const optLista = $('presentesOptLista');
+    optLista.hidden = !(ligado('lista') && itens.length);
+    if (!optLista.hidden) {
+      const livres = itens.filter(function (it) { return !it.reservado; }).length;
+      $('presentesListaTexto').textContent = itens.length + (itens.length === 1 ? ' presente' : ' presentes') + ' para escolher' + (livres < itens.length ? ' · ' + livres + (livres === 1 ? ' disponível' : ' disponíveis') : '') + '. Marque o que você vai dar, para ninguém repetir.';
+      const a = $('presentesListaCta'); a.href = urlListaPresentes(); a.textContent = t('presentes.lista_cta_label', 'Ver lista de presentes →');
+    }
+
+    // 2) lista em outra loja
+    const urlExt = urlExterna(t('presentes.cta_url', ''));
+    const optExt = $('presentesOptExterna');
+    optExt.hidden = !(ligado('externa') && urlExt);
+    if (!optExt.hidden) { const a = $('presentesCta'); a.href = urlExt; a.textContent = t('presentes.cta_label', 'Abrir lista de presentes →'); }
+
+    // 3) dicas e informações (tamanho de roupa, brinquedos de interesse...)
     let infos = [];
     try { infos = JSON.parse(t('presentes.infos', '[]')); } catch (e) { infos = []; }
     if (!Array.isArray(infos)) infos = [];
     infos = infos.filter(function (it) { return it && (String(it.titulo || '').trim() || String(it.texto || '').trim()); });
-    const boxInfos = document.getElementById('presentesInfos');
+    const boxInfos = $('presentesInfos');
     boxInfos.innerHTML = '';
     infos.forEach(function (it) {
       const card = document.createElement('div'); card.className = 'gift-info';
@@ -1251,130 +1311,18 @@
       if (it.texto) { const sp = document.createElement('span'); sp.textContent = it.texto; card.appendChild(sp); }
       boxInfos.appendChild(card);
     });
-    boxInfos.hidden = !(infos.length && t('presentes.mostrar_infos', '1') !== '0');
+    boxInfos.hidden = !(infos.length && ligado('infos'));
+    $('presentesInfosTit').hidden = boxInfos.hidden;
 
-    // lista desligada no painel: some a lista de itens (e o link de lista externa), o resto do módulo continua
-    if (t('presentes.mostrar_lista', '1') === '0') {
-      wrap.hidden = true; filtro.hidden = true; ctaFallback.hidden = true;
-      presentesItens = [];
-    } else if (!presentesItens.length) {
-      wrap.hidden = true; filtro.hidden = true;
-      // botão de lista externa só aparece quando há um link de verdade
-      ctaFallback.hidden = t('presentes.cta_url', '#') === '#';
-      if (!ctaFallback.hidden) ctaFallback.target = '_blank';
-    } else {
-      ctaFallback.hidden = true;
-      wrap.hidden = false;
-      filtro.hidden = presentesItens.length < 5;
-      desenharPresentes();
-    }
-
+    // 4) PIX
     const pix = t('presentes.chave_pix', '');
-    if (pix) {
-      pixBox.hidden = false;
-      document.getElementById('presentesPixChave').textContent = pix;
-      document.getElementById('presentesPixCopiar').onclick = function () { copiar(pix, 'Chave PIX copiada'); };
-    } else {
-      pixBox.hidden = true;
+    const pixBox = $('presentesPix');
+    pixBox.hidden = !(pix && ligado('pix'));
+    if (!pixBox.hidden) {
+      $('presentesPixChave').textContent = pix;
+      $('presentesPixCopiar').onclick = function () { copiar(pix, 'Chave PIX copiada'); };
     }
-  }
-  document.querySelectorAll('#presentesFiltro button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      presentesFiltro = b.dataset.filtro;
-      document.querySelectorAll('#presentesFiltro button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-      desenharPresentes();
-    });
-  });
-  const ICONE_PRESENTE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/></svg>';
-  function desenharPresentes() {
-    const wrap = document.getElementById('presentesLista');
-    wrap.innerHTML = '';
-    presentesItens.filter(function (it) { return presentesFiltro === 'todos' || !it.reservado; }).forEach(function (item) {
-      const card = document.createElement('div');
-      card.className = 'gift-item' + (item.reservado ? ' reservado' : '');
-      if (item.foto) { const img = document.createElement('img'); img.src = item.foto; img.alt = ''; img.loading = 'lazy'; card.appendChild(img); }
-      else { const s = document.createElement('div'); s.className = 'sem-img'; s.innerHTML = ICONE_PRESENTE; card.appendChild(s); }
-      const info = document.createElement('div'); info.className = 'gift-item-info';
-      const nome = document.createElement('div'); nome.className = 'gift-item-nome'; nome.textContent = item.nome || '';
-      info.appendChild(nome);
-      if (item.descricao) { const d = document.createElement('div'); d.className = 'gift-item-desc'; d.textContent = item.descricao; info.appendChild(d); }
-      if (item.valor) { const v = document.createElement('div'); v.className = 'gift-item-valor'; v.textContent = item.valor; info.appendChild(v); }
-      card.appendChild(info);
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = item.reservado ? 'Escolhido ✓' : 'Escolher';
-      btn.setAttribute('aria-label', (item.reservado ? 'Já escolhido: ' : 'Escolher ') + (item.nome || 'presente'));
-      btn.addEventListener('click', function () { abrirSheetPresente(item, btn); });
-      card.appendChild(btn);
-      wrap.appendChild(card);
-    });
-    if (!wrap.children.length) {
-      const vazio = document.createElement('p'); vazio.style.cssText = 'text-align:center;color:var(--wine-pale);font-size:13.5px;margin:6px 0;';
-      vazio.textContent = 'Todos os presentes já foram escolhidos. A chave PIX continua disponível abaixo.';
-      wrap.appendChild(vazio);
-    }
-  }
-
-  // ---- janela inferior (confirmar escolha do presente / desfazer) ----
-  let sheetOrigem = null;
-  function abrirSheet(conteudoHtml, montar) {
-    const sheet = $('sheet'), fundo = $('sheetFundo');
-    sheetOrigem = document.activeElement;
-    $('sheetCorpo').innerHTML = conteudoHtml;
-    if (montar) montar($('sheetCorpo'));
-    sheet.hidden = false;
-    requestAnimationFrame(function () { sheet.classList.add('show'); fundo.classList.add('show'); });
-    const foco = sheet.querySelector('button'); if (foco) setTimeout(function () { foco.focus(); }, 60);
-  }
-  function fecharSheet() {
-    const sheet = $('sheet');
-    sheet.classList.remove('show'); $('sheetFundo').classList.remove('show');
-    setTimeout(function () { sheet.hidden = true; }, 300);
-    if (sheetOrigem && sheetOrigem.focus) sheetOrigem.focus();
-  }
-  $('sheetFundo').addEventListener('click', fecharSheet);
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('sheet').hidden) fecharSheet(); });
-  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-
-  function abrirSheetPresente(item) {
-    const pix = t('presentes.chave_pix', '');
-    const resumo = '<div class="item-resumo">' + (item.foto ? '<img src="' + esc(item.foto) + '" alt="">' : '') +
-      '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, item.valor].filter(Boolean).join(' · ')) + '</span></div></div>';
-    if (item.reservado) {
-      abrirSheet('<h3 id="sheetTitulo">Este presente já foi escolhido</h3><p>Se foi você e mudou de ideia, dá para desfazer a escolha e liberar o presente para outra pessoa.</p>' + resumo +
-        '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Manter escolhido</button><button type="button" class="pill solid small" data-acao="desfazer">Desfazer minha escolha</button></div>',
-        function (corpo) {
-          corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-          corpo.querySelector('[data-acao=desfazer]').addEventListener('click', function (ev) { reservarPresente(item, false, ev.currentTarget); });
-        });
-      return;
-    }
-    abrirSheet('<h3 id="sheetTitulo">Vai dar este presente?</h3><p>Ao confirmar, ele aparece como "escolhido" para os outros convidados não repetirem.</p>' + resumo +
-      '<div class="acoes"><button type="button" class="pill solid small" data-acao="sim">Sim, vou dar este presente</button><button type="button" class="pill outline small" data-acao="fechar">Voltar</button></div>',
-      function (corpo) {
-        corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) { reservarPresente(item, true, ev.currentTarget, pix); });
-      });
-  }
-  function reservarPresente(item, reservado, btn, pix) {
-    btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
-    fetch(api('presentes/reservar'), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); return; }
-        item.reservado = reservado;
-        desenharPresentes();
-        if (!reservado) { fecharSheet(); avisar('Escolha desfeita. O presente voltou para a lista.'); return; }
-        // presente escolhido: agradece e, se houver, mostra a chave PIX na mesma janela
-        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + (pix ? ' Se quiser enviar o valor por PIX, a chave está aqui:' : '') + '</p>' +
-          (pix ? '<div class="pix-box"><small>Chave PIX</small><b>' + esc(pix) + '</b><button type="button" class="pill solid small" data-acao="pix">Copiar chave PIX</button></div>' : '') +
-          '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Fechar</button></div>',
-          function (corpo) {
-            corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-            const b = corpo.querySelector('[data-acao=pix]'); if (b) b.addEventListener('click', function () { copiar(pix, 'Chave PIX copiada'); });
-          });
-      })
-      .catch(function () { btn.disabled = false; btn.textContent = rotulo; avisar('Sem conexão agora. Tente de novo em instantes.'); });
+    $('presentesComo').hidden = optLista.hidden && optExt.hidden && boxInfos.hidden && pixBox.hidden;
   }
 
   // ======= CONFIRMAÇÃO DE PRESENÇA =======
