@@ -13,6 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="/fontes.js"></script>
 <script src="/ancoras.js"></script>
+<script src="/datas.js"></script>
 <style>
   /* Painel: ferramenta de trabalho em azul-marinho neutro. Topo fixo com menu, conteúdo em coluna de até 1120px. */
   :root{
@@ -391,7 +392,7 @@
   .std-bar[hidden]{display:none;}
   .std-bar button{border:1px solid #5C3A00;background:transparent;color:#5C3A00;border-radius:999px;padding:5px 14px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;}
   .hd-badge.std{background:#FFE8B0;color:#5C3A00;cursor:pointer;border:none;font-family:inherit;}
-  .std-card{display:grid;grid-template-columns:1fr 210px;gap:22px;align-items:center;border-radius:16px;padding:22px;margin-bottom:18px;border:2px solid var(--line, #E0E5EE);background:#fff;}
+  .std-card{display:grid;grid-template-columns:1fr;gap:22px;align-items:center;border-radius:16px;padding:22px;margin-bottom:18px;border:2px solid var(--line, #E0E5EE);background:#fff;}
   .std-card.on{background:linear-gradient(135deg,#FFF6E0,#FFFFFF);border-color:#F2C96A;}
   @media (max-width:760px){.std-card{grid-template-columns:1fr;} .std-card .std-fone{margin:0 auto;}}
   .std-estado{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:99px;background:#EEF1F6;color:var(--ink-soft);}
@@ -440,7 +441,8 @@
   .ev-op{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 8px;cursor:pointer;font:inherit;color:var(--ink);}
   .ev-op b{font-size:13px;} .ev-op span{font-size:11.5px;color:var(--ink-soft);line-height:1.35;}
   .ev-op:hover{border-color:var(--navy);} .ev-op.on{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 18%,transparent);background:var(--surface-2,#F6F8FB);}
-  .ev-desenho{width:100%;height:58px;display:flex;align-items:center;justify-content:center;} .ev-desenho svg{width:100%;height:100%;}
+  .ev-desenho{width:100%;height:var(--ev-altura,58px);display:flex;align-items:center;justify-content:center;} .ev-desenho svg{width:100%;height:100%;}
+  .previa-data{margin:2px 0 12px;padding:9px 12px;border-radius:10px;background:var(--surface-2,#F6F8FB);border:1px solid var(--line);font-size:13px;color:var(--ink-soft);} .previa-data b{color:var(--ink);}
   .rot-campo{display:block;font-size:13px;font-weight:600;margin:10px 0 4px;}
   .atalho-lista{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid var(--line);background:var(--surface-2,#F6F8FB);border-radius:12px;padding:12px 14px;}
   .atalho-lista b{display:block;font-size:13.5px;} .atalho-lista span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:420px;}
@@ -2433,9 +2435,40 @@
     marca: (d) => '<svg viewBox="0 0 100 58"><rect x="2" y="2" width="96" height="54" rx="6" fill="' + corEv(d, 'aparencia.cor_primaria', '#0B2545') + '"/><rect x="24" y="20" width="52" height="5" rx="2.5" fill="#fff"/><rect x="30" y="30" width="40" height="10" rx="5" fill="#fff"/></svg>',
   };
 
+  // Miniaturas das posições dos textos da capa (celular em pé, fundo com uma imagem qualquer)
+  const desenhoCapa = (l) => {
+    const fundo = '<rect width="60" height="100" rx="7" fill="#2B4A78"/><circle cx="44" cy="26" r="15" fill="#ffffff14"/><rect x="0" y="52" width="60" height="48" rx="7" fill="#00000030"/>';
+    const b = (x, y, w, h, o, r) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (r === undefined ? h / 2 : r) + '" fill="#fff" fill-opacity="' + o + '"/>';
+    const bloco = (x0, y, alinha, botaoY, larg) => {
+      const c = alinha === 'c';
+      const px = (w) => c ? (60 - w) / 2 : x0;
+      return b(px(26), y, 26, 4, .35) + b(px(16), y + 8, 16, 2.4, .6) + b(px(40), y + 14, 40, 7, .95, 2) + b(px(22), y + 26, 22, 3, .6) + b(px(larg || 36), botaoY, larg || 36, 7, .95);
+    };
+    let corpo = '';
+    if (l === 'classico') corpo = bloco(0, 50, 'c', 86);
+    else if (l === 'topo') corpo = bloco(0, 8, 'c', 86);
+    else if (l === 'centro') corpo = bloco(0, 30, 'c', 68);
+    else if (l === 'esquerda') corpo = bloco(8, 50, 'e', 86, 28);
+    else if (l === 'cartao') corpo = '<rect x="5" y="46" width="50" height="48" rx="7" fill="#fff" fill-opacity=".2" stroke="#fff" stroke-opacity=".4" stroke-width=".8"/>' + bloco(0, 52, 'c', 82, 32);
+    else if (l === 'moldura') corpo = '<rect x="4" y="4" width="52" height="92" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".8"/><rect x="7" y="7" width="46" height="86" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width=".6"/>' + bloco(0, 30, 'c', 68, 30);
+    else if (l === 'impacto') corpo = b(17, 46, 26, 4, .35) + '<rect x="19" y="53" width="22" height="6" rx="3" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/>' + b(21, 63, 18, 2.4, .6) + b(8, 68, 44, 8, .95, 2) + b(12, 78, 36, 8, .95, 2) + b(12, 90, 36, 6, .95);
+    else if (l === 'igual') return '<svg viewBox="0 0 60 100"><rect x="6" y="14" width="34" height="62" rx="6" fill="#B9C3D3"/><rect x="20" y="24" width="34" height="62" rx="6" fill="#2B4A78"/><rect x="26" y="52" width="22" height="4" rx="2" fill="#fff" fill-opacity=".9"/><rect x="29" y="60" width="16" height="3" rx="1.5" fill="#fff" fill-opacity=".6"/></svg>';
+    return '<svg viewBox="0 0 60 100">' + fundo + corpo + '</svg>';
+  };
+  const OPCOES_LAYOUT = [
+    { valor: 'classico', label: 'Clássico', desc: 'Centralizado embaixo' },
+    { valor: 'topo', label: 'Topo', desc: 'Nomes no alto, botão embaixo' },
+    { valor: 'centro', label: 'Centro', desc: 'No meio da imagem' },
+    { valor: 'esquerda', label: 'Editorial', desc: 'À esquerda, letras grandes' },
+    { valor: 'cartao', label: 'Cartão', desc: 'Painel de vidro embaixo' },
+    { valor: 'moldura', label: 'Moldura', desc: 'Filete em volta, ao centro' },
+    { valor: 'impacto', label: 'Impacto', desc: 'Nomes enormes, data em etiqueta' },
+  ].map((o) => ({ ...o, desenho: () => desenhoCapa(o.valor) }));
+
   const GRUPOS_CONTEUDO = [
-    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem ou vídeo' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
+    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem ou vídeo' }, { id: 'layout', titulo: 'Posição dos textos' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
       { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
+      { etapa: 'layout', chave: 'hero.layout', tipo: 'escolha_visual', label: 'Como os textos aparecem na capa', padrao: 'classico', altura: 118, opcoes: OPCOES_LAYOUT, dica: 'Vale para o convite. O Save the Date pode ter outra posição (menu Save the Date). A saudação com o nome de quem foi convidado aparece em todas as posições; a prévia mostra um exemplo.' },
       { etapa: 'textos', chave: '__nota_textos__', tipo: 'nota', label: 'Cada texto tem o seu interruptor: desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
       { etapa: 'textos', chave: '__bloco_eyebrow__', tipo: 'bloco_texto', liga: 'hero.mostrar_eyebrow', label: 'Texto pequeno acima do nome', campos: [
         { chave: 'hero.eyebrow', label: 'Texto', dica: 'Ex.: "Nosso casamento" ou "Você é nosso convidado".', avisoSTD: true },
@@ -2453,7 +2486,10 @@
       ]},
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
       { etapa: 'data', chave: '__bloco_data__', tipo: 'bloco_texto', liga: 'hero.mostrar_data', label: 'Data na capa', campos: [
-        { chave: 'hero.data_display', label: 'Data como aparece no site' },
+        { chave: 'hero.data_formato', label: 'Formato da data', tipo: 'select', opcoes: window.FORMATOS_DATA },
+        { chave: 'hero.dia_semana', label: 'Dia da semana', tipo: 'select', opcoes: window.DIAS_SEMANA, dica: 'Ex.: "Quarta, 16/12/26". Vale também no rodapé do site.' },
+        { chave: '__previa_data__', tipo: 'previa_data' },
+        { chave: 'hero.data_display', label: 'Data como aparece no site (texto livre)', se: { chave: 'hero.data_formato', valor: 'texto' } },
       ]},
       { etapa: 'data', chave: '__bloco_horario__', tipo: 'bloco_texto', liga: 'hero.mostrar_horario', label: 'Horário na capa', campos: [
         { chave: 'hero.horario_display', label: 'Horário como aparece no site' },
@@ -2461,9 +2497,10 @@
       { etapa: 'data', chave: 'hero.prazo_iso', label: 'Prazo para confirmar', tipo: 'data_hora', dica: 'Até essa data e hora o convidado pode responder e mudar a resposta. Depois disso o site só mostra as respostas registradas e não aceita mais alterações. Em branco: sem prazo.', horaPadrao: '23:59', sugere: { 'hero.prazo_display': 'curto', 'hero.prazo_horario_display': 'hora' } },
       { etapa: 'data', chave: 'hero.prazo_display', label: 'Prazo como aparece no site' },
       { etapa: 'data', chave: 'hero.prazo_horario_display', label: 'Horário limite como aparece no site (opcional)', dica: 'Se preenchido, aparece depois da data. Ex.: "confirme até 01 de maio às 23h59". Deixe em branco para mostrar só a data. O prazo só aparece no site quando o botão de confirmar está ligado.' },
-      { etapa: 'previa', chave: '__previa_capa__', tipo: 'previa_capa' },
+      { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
     { titulo: 'Save the Date', ancora: 'hero', especial: 'savethedate', campos: [
+      { chave: 'hero.layout_std', tipo: 'escolha_visual', label: 'Posição dos textos no Save the Date', padrao: 'igual', altura: 118, opcoes: [{ valor: 'igual', label: 'Igual ao convite', desc: 'Usa a posição escolhida na Capa', desenho: () => desenhoCapa('igual') }, ...OPCOES_LAYOUT] },
       { chave: 'savethedate.titulo', label: 'Título da chamada', dica: 'Aparece no lugar do texto pequeno da capa. Ex.: "Guarde a data!".' },
       { chave: 'savethedate.texto', label: 'Mensagem', tipo: 'textarea', dica: 'Aparece abaixo da data, na capa. Ex.: "Em breve enviaremos o convite oficial."' },
       { chave: 'footer.mostrar', tipo: 'liga', label: 'Mostrar o rodapé do site', sub: 'É a mesma opção de "Rodapé e barra fixa": vale para o Save the Date e para o site normal.' },
@@ -3409,11 +3446,27 @@
       return;
     }
 
+    if (campo.tipo === 'previa_data') {
+      // mostra, ao vivo, como a data vai aparecer na capa com o formato e o dia da semana escolhidos
+      const caixa = h('div', { class: 'previa-data', 'aria-live': 'polite' });
+      fs.appendChild(caixa);
+      const ler = (k) => { const e = fs.querySelector('[data-chave="' + k + '"]'); return e ? e.value : (ctDados[k] || ''); };
+      const atualizar = () => {
+        const txt = window.FORMATA_DATA(ler('hero.data_iso'), ler('hero.data_formato') || 'texto', ler('hero.dia_semana') || 'nao', ler('hero.data_display'));
+        caixa.innerHTML = '';
+        caixa.append(h('span', { text: 'Na capa vai aparecer: ' }), h('b', { text: txt || '(vazio: escreva o texto da data abaixo)' }));
+      };
+      fs.addEventListener('input', atualizar); fs.addEventListener('change', atualizar);
+      setTimeout(atualizar, 0);
+      return;
+    }
+
     if (campo.tipo === 'escolha_visual') {
       // opções em cartões com um desenho: grava o valor escolhido num campo escondido
       const oculto = h('input', { type: 'hidden', 'data-chave': campo.chave });
       oculto.value = ctDados[campo.chave] || campo.padrao || campo.opcoes[0].valor;
       const grade = h('div', { class: 'escolha-visual', role: 'radiogroup', 'aria-label': campo.label });
+      if (campo.altura) grade.style.setProperty('--ev-altura', campo.altura + 'px');
       const botoes = campo.opcoes.map((op) => {
         const b = h('button', { type: 'button', role: 'radio', class: 'ev-op' }, h('div', { class: 'ev-desenho', html: op.desenho ? op.desenho(ctDados) : '' }), h('b', { text: op.label }), op.desc ? h('span', { text: op.desc }) : null);
         b.addEventListener('click', () => { oculto.value = op.valor; pintar(); oculto.dispatchEvent(new Event('input', { bubbles: true })); });
@@ -3738,7 +3791,7 @@
       form.querySelectorAll('[data-chave]').forEach((e) => { d[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
       if (grupo.toggle) d['secao.' + grupo.toggle + '.ativa'] = '1';   // mostra o módulo mesmo desligado
       if (grupo.toggle === 'presente_teaser') d['secao.presentes.ativa'] = '1';
-      if (!grupo.especial) d['config.modo_save_the_date'] = '0';        // sem Save the Date, para o módulo aparecer
+      d['config.modo_save_the_date'] = grupo.especial === 'savethedate' ? '1' : '0'; // o Save the Date é visto ligado; os demais módulos, com o site normal
       return d;
     };
     const avisoDesligado = () => {
@@ -3921,7 +3974,7 @@
       h('ul', {}, lista.map((t) => h('li', { text: t }))),
       acao,
       h('p', { style: 'margin:12px 0 0;font-size:12px;', text: 'Escreva o título e a mensagem abaixo e confira a prévia ao lado. Ligar ou desligar vale na hora, sem precisar salvar.' }));
-    form.appendChild(h('div', { class: 'std-card' + (on ? ' on' : '') }, esq, fone));
+    form.appendChild(h('div', { class: 'std-card' + (on ? ' on' : '') }, esq));
   }
 
   // Desenha um grupo de campos (módulo do site, aparência...) dentro de "form", com barra de salvar.
@@ -3973,7 +4026,7 @@
       form.appendChild(fs);
     } else {
       grupo.campos.forEach((campo) => renderCampoConteudo(fs, campo));
-      if (grupo.ancora && !grupo.especial && !opcoes.semPrevia) {
+      if (grupo.ancora && !opcoes.semPrevia) {
         // módulos simples: campos à esquerda, prévia do módulo à direita
         form.appendChild(h('div', { class: 'etapas-layout' }, fs, h('aside', { class: 'etapas-previa' }, criarPreviaModulo(grupo, form).el)));
       } else form.appendChild(fs);

@@ -54,6 +54,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="/fontes.js"></script>
 <script src="/ancoras.js"></script>
+<script src="/datas.js"></script>
 <style>
   :root{
     /* ===== paleta editável pela aba Site › Cores do painel — os 5 tokens abaixo ===== */
@@ -153,7 +154,9 @@
     linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);
     opacity:.88;
   }
-  .hero-content{position:relative;padding:0 28px 40px;text-align:center;}
+  .hero-content{position:relative;padding:0 28px 40px;text-align:center;display:flex;flex-direction:column;align-items:center;}
+  .hero-content > *{max-width:100%;}
+  .hero-cta-wrap{width:100%;}
   .hero .eyebrow{color:var(--wine-pale);animation:riseIn .9s .2s ease both;}
   .hero h1{font-size:clamp(46px,14vw,60px);font-weight:400;margin:10px 0 14px;line-height:.98;animation:riseIn 1s .35s ease both;overflow-wrap:anywhere;}
   .hero .amp{display:block;font-size:30px;color:var(--gold);margin:4px 0;}
@@ -161,6 +164,49 @@
   .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--wine-pale);margin-bottom:6px;animation:riseIn 1s .5s ease both;}
   .hero-time{font-size:15px;color:var(--wine-pale);margin-bottom:26px;animation:riseIn 1s .55s ease both;}
   .hero-cta-wrap{animation:riseIn 1s .65s ease both;}
+  /* ----- posições e estilos dos textos da capa (escolhidos no painel) ----- */
+  .hero.hl-topo,.hero.hl-centro,.hero.hl-moldura{justify-content:stretch;}
+  .hero.hl-topo .hero-content,.hero.hl-centro .hero-content,.hero.hl-moldura .hero-content{flex:1;}
+  /* topo: nomes no alto, botão embaixo */
+  .hero.hl-topo .hero-content{padding:66px 28px 40px;}
+  .hero.hl-topo .hero-cta-wrap{margin-top:auto;padding-top:24px;}
+  .hero.hl-topo:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 90%, black) 0%, color-mix(in srgb, var(--wine-deep) 40%, transparent) 42%, transparent 62%, color-mix(in srgb, var(--wine-deep) 70%, black) 100%), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
+  /* centro: tudo no meio da imagem */
+  .hero.hl-centro .hero-content{justify-content:center;padding:70px 28px 70px;}
+  .hero.hl-centro .hero-cta-wrap{margin-top:26px;}
+  .hero.hl-centro .hero-time{margin-bottom:0;}
+  .hero.hl-centro:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 60%, transparent), color-mix(in srgb, var(--wine-deep) 62%, transparent)), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
+  /* esquerda: editorial, alinhado à esquerda embaixo */
+  .hero.hl-esquerda .hero-content{align-items:flex-start;text-align:left;padding:0 28px 44px;}
+  .hero.hl-esquerda .hero-convite{margin-left:0;}
+  .hero.hl-esquerda h1{font-size:clamp(52px,17vw,72px);line-height:.95;}
+  .hero.hl-esquerda .amp{display:inline;font-size:.6em;margin:0 .15em;}
+  .hero.hl-esquerda .hero-date{justify-content:flex-start;}
+  .hero.hl-esquerda .hero-date .ln:first-child{display:none;}
+  .hero.hl-esquerda .hero-date .ln:last-child{width:46px;}
+  .hero.hl-esquerda .hero-cta-wrap .pill{width:auto;align-self:flex-start;}
+  .hero.hl-esquerda .deadline-chip{text-align:left;}
+  /* cartão: os textos ficam num painel de vidro */
+  .hero.hl-cartao .hero-content{margin:0 16px 22px;padding:26px 20px 24px;border-radius:24px;background:color-mix(in srgb, var(--wine-deep) 46%, transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid color-mix(in srgb, var(--cream) 24%, transparent);}
+  .hero.hl-cartao .hero-time{margin-bottom:20px;}
+  .hero.hl-cartao:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, transparent 38%, color-mix(in srgb, var(--wine-deep) 55%, transparent) 100%), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
+  /* moldura: filete duplo em volta e textos no centro */
+  .hero.hl-moldura::after{content:'';position:absolute;inset:14px;border:1px solid color-mix(in srgb, var(--cream) 60%, transparent);outline:1px solid color-mix(in srgb, var(--cream) 28%, transparent);outline-offset:5px;pointer-events:none;z-index:2;}
+  .hero.hl-moldura .hero-content{justify-content:center;padding:64px 38px;z-index:3;}
+  .hero.hl-moldura .hero-cta-wrap{margin-top:22px;}
+  .hero.hl-moldura .hero-time{margin-bottom:0;}
+  .hero.hl-moldura h1{font-size:clamp(40px,12vw,54px);}
+  .hero.hl-moldura:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 62%, transparent), color-mix(in srgb, var(--wine-deep) 66%, transparent)), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
+  /* impacto: nomes enormes em caixa alta; data numa etiqueta acima */
+  .hero.hl-impacto .hero-content{padding:0 24px 40px;}
+  .hero.hl-impacto .hero-convite{order:-6;}
+  .hero.hl-impacto .hero-date{order:-5;justify-content:center;padding:7px 16px;border:1px solid color-mix(in srgb, var(--cream) 55%, transparent);border-radius:999px;margin-bottom:8px;background:color-mix(in srgb, var(--wine-deep) 35%, transparent);}
+  .hero.hl-impacto .hero-date .ln{display:none;}
+  .hero.hl-impacto .hero-time{order:-4;margin-bottom:22px;}
+  .hero.hl-impacto .eyebrow{order:-3;}
+  .hero.hl-impacto h1{order:-2;font-size:clamp(50px,17vw,78px);text-transform:uppercase;font-weight:700;line-height:.92;letter-spacing:.01em;margin:6px 0 16px;}
+  .hero.hl-impacto .amp{font-size:.42em;letter-spacing:.3em;margin:8px 0;}
+  .hero.hl-impacto .hero-idade{order:-1;}
   @keyframes riseIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
   .hero-convite{display:inline-flex;align-items:center;gap:8px;margin:0 auto 14px;padding:6px 14px;border-radius:999px;background:color-mix(in srgb, var(--cream) 14%, transparent);border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);font-size:12.5px;color:var(--cream);backdrop-filter:blur(6px);}
   .deadline-chip{text-align:center;font-size:12px;color:var(--wine-pale);margin-top:12px;letter-spacing:.02em;}
@@ -743,6 +789,10 @@
   function tOu(chave, def) { return t(chave, '') || def; }
   // Escreve um texto e esconde o elemento inteiro quando o texto é vazio (sem buracos nem botões vazios)
   function definir(el, valor) { if (!el) return; el.textContent = valor; el.classList.toggle('vazio', valor === ''); }
+  // Data do evento como aparece na capa: formato e dia da semana escolhidos no painel (Capa › Data e prazo)
+  function dataHero() {
+    return window.FORMATA_DATA(tOu('hero.data_iso', ''), t('hero.data_formato', 'texto'), t('hero.dia_semana', 'nao'), t('hero.data_display', '12 de junho de 2027'));
+  }
   // Prazo de confirmação como aparece no site: a data e, se preenchido no painel, o horário limite ("01 de maio às 23h59")
   function prazoCompleto() {
     const hora = t('hero.prazo_horario_display', '').trim();
@@ -921,7 +971,7 @@
     aplicar('heroEyebrow', 'hero.eyebrow');
     aplicar('nomeNoiva', 'hero.noiva');
     aplicar('nomeNoivo', 'hero.noivo');
-    aplicar('heroData', 'hero.data_display');
+    definir($('heroData'), dataHero());
     aplicar('heroHorario', 'hero.horario_display');
     aplicar('heroCta', 'hero.cta_label');
     document.title = ehAniversario()
@@ -945,7 +995,7 @@
       esconder(document.getElementById('heroEyebrow'), !ligado('eyebrow'));
       esconder(document.querySelector('#hero h1'), !ligado('nomes'));
       esconder(document.getElementById('heroIdade'), !ligado('nomes'));
-      esconder(document.querySelector('#hero .hero-date'), !ligado('data'));
+      esconder(document.querySelector('#hero .hero-date'), !ligado('data') || !dataHero());
       esconder(document.getElementById('heroHorario'), !ligado('horario'));
       esconder(document.getElementById('heroCtaWrap'), !ligado('botao'));
     }
@@ -1030,7 +1080,7 @@
       document.querySelector('.frame').style.paddingBottom = '90px'; // espaço para a barra fixa não cobrir o último módulo
     }
     document.getElementById('footerNomes').textContent = ehAniversario() ? t('hero.noiva', '') : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
-    document.getElementById('footerDataLocal').textContent = t('hero.data_display', '12 de junho de 2027') + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
+    document.getElementById('footerDataLocal').textContent = dataHero() + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
     aplicar('countdownTitulo', 'countdown.titulo');
@@ -1149,11 +1199,16 @@
       document.querySelector('.frame').style.paddingBottom = ''; // no Save the Date não há barra fixa
       definir(document.getElementById('heroEyebrow'), t('savethedate.titulo', 'Guarde a data!'));
       document.getElementById('heroCta').style.display = 'none';
-      document.getElementById('heroConvite').hidden = true;
       definir(document.getElementById('deadlineChip'), t('savethedate.texto', ''));
       document.getElementById('heroCtaWrap').style.display = ''; // a mensagem do Save the Date vive nesse bloco
       modoSaveTheDate = true;
     }
+
+    // ---- Layout da capa (Capa › Posição dos textos; o Save the Date pode ter o seu) ----
+    const LAYOUTS_CAPA = ['classico', 'topo', 'centro', 'esquerda', 'cartao', 'moldura', 'impacto'];
+    let layoutCapa = t('hero.layout', 'classico');
+    if (modoSaveTheDate) { const ls = t('hero.layout_std', 'igual'); if (LAYOUTS_CAPA.indexOf(ls) !== -1) layoutCapa = ls; }
+    hero.classList.add('hl-' + (LAYOUTS_CAPA.indexOf(layoutCapa) !== -1 ? layoutCapa : 'classico'));
 
     // ---- Ordem dos módulos (definida em Site › Ordem dos módulos) ----
     const ORDEM_PADRAO = ['countdown', 'presente_teaser', 'timeline', 'padrinhos', 'madrinhas_pais', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
@@ -1393,7 +1448,14 @@
     const sucesso = $('rsvpSucesso');
 
     function mostrarErro(texto) { $('rsvpErroTexto').textContent = texto; erroBox.hidden = false; }
-    if (!codigo) return; // mantém a mensagem "sem código" já visível por padrão
+    if (!codigo) {
+      // na prévia do painel não há convite de verdade: mostra uma saudação de exemplo para o anfitrião ver onde ela fica
+      if (window.__previa && t('hero.mostrar_convite', '1') !== '0') {
+        const convite = $('heroConvite'); const prefixo = t('hero.convite_prefixo', 'Convite para');
+        convite.textContent = (prefixo ? prefixo + ' ' : '') + (ehAniversario() ? 'Ana, Beto e Carla' : 'Ana e Beto'); convite.hidden = false;
+      }
+      return; // mantém a mensagem "sem código" já visível por padrão
+    }
 
     semCodigo.hidden = true;
     carregando.hidden = false;
@@ -1447,7 +1509,7 @@
         contexto = { escopo: data.escopo, adultosNoGrupo: data.adultosNoGrupo || adultos.length, outrosAdultosSim: data.outrosAdultosSim || 0, prazoEncerrado: !!data.prazoEncerrado };
 
         // saudação para todos os convites: o nome de cada pessoa (como ela gosta de ser chamada); no link individual, só a pessoa
-        if (!modoSaveTheDate) {
+        {
           const convite = $('heroConvite');
           const prefixo = t('hero.convite_prefixo', 'Convite para');
           convite.textContent = (prefixo ? prefixo + ' ' : '') + listaNomes(pessoas.map(function (p) { return p.chamar; }));
