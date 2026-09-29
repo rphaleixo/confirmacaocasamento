@@ -422,6 +422,20 @@
   .thumb-bloco > img,.thumb-bloco > .sem-foto{width:100px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--surface-2,#F1F4F9);flex-shrink:0;display:grid;place-items:center;font-size:11px;color:var(--ink-faint);}
   .barra-envio{height:8px;border-radius:99px;background:#E4E9F1;overflow:hidden;margin:10px 0 4px;} .barra-envio i{display:block;height:100%;width:0;background:var(--navy);transition:width .15s;}
   .aviso-midia{margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--warn-bg);color:var(--warn);font-size:12.5px;font-weight:500;}
+  .lugar-busca{position:relative;}
+  .lugar-lista{position:absolute;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(20,40,66,.18);z-index:30;max-height:300px;overflow:auto;}
+  .lugar-lista[hidden]{display:none;}
+  .lugar-lista li{padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;}
+  .lugar-lista li b{display:block;color:var(--ink);} .lugar-lista li span{display:block;font-size:12px;color:var(--ink-soft);}
+  .lugar-lista li[aria-selected=true],.lugar-lista li:hover{background:var(--surface-2,#EEF2F8);}
+  .lugar-lista li.vazio{cursor:default;color:var(--ink-soft);} .lugar-lista li.vazio:hover{background:none;}
+  .lugar-ok{border:1px solid #BFE3CD;background:var(--ok-bg);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13px;}
+  .lugar-ok .t{font-weight:700;color:var(--ok);margin-bottom:4px;} .lugar-ok .n{font-weight:700;color:var(--ink);} .lugar-ok .a{color:var(--ink-soft);}
+  .lugar-ok .acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .lugar-aviso{border:1px solid #F2DDB0;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:13px;font-weight:500;}
+  .lugar-info{border:1px solid var(--line);background:var(--surface-2,#F6F8FB);color:var(--ink-soft);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:12.5px;}
+  .lugar-mapa{width:100%;height:230px;border:1px solid var(--line);border-radius:12px;margin-top:12px;background:#EEF1F6;}
+  .lugar-campos{margin-top:14px;padding-top:6px;border-top:1px dashed var(--line);}
   .bloco-texto{border:1px solid var(--line);border-radius:14px;background:var(--surface);margin:0 0 14px;overflow:hidden;}
   .bloco-cab{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface-2,#F6F8FB);border-bottom:1px solid var(--line);}
   .bloco-cab .rot{flex:1;font-size:14px;font-weight:700;color:var(--ink);margin:0;} .bloco-cab .rot .sub{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);margin-top:2px;}
@@ -2379,8 +2393,7 @@
     { titulo: 'Localização', toggle: 'mapa', ancora: 'map', campos: [
       { chave: 'mapa.eyebrow', label: 'Texto pequeno' },
       { chave: 'mapa.titulo', label: 'Título' },
-      { chave: 'mapa.local_nome', label: 'Nome do local', dica: 'Nome e endereço juntos formam a busca do mapa e do botão "Como chegar".' },
-      { chave: 'mapa.local_endereco', label: 'Endereço', tipo: 'endereco' },
+      { chave: '__lugar__', tipo: 'lugar' },
       { chave: 'mapa.cta_label', label: 'Texto do botão "Como chegar"' },
       { chave: 'mapa.mostrar_botao_copiar', label: 'Mostrar botão "Copiar endereço" no site', tipo: 'checkbox' },
     ]},
@@ -2789,6 +2802,114 @@
   function renderCampoConteudo(fs, campo) {
     if (campo.tipo === 'separador') { fs.appendChild(h('div', { class: 'separador-campo', text: campo.label })); return; }
     if (campo.tipo === 'nota') { fs.appendChild(h('div', { class: 'dica-campo', style: 'margin:0 0 6px;', text: campo.label })); return; }
+    if (campo.tipo === 'lugar') {
+      const emitir = (el) => el.dispatchEvent(new Event('input', { bubbles: true }));
+      const oculto = (k) => { const i = h('input', { type: 'hidden', 'data-chave': k }); i.value = ctDados[k] || ''; return i; };
+      const hId = oculto('mapa.place_id'), hLat = oculto('mapa.lat'), hLng = oculto('mapa.lng'), hUrl = oculto('mapa.maps_url');
+      fs.append(hId, hLat, hLng, hUrl);
+      const novaSessao = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 's' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+      let sessao = novaSessao(), semChave = false, sugestoes = [], ativo = -1, agenda = null, buscaSeq = 0;
+
+      const busca = h('input', { type: 'text', id: 'lugar-busca', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': 'lugar-lista', placeholder: 'Digite o nome do local ou o endereço (ex.: Copacabana Palace)' });
+      const lista = h('ul', { class: 'lugar-lista', id: 'lugar-lista', role: 'listbox', hidden: true });
+      const status = h('div', { class: 'dica-campo', 'aria-live': 'polite', style: 'min-height:16px;' });
+      const painel = h('div');           // confirmação / avisos
+      const mapa = h('iframe', { class: 'lugar-mapa', title: 'Mapa do local', loading: 'lazy', referrerpolicy: 'no-referrer-when-downgrade' });
+      const camposBox = h('div', { class: 'lugar-campos' });
+
+      fs.append(
+        h('label', { for: 'lugar-busca', text: 'Buscar o local no Google Maps' }),
+        h('div', { class: 'lugar-busca' }, busca, lista),
+        status, painel,
+        h('div', { class: 'dica-campo', style: 'margin:12px 0 4px;', text: 'Confira se o pin do mapa está no lugar certo:' }), mapa, camposBox);
+
+      // nome e endereço que aparecem no site (editáveis); vêm preenchidos com o que o Google devolver
+      [{ chave: 'mapa.local_nome', label: 'Nome do local (como aparece no site)' }, { chave: 'mapa.local_endereco', label: 'Endereço (como aparece no site)' }].forEach((c) => {
+        const antes = fs.children.length;
+        renderCampoConteudo(fs, c);
+        Array.from(fs.children).slice(antes).forEach((n) => camposBox.appendChild(n));
+      });
+      const campoNome = () => fs.querySelector('[data-chave="mapa.local_nome"]');
+      const campoEnd = () => fs.querySelector('[data-chave="mapa.local_endereco"]');
+
+      const atualizarMapa = () => {
+        const q = hLat.value && hLng.value ? hLat.value + ',' + hLng.value : [campoNome() && campoNome().value, campoEnd() && campoEnd().value].filter(Boolean).join(', ');
+        const alvo = q ? 'https://www.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed' : '';
+        if (mapa.dataset.q !== alvo) { mapa.dataset.q = alvo; if (alvo) mapa.src = alvo; else mapa.removeAttribute('src'); }
+        mapa.style.display = alvo ? '' : 'none';
+      };
+      const pintar = () => {
+        painel.innerHTML = '';
+        if (hId.value) {
+          painel.appendChild(h('div', { class: 'lugar-ok' },
+            h('div', { class: 't', text: '✓ Local confirmado no Google Maps' }),
+            h('div', { class: 'n', text: (campoNome() && campoNome().value) || '' }), h('div', { class: 'a', text: (campoEnd() && campoEnd().value) || '' }),
+            h('div', { class: 'acoes' },
+              hUrl.value ? h('a', { class: 'btn sm', href: hUrl.value, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir no Google Maps' }) : null,
+              btn('Buscar outro local', () => { busca.focus(); busca.select(); }, 'sm'),
+              btn('Remover confirmação', () => { [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
+        } else if (semChave) {
+          painel.appendChild(h('div', { class: 'lugar-info', text: 'A busca automática do Google Maps ainda não está ativada neste sistema. Digite o nome e o endereço abaixo e confira o pin no mapa. Para ativar a busca, o administrador da plataforma precisa configurar a chave do Google Maps.' }));
+        } else if ((campoEnd() && campoEnd().value.trim()) || (campoNome() && campoNome().value.trim())) {
+          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Busque o local acima e escolha uma das opções para garantir que está certo.' }));
+        }
+      };
+      const fechar = () => { lista.hidden = true; busca.setAttribute('aria-expanded', 'false'); ativo = -1; };
+      const desenhar = () => {
+        lista.innerHTML = '';
+        if (!sugestoes.length) { lista.appendChild(h('li', { class: 'vazio', text: 'Nenhum resultado. Tente incluir a cidade ou o nome do local.' })); }
+        sugestoes.forEach((sg, i) => {
+          const li = h('li', { role: 'option', id: 'lugar-op-' + i, 'aria-selected': String(i === ativo) }, h('b', { text: sg.principal }), h('span', { text: sg.secundario }));
+          li.addEventListener('mousedown', (ev) => { ev.preventDefault(); escolher(sg); });
+          lista.appendChild(li);
+        });
+        lista.hidden = false; busca.setAttribute('aria-expanded', 'true');
+      };
+      const buscar = async () => {
+        const q = busca.value.trim();
+        if (q.length < 3) { fechar(); status.textContent = ''; return; }
+        const meu = ++buscaSeq;
+        status.textContent = 'Buscando no Google Maps…';
+        const d = await api('/api/admin/lugar?q=' + encodeURIComponent(q) + '&sessao=' + encodeURIComponent(sessao));
+        if (meu !== buscaSeq) return; // uma busca mais nova já saiu
+        if (d.semChave) { semChave = true; status.textContent = ''; fechar(); pintar(); return; }
+        if (d.erro) { status.textContent = ''; fechar(); painel.prepend(h('div', { class: 'lugar-aviso', text: d.erro })); return; }
+        status.textContent = '';
+        sugestoes = d.sugestoes || []; ativo = -1; desenhar();
+      };
+      async function escolher(sg) {
+        fechar(); status.textContent = 'Confirmando o local…';
+        const d = await api('/api/admin/lugar?id=' + encodeURIComponent(sg.id) + '&sessao=' + encodeURIComponent(sessao));
+        status.textContent = '';
+        if (d.erro) { painel.prepend(h('div', { class: 'lugar-aviso', text: d.erro })); return; }
+        sessao = novaSessao(); busca.value = '';
+        hId.value = d.id || sg.id; hLat.value = d.lat != null ? String(d.lat) : ''; hLng.value = d.lng != null ? String(d.lng) : ''; hUrl.value = d.url || '';
+        if (campoNome()) { campoNome().value = d.nome || sg.principal || ''; emitir(campoNome()); }
+        if (campoEnd()) { campoEnd().value = d.endereco || sg.secundario || ''; emitir(campoEnd()); }
+        [hId, hLat, hLng, hUrl].forEach(emitir);
+        pintar(); atualizarMapa();
+        toast('Local confirmado. Salve para publicar no site.');
+      }
+      busca.addEventListener('input', () => { clearTimeout(agenda); agenda = setTimeout(buscar, 320); });
+      busca.addEventListener('focus', () => { if (sugestoes.length && busca.value.trim().length >= 3) desenhar(); });
+      busca.addEventListener('blur', () => setTimeout(fechar, 120));
+      busca.addEventListener('keydown', (ev) => {
+        if (lista.hidden || !sugestoes.length) return;
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); ativo = (ativo + 1) % sugestoes.length; desenhar(); busca.setAttribute('aria-activedescendant', 'lugar-op-' + ativo); }
+        else if (ev.key === 'ArrowUp') { ev.preventDefault(); ativo = (ativo - 1 + sugestoes.length) % sugestoes.length; desenhar(); busca.setAttribute('aria-activedescendant', 'lugar-op-' + ativo); }
+        else if (ev.key === 'Enter' && ativo >= 0) { ev.preventDefault(); escolher(sugestoes[ativo]); }
+        else if (ev.key === 'Escape') { fechar(); }
+      });
+      let agendaMapa = null;
+      fs.addEventListener('input', (ev) => {
+        if (ev.target === busca) return;
+        clearTimeout(agendaMapa); agendaMapa = setTimeout(() => { atualizarMapa(); if (!hId.value) pintar(); else pintar(); }, 500);
+      });
+      pintar(); atualizarMapa();
+      // descobre cedo se a busca está ativada, para avisar antes de a pessoa digitar
+      api('/api/admin/lugar').then((d) => { if (d && d.semChave) { semChave = true; pintar(); } });
+      return;
+    }
     if (campo.tipo === 'bloco_texto') {
       // texto + interruptor num bloco só: o interruptor liga/desliga o que aparece no site; o texto fica logo abaixo
       const idLiga = 'liga-' + campo.liga.replace(/\W/g, '-');

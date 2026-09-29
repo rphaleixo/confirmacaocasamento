@@ -760,7 +760,16 @@
   function localCompleto() {
     return t('mapa.local_nome', 'Copacabana Palace') + ', ' + t('mapa.local_endereco', 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro');
   }
-  function linkComoChegar() { return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localCompleto()); }
+  // Local confirmado pelo painel (Google Maps): usa as coordenadas e o id do lugar; sem isso, cai para o texto do endereço
+  function coordenadasLocal() {
+    const lat = parseFloat(t('mapa.lat', '')), lng = parseFloat(t('mapa.lng', ''));
+    return (isFinite(lat) && isFinite(lng)) ? lat + ',' + lng : '';
+  }
+  function linkComoChegar() {
+    const c = coordenadasLocal(), id = t('mapa.place_id', '');
+    if (c) return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(c) + (id ? '&destination_place_id=' + encodeURIComponent(id) : '');
+    return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localCompleto());
+  }
   function tituloEvento() {
     return ehAniversario() ? 'Aniversário de ' + t('hero.noiva', '') : 'Casamento de ' + t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
   }
@@ -1019,7 +1028,7 @@
     const localNome = t('mapa.local_nome', 'Copacabana Palace');
     const localEndereco = t('mapa.local_endereco', 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro');
     document.getElementById('mapEndereco').textContent = localNome + ' — ' + localEndereco;
-    document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(localNome + ', ' + localEndereco) + '&output=embed';
+    document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(coordenadasLocal() || (localNome + ', ' + localEndereco)) + '&output=embed';
     document.getElementById('mapaCta').href = linkComoChegar();
     const btnCopiarEndereco = document.getElementById('mapaCopiar');
     if (t('mapa.mostrar_botao_copiar', '0') === '1') {
