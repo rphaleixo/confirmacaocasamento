@@ -53,6 +53,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="/fontes.js"></script>
+<script src="/formas.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
 <script src="/html-seguro.js"></script>
@@ -246,8 +247,19 @@
   .deadline-chip{text-align:center;font-size:12px;color:var(--wine-pale);margin-top:12px;letter-spacing:.02em;}
 
   /* ---------- DIVISÓRIAS ORGÂNICAS ---------- */
-  .divider{position:relative;height:46px;margin-top:-1px;line-height:0;}
-  .divider svg{width:100%;height:100%;display:block;}
+  /* ---------- APARÊNCIA DOS MÓDULOS (Site › módulo › Aparência; padrões em Site › Formas e estilo) ---------- */
+  .divider{position:relative;line-height:0;}
+  .divider .enfeite{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible;}
+  section[data-escala="pequeno"]{zoom:.9;} section[data-escala="grande"]{zoom:1.12;} section[data-escala="enorme"]{zoom:1.25;}
+  section[data-cantos="retos"]{--rd-card:3px;--rd-pill:6px;--rd-campo:4px;}
+  section[data-cantos="suaves"]{--rd-card:12px;--rd-pill:12px;--rd-campo:10px;}
+  section[data-cantos="redondos"]{--rd-card:28px;--rd-pill:999px;--rd-campo:18px;}
+  section[data-cantos] .gift-box, section[data-cantos] .node-card, section[data-cantos] .rsvp-card, section[data-cantos] .rsvp-pessoa, section[data-cantos] .recado-card, section[data-cantos] .recados-form, section[data-cantos] .gift-opcao, section[data-cantos] .gift-info, section[data-cantos] .gift-pix, section[data-cantos] .rsvp-ninguem, section[data-cantos] .gallery-viewport, section[data-cantos] .map-frame-wrap, section[data-cantos] .g-thumb, section[data-cantos] .cd-cell{border-radius:var(--rd-card);}
+  section[data-cantos] .pill, section[data-cantos] .gift-pix button{border-radius:var(--rd-pill);}
+  section[data-cantos] .rsvp-input, section[data-cantos] .rsvp-op span{border-radius:var(--rd-campo);}
+  section[data-sombra="nenhuma"] .gift-box, section[data-sombra="nenhuma"] .node-card, section[data-sombra="nenhuma"] .rsvp-card, section[data-sombra="nenhuma"] .recado-card, section[data-sombra="nenhuma"] .recados-form, section[data-sombra="nenhuma"] .gift-opcao, section[data-sombra="nenhuma"] .gift-info, section[data-sombra="nenhuma"] .gallery-viewport, section[data-sombra="nenhuma"] .pill{box-shadow:none !important;}
+  section[data-sombra="suave"] .gift-box, section[data-sombra="suave"] .node-card, section[data-sombra="suave"] .rsvp-card, section[data-sombra="suave"] .recado-card, section[data-sombra="suave"] .recados-form, section[data-sombra="suave"] .gift-opcao, section[data-sombra="suave"] .gift-info, section[data-sombra="suave"] .gallery-viewport{box-shadow:0 6px 18px -8px rgba(0,0,0,.2) !important;}
+  section[data-sombra="forte"] .gift-box, section[data-sombra="forte"] .node-card, section[data-sombra="forte"] .rsvp-card, section[data-sombra="forte"] .recado-card, section[data-sombra="forte"] .recados-form, section[data-sombra="forte"] .gift-opcao, section[data-sombra="forte"] .gift-info, section[data-sombra="forte"] .gallery-viewport{box-shadow:0 22px 48px -14px rgba(0,0,0,.5) !important;}
 
   /* ---------- PRESENTES (chamada): tamanho, fundo e foto vêm do painel ---------- */
   #secPresenteTeaser{position:relative;text-align:center;overflow:hidden;}
@@ -1229,6 +1241,7 @@
 
     aplicarChamadaPresentes();
     aplicarCoresModulos();
+    aplicarAparenciaModulos();
 
     aplicar('timelineEyebrow', 'timeline.eyebrow');
     aplicar('timelineTitulo', 'timeline.titulo');
@@ -1390,41 +1403,77 @@
       if (el) footerEl.parentNode.insertBefore(el, footerEl);
     });
 
-    // ---- Divisórias orgânicas geradas dinamicamente: cada módulo carrega sua própria
-    // cor de topo/base (data-bg-top/data-bg-bottom), então a transição fica certa
-    // não importa em que ordem ou combinação os módulos estejam. ----
-    const FORMAS_ONDA = [
-      'M0,22 C 80,50 160,4 240,24 C 320,44 390,14 460,32 L460,64 L0,64 Z',
-      'M0,50 C 100,20 200,55 300,30 C 370,12 420,38 460,24 L460,64 L0,64 Z',
-      'M0,26 C 90,54 180,8 260,28 C 340,48 400,18 460,34 L460,64 L0,64 Z',
-      'M0,34 C 100,8 200,50 300,24 C 370,6 420,30 460,16 L460,64 L0,64 Z',
-    ];
-    function criarDivisor(corDestino, indice) {
-      const div = document.createElement('div');
-      div.className = 'divider';
-      div.setAttribute('aria-hidden', 'true');
-      div.innerHTML = '<svg viewBox="0 0 460 64" preserveAspectRatio="none"><path d="' + FORMAS_ONDA[indice % FORMAS_ONDA.length] + '" style="fill:' + corDestino + '"/></svg>';
-      return div;
-    }
-
+    // ---- Formas do topo das seções: cada seção recorta o próprio topo (máscara) e mostra, por trás da curva,
+    // a cor final da seção anterior. Funciona com cor sólida, degradê ou imagem de fundo. A forma vem de
+    // "<módulo>.divisoria_forma" ou do padrão do site ("layout.divisoria_forma"). ----
+    const FS = window.FORMAS_SECAO;
+    const MOD_DE_ID = {}; Object.keys(MAPA_MODULO_ID).forEach(function (k) { MOD_DE_ID[MAPA_MODULO_ID[k]] = k; });
     const modulosVisiveis = ordem
       .map(function (k) { return document.getElementById(MAPA_MODULO_ID[k]); })
       .filter(function (el) { return el && el.style.display !== 'none'; });
 
+    const divisoriasAtivas = [];
+    function paletaDivisoria() {
+      const cs = getComputedStyle(document.documentElement);
+      return { dest: cs.getPropertyValue('--gold').trim() || '#C9A227', sec: cs.getPropertyValue('--wine-soft').trim() || '#2F5D9A', prim: cs.getPropertyValue('--wine').trim() || '#0B2545' };
+    }
+    function desenharEnfeite(d) {
+      const W = Math.max(200, Math.round(d.el.clientWidth || 460));
+      d.svg.setAttribute('viewBox', '0 0 ' + W + ' ' + d.altura);
+      d.svg.innerHTML = FS.enfeite(d.forma, W, d.altura, paletaDivisoria(), d.espelhar);
+    }
+    function aplicarDivisoria(el, corAntes, chave, indice) {
+      if (!FS || !corAntes) return false;
+      const pega = function (k) { const v = String(t(k, '')).trim(); return v && v !== 'padrao' ? v : ''; };
+      let forma = pega(chave + '.divisoria_forma') || pega('layout.divisoria_forma') || 'onda';
+      if (!FS.existe(forma)) forma = 'onda';
+      const comEnfeite = FS.temEnfeite(forma);
+      if (forma === 'reta') return false;
+      // com a mesma cor dos dois lados, a curva não aparece: só vale a pena para as formas com enfeite
+      if (!comEnfeite && corAntes === (el.dataset.bgTop || '')) return false;
+      const altura = FS.ALTURAS[pega(chave + '.divisoria_altura') || pega('layout.divisoria_altura') || 'media'] || 46;
+      let espelhar = t(chave + '.divisoria_espelhar', '0') === '1';
+      if (t('layout.divisoria_alternar', '1') !== '0' && indice % 2 === 1) espelhar = !espelhar;
+      const z = ({ pequeno: 0.9, grande: 1.12, enorme: 1.25 })[el.dataset.escala] || 1;
+      const hz = altura / z;
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 64" preserveAspectRatio="none"><path d="' + FS.caminho(forma, espelhar) + '" fill="#000"/></svg>';
+      const url = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+      const mascara = url + ', linear-gradient(#000, #000)';
+      ['maskImage', 'webkitMaskImage'].forEach(function (p) { el.style[p] = mascara; });
+      ['maskSize', 'webkitMaskSize'].forEach(function (p) { el.style[p] = '100% ' + hz + 'px, 100% calc(100% - ' + (hz - 1) + 'px)'; });
+      ['maskPosition', 'webkitMaskPosition'].forEach(function (p) { el.style[p] = 'top, bottom'; });
+      ['maskRepeat', 'webkitMaskRepeat'].forEach(function (p) { el.style[p] = 'no-repeat'; });
+      // a faixa recortada mostra a seção anterior: uma peça com a cor final dela, que a seção nova cobre
+      const div = document.createElement('div');
+      div.className = 'divider'; div.setAttribute('aria-hidden', 'true');
+      div.style.height = altura + 'px'; div.style.background = corAntes;
+      el.parentNode.insertBefore(div, el);
+      el.style.marginTop = (-hz) + 'px';
+      const pad = parseFloat(getComputedStyle(el).paddingTop) || 0;
+      const minimo = (altura + 14) / z;
+      if (pad < minimo) el.style.paddingTop = minimo + 'px';
+      if (comEnfeite) {
+        const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        sv.setAttribute('class', 'enfeite'); sv.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+        div.appendChild(sv);
+        const d = { el: div, svg: sv, forma: forma, altura: altura, espelhar: espelhar };
+        desenharEnfeite(d); divisoriasAtivas.push(d);
+      }
+      return true;
+    }
     let indiceForma = 0;
     modulosVisiveis.forEach(function (el, i) {
       const corAntes = i === 0 ? null : modulosVisiveis[i - 1].dataset.bgBottom;
-      const corDepois = el.dataset.bgTop;
-      if (corAntes && corAntes !== corDepois) {
-        el.parentNode.insertBefore(criarDivisor(corDepois, indiceForma++), el);
-      }
+      if (aplicarDivisoria(el, corAntes, MOD_DE_ID[el.id] || '', indiceForma)) indiceForma++;
     });
+    let esperaRedimensionar = null;
+    window.addEventListener('resize', function () { clearTimeout(esperaRedimensionar); esperaRedimensionar = setTimeout(function () { divisoriasAtivas.forEach(desenharEnfeite); }, 150); });
 
     const primeiroVisivel = modulosVisiveis[0];
     document.querySelector('.hero-veil').style.setProperty('--hero-fade', primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)');
 
     if (modulosVisiveis.length && rodapeLigado) {
-      footerEl.parentNode.insertBefore(criarDivisor('var(--ink)', indiceForma++), footerEl);
+      aplicarDivisoria(footerEl, modulosVisiveis[modulosVisiveis.length - 1].dataset.bgBottom, 'footer', indiceForma);
     }
 
     // Sem o módulo de confirmação no site, os atalhos para ele somem
@@ -1518,9 +1567,11 @@
     Object.keys(MODS).forEach(function (mod) {
       const sec = $(MODS[mod]); if (!sec) return;
       ['fundo', 'titulo', 'texto', 'cartao', 'texto-cartao', 'destaque', 'destaque-on'].forEach(function (p) { sec.style.removeProperty('--m-' + p); });
+      sec.style.removeProperty('background-origin');
       sec.style.background = ''; sec.removeAttribute('data-cor');
       const cor = function (p) { const v = String(t(mod + '.cor_' + p.replace('-', '_'), '')).trim(); return /^#[0-9a-f]{3,8}$/i.test(v) ? v : ''; };
       const v = {}; ['fundo', 'titulo', 'texto', 'cartao', 'texto-cartao', 'destaque'].forEach(function (p) { v[p] = cor(p); });
+      const fim = cor('fundo-fim');
       if (v.fundo) {
         sec.style.background = v.fundo; sec.dataset.bgTop = v.fundo; sec.dataset.bgBottom = v.fundo;
         // fundo claro/escuro diferente do padrão do módulo: títulos e textos trocam sozinhos para continuar legíveis
@@ -1532,10 +1583,47 @@
           if (!v.texto) v.texto = escuro ? '#E8ECF3' : '#3A3A3A';
         }
       }
+      if (fim) {
+        // degradê vertical: da cor de cima (a escolhida ou a padrão do módulo) até a cor final
+        const topo = v.fundo || sec.dataset.bgTop || 'var(--cream)';
+        sec.style.background = 'linear-gradient(180deg, ' + topo + ', ' + fim + ')';
+        sec.dataset.bgTop = topo; sec.dataset.bgBottom = fim;
+        if (!v.fundo && !sec.dataset.fundoBase) sec.dataset.fundoBase = '1';
+      }
       const marcas = [];
       Object.keys(v).forEach(function (p) { if (p !== 'fundo' && v[p]) { sec.style.setProperty('--m-' + p, v[p]); marcas.push(p); } });
       if (v.destaque) sec.style.setProperty('--m-destaque-on', (1.05 / (lum(v.destaque) + 0.05) >= (lum(v.destaque) + 0.05) / 0.05 ? '#FFFFFF' : '#111111'));
       if (marcas.length) sec.setAttribute('data-cor', marcas.join(' '));
+    });
+  }
+
+  // Tamanho, estilo e fundo dos módulos: cada módulo tem a sua escolha e, sem ela, vale o padrão do site (Site › Formas e estilo).
+  function cfgModulo(mod, prop, validos) {
+    const pega = function (k) { const v = String(t(k, '')).trim(); return v && v !== 'padrao' && validos.indexOf(v) !== -1 ? v : ''; };
+    return pega(mod + '.' + prop) || pega('layout.' + prop) || '';
+  }
+  function aplicarAparenciaModulos() {
+    const MODS = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', padrinhos: 'secPadrinhos', madrinhas_pais: 'secMadrinhasPais', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
+    const MULT = { compacto: 0.6, amplo: 1.5 };
+    Object.keys(MODS).forEach(function (mod) {
+      const sec = $(MODS[mod]); if (!sec) return;
+      const espaco = cfgModulo(mod, 'espaco', ['compacto', 'amplo']);
+      if (espaco && mod !== 'presente_teaser') {
+        const cs = getComputedStyle(sec), m = MULT[espaco];
+        sec.style.paddingTop = Math.round(parseFloat(cs.paddingTop) * m) + 'px';
+        if (mod !== 'timeline') sec.style.paddingBottom = Math.round(parseFloat(cs.paddingBottom) * m) + 'px';
+      }
+      const esc = cfgModulo(mod, 'escala', ['pequeno', 'grande', 'enorme']); if (esc) sec.dataset.escala = esc;
+      const can = cfgModulo(mod, 'cantos', ['retos', 'suaves', 'redondos']); if (can) sec.dataset.cantos = can;
+      const som = cfgModulo(mod, 'sombra', ['nenhuma', 'suave', 'forte']); if (som) sec.dataset.sombra = som;
+      // imagem de fundo com véu da cor do módulo (a forma do topo é recortada na própria seção, então convive com a imagem)
+      const img = String(t(mod + '.imagem_fundo', '')).trim();
+      if (img && mod !== 'countdown') {
+        const veu = ({ leve: 40, medio: 62, forte: 82, total: 95 })[String(t(mod + '.fundo_veu', 'medio'))] || 62;
+        const base = sec.dataset.bgTop || 'var(--cream)';
+        const camada = 'color-mix(in srgb, ' + base + ' ' + veu + '%, transparent)';
+        sec.style.background = 'linear-gradient(' + camada + ', ' + camada + '), url("' + img.replace(/"/g, '%22') + '") center / cover no-repeat';
+      }
     });
   }
 

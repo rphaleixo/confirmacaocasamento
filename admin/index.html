@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script src="/fontes.js"></script>
+<script src="/formas.js"></script>
 <script src="/compartilhar.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
@@ -1009,6 +1010,11 @@
     </div>
   </section>
 
+  <section id="tab-formas" class="tab">
+    <div class="pag-head"><div><h2>Formas e estilo</h2><p>O jeito padrão de todas as seções do site: a forma que separa um módulo do outro, o espaço, o tamanho dos elementos, os cantos e as sombras. Cada módulo pode escolher o seu próprio na etapa Aparência.</p></div></div>
+    <div id="fm-form"><div class="carregando">Carregando...</div></div>
+  </section>
+
   <section id="tab-ordem" class="tab">
     <div class="pag-head"><div><h2>Ordem e visibilidade dos módulos</h2><p>Arraste pela alça (ou use as setas) para mudar a ordem, e use o interruptor para mostrar ou esconder cada módulo. Transições e cores entre módulos se ajustam sozinhas no site.</p></div></div>
     <div style="max-width:720px;">
@@ -1451,6 +1457,7 @@
     cores: () => carregarAparencia('cores'),
     tipografia: () => carregarAparencia('tipografia'),
     conteudo: () => carregarConteudo(),
+    formas: () => carregarFormas(),
     ordem: () => carregarOrdem(),
     presentes: () => carregarPresentes(),
     recados: () => carregarRecados(),
@@ -1460,7 +1467,7 @@
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
-    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
@@ -3445,16 +3452,51 @@
   ];
   // Cores próprias de cada módulo (etapa "Cores"): só aparecem os papéis que existem naquele módulo.
   const CORES_DOS_MODULOS = {
-    presente_teaser: { fundo: 'Fundo da seção', cartao: 'Caixa da chamada', titulo: 'Título', texto: 'Texto', destaque: 'Botão e ícone' },
-    timeline: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Dica "arraste para o lado"', cartao: 'Cartões dos marcos', 'texto-cartao': 'Textos dos marcos', destaque: 'Bolinhas, linhas e setas' },
-    padrinhos: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
-    madrinhas_pais: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
-    mapa: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Endereço', destaque: 'Botões e borda do mapa' },
-    galeria: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', destaque: 'Bolinhas, miniatura ativa e borda' },
-    rsvp: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', cartao: 'Cartão do formulário', 'texto-cartao': 'Textos do formulário', destaque: 'Botões e opção "Sim"' },
-    presentes: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Textos sobre o fundo', cartao: 'Cartões das opções e dicas', 'texto-cartao': 'Textos dos cartões', destaque: 'Botões' },
-    recados: { fundo: 'Fundo da seção', titulo: 'Título e texto pequeno', texto: 'Texto de apresentação', cartao: 'Cartões dos recados e do formulário', 'texto-cartao': 'Textos dos recados', destaque: 'Botão de enviar' },
+    presente_teaser: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', cartao: 'Caixa da chamada', titulo: 'Título', texto: 'Texto', destaque: 'Botão e ícone' },
+    timeline: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Dica "arraste para o lado"', cartao: 'Cartões dos marcos', 'texto-cartao': 'Textos dos marcos', destaque: 'Bolinhas, linhas e setas' },
+    padrinhos: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
+    madrinhas_pais: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Nomes e funções', destaque: 'Moldura das fotos' },
+    mapa: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Endereço', destaque: 'Botões e borda do mapa' },
+    galeria: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', destaque: 'Bolinhas, miniatura ativa e borda' },
+    rsvp: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', cartao: 'Cartão do formulário', 'texto-cartao': 'Textos do formulário', destaque: 'Botões e opção "Sim"' },
+    presentes: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Textos sobre o fundo', cartao: 'Cartões das opções e dicas', 'texto-cartao': 'Textos dos cartões', destaque: 'Botões' },
+    recados: { fundo: 'Fundo da seção', 'fundo-fim': 'Fundo: cor final (faz um degradê de cima para baixo)', titulo: 'Título e texto pequeno', texto: 'Texto de apresentação', cartao: 'Cartões dos recados e do formulário', 'texto-cartao': 'Textos dos recados', destaque: 'Botão de enviar' },
   };
+  // ---- Aparência de cada módulo (tamanho, estilo, fundo e forma do topo) e padrões gerais (aba Formas e estilo) ----
+  const OPC_ESPACO = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'compacto', label: 'Compacto (menos espaço em volta)' }, { valor: 'amplo', label: 'Amplo (mais espaço em volta)' }];
+  const OPC_ESCALA = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'pequeno', label: 'Pequeno' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }];
+  const OPC_CANTOS = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'retos', label: 'Retos' }, { valor: 'suaves', label: 'Suaves' }, { valor: 'redondos', label: 'Bem redondos' }];
+  const OPC_SOMBRA = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'nenhuma', label: 'Sem sombra' }, { valor: 'suave', label: 'Sombra suave' }, { valor: 'forte', label: 'Sombra forte' }];
+  const OPC_ALTURA = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'baixa', label: 'Baixa' }, { valor: 'media', label: 'Média' }, { valor: 'alta', label: 'Alta' }];
+  const OPC_VEU = [{ valor: 'leve', label: 'Leve: a foto aparece bastante' }, { valor: 'medio', label: 'Médio' }, { valor: 'forte', label: 'Forte' }, { valor: 'total', label: 'Quase total: só uma textura' }];
+  function opcoesForma(comPadrao) {
+    const F = window.FORMAS_SECAO;
+    const lista = (F ? F.LISTA : []).map((f) => ({ valor: f.id, label: f.nome, desc: f.desc, desenho: (d) => F.mini(f.id, corEv(d, 'aparencia.cor_fundo', '#EAF1FB'), corEv(d, 'aparencia.cor_primaria', '#0B2545'), { dest: corEv(d, 'aparencia.cor_destaque', '#C9A227'), sec: corEv(d, 'aparencia.cor_secundaria', '#2F5D9A'), prim: corEv(d, 'aparencia.cor_primaria', '#0B2545') }) }));
+    if (!comPadrao) return lista.length ? lista : [{ valor: 'onda', label: 'Onda suave' }];
+    return [{ valor: 'padrao', label: 'Igual ao site', desc: 'Segue Formas e estilo', desenho: () => '<svg viewBox="0 0 100 46"><rect width="100" height="46" rx="6" fill="#F0F2F5" stroke="#B9C3D3" stroke-dasharray="4 3"/><text x="50" y="27" text-anchor="middle" font-size="11" fill="#6B7488">padrão</text></svg>' }].concat(lista);
+  }
+  function camposAparencia(mod, o) {
+    o = o || {};
+    const e = 'aparencia', c = [];
+    c.push({ etapa: e, chave: '__nota_apar_' + mod + '__', tipo: 'nota', label: 'Tudo aqui é opcional. Em "Igual ao site", o módulo segue o que você definiu em Site › Formas e estilo.' });
+    c.push({ etapa: e, chave: '__sep_ap_tam_' + mod + '__', tipo: 'separador', label: 'Tamanho' });
+    if (!o.semEspaco) c.push({ etapa: e, chave: mod + '.espaco', tipo: 'select', label: 'Espaço em volta do módulo', opcoes: OPC_ESPACO });
+    c.push({ etapa: e, chave: mod + '.escala', tipo: 'select', label: 'Tamanho dos textos e elementos', opcoes: OPC_ESCALA });
+    c.push({ etapa: e, chave: '__sep_ap_est_' + mod + '__', tipo: 'separador', label: 'Estilo' });
+    c.push({ etapa: e, chave: mod + '.cantos', tipo: 'select', label: 'Cantos dos cartões e botões', opcoes: OPC_CANTOS });
+    if (!o.semSombra) c.push({ etapa: e, chave: mod + '.sombra', tipo: 'select', label: 'Sombra dos cartões', opcoes: OPC_SOMBRA });
+    if (!o.semImagem) {
+      c.push({ etapa: e, chave: '__sep_ap_img_' + mod + '__', tipo: 'separador', label: 'Imagem de fundo (opcional)' });
+      c.push({ etapa: e, chave: mod + '.imagem_fundo', tipo: 'foto', label: 'Imagem de fundo', aspecto: 1, dica: 'Ela aparece por trás do conteúdo, coberta por um véu da cor do módulo para o texto continuar legível.' });
+      c.push({ etapa: e, chave: mod + '.fundo_veu', tipo: 'select', label: 'Força do véu sobre a imagem', padrao: 'medio', opcoes: OPC_VEU });
+    }
+    c.push({ etapa: e, chave: '__sep_ap_forma_' + mod + '__', tipo: 'separador', label: 'Forma do topo da seção' });
+    c.push({ etapa: e, chave: mod + '.divisoria_forma', tipo: 'escolha_visual', label: 'Como esta seção começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
+    c.push({ etapa: e, chave: mod + '.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+    c.push({ etapa: e, chave: mod + '.divisoria_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
+    return c;
+  }
+
   GRUPOS_CONTEUDO.forEach((g) => {
     const papeis = g.toggle ? CORES_DOS_MODULOS[g.toggle] : (g.ancora === 'rsvp' ? CORES_DOS_MODULOS.rsvp : null);
     if (!papeis) return;
@@ -3465,6 +3507,22 @@
     Object.keys(papeis).forEach((p) => g.campos.push({ etapa: 'cores', chave: mod + '.cor_' + p.replace('-', '_'), tipo: 'cor_livre', label: papeis[p], dica: p === 'fundo' ? 'Se o fundo ficar claro ou escuro demais para o texto atual, os títulos e textos se ajustam sozinhos (você pode escolher as cores deles logo abaixo).' : undefined }));
     if (!g.campos.some((c) => c.tipo === 'previa_modulo')) g.campos.push({ etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' });
   });
+  // Aparência (etapa própria) nos módulos; a contagem tem a sua etapa de cores e fontes, então só ganha a Aparência
+  GRUPOS_CONTEUDO.forEach((g) => {
+    const mod = g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null);
+    if (!mod || !g.etapas) return;
+    g.etapas.push({ id: 'aparencia', titulo: 'Aparência' });
+    const opc = mod === 'presente_teaser' ? { semEspaco: true } : mod === 'countdown' ? { semSombra: true, semImagem: true } : {};
+    camposAparencia(mod, opc).forEach((c) => g.campos.push(c));
+  });
+  // rodapé: só a forma do topo
+  GRUPOS_CONTEUDO.forEach((g) => {
+    if (g.ancora !== 'rodape') return;
+    g.campos.push({ chave: '__sep_ap_forma_footer__', tipo: 'separador', label: 'Forma do topo do rodapé' });
+    g.campos.push({ chave: 'footer.divisoria_forma', tipo: 'escolha_visual', label: 'Como o rodapé começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
+    g.campos.push({ chave: 'footer.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+  });
+
 
 
   let ctDados = null;
@@ -4776,7 +4834,7 @@
       fs.appendChild(h('div', { class: 'campo-checkbox' }, chk, label));
     } else if (campo.tipo === 'select') {
       const select = h('select', { 'data-chave': campo.chave, id: idCampo });
-      campo.opcoes.forEach((op) => { const o = new Option(op.label, op.valor); if (ctDados[campo.chave] === op.valor) o.selected = true; select.appendChild(o); });
+      campo.opcoes.forEach((op) => { const o = new Option(op.label, op.valor); if ((ctDados[campo.chave] === undefined || ctDados[campo.chave] === '' ? campo.padrao : ctDados[campo.chave]) === op.valor) o.selected = true; select.appendChild(o); });
       fs.appendChild(select);
     } else if (campo.tipo === 'data_hora') {
       const { data, hora } = isoParaDataHora(ctDados[campo.chave]);
@@ -5231,6 +5289,29 @@
       ficarSujo(true);
     };
     form.addEventListener('input', mexeu); form.addEventListener('change', mexeu);
+  }
+
+  // =====================================================================
+  //  SITE › FORMAS E ESTILO (padrões gerais das seções)
+  // =====================================================================
+  const paraPadraoGeral = (lista) => lista.map((o) => (o.valor === 'padrao' ? { valor: 'padrao', label: 'Como é hoje' } : o));
+  const GRUPO_FORMAS = { titulo: 'Formas e estilo', campos: [
+    { chave: '__sep_fm_forma__', tipo: 'separador', label: 'Forma que separa uma seção da outra' },
+    { chave: 'layout.divisoria_forma', tipo: 'escolha_visual', label: 'Forma padrão', padrao: 'onda', altura: 46, colunas: 4, opcoes: opcoesForma(false), dica: 'Vale para todas as seções e para o rodapé. Cada módulo pode escolher outra na sua etapa Aparência.' },
+    { chave: 'layout.divisoria_altura', tipo: 'select', label: 'Altura da forma', padrao: 'media', opcoes: OPC_ALTURA.filter((o) => o.valor !== 'padrao') },
+    { chave: 'layout.divisoria_alternar', tipo: 'liga', label: 'Alternar o lado da forma de uma seção para a outra', sub: 'Deixa o conjunto mais vivo: formas inclinadas ou onduladas vão e voltam.' },
+    { chave: '__sep_fm_estilo__', tipo: 'separador', label: 'Estilo geral dos módulos' },
+    { chave: 'layout.espaco', tipo: 'select', label: 'Espaço em volta dos módulos', opcoes: paraPadraoGeral(OPC_ESPACO) },
+    { chave: 'layout.escala', tipo: 'select', label: 'Tamanho dos textos e elementos', opcoes: paraPadraoGeral(OPC_ESCALA) },
+    { chave: 'layout.cantos', tipo: 'select', label: 'Cantos dos cartões e botões', opcoes: paraPadraoGeral(OPC_CANTOS) },
+    { chave: 'layout.sombra', tipo: 'select', label: 'Sombra dos cartões', opcoes: paraPadraoGeral(OPC_SOMBRA) },
+  ]};
+  async function carregarFormas() {
+    const form = document.getElementById('fm-form');
+    const d = await api('/api/conteudo');
+    if (d.erro) { form.textContent = 'Não consegui carregar agora. Recarregue a página para tentar de novo.'; return; }
+    ctDados = d;
+    renderGrupoEm(GRUPO_FORMAS, form, { msgId: 'fm-msg', semCabecalho: true, semMoldura: true, semPrevia: true, onde: 'formas', rotuloSalvar: 'Salvar formas e estilo', msgSalvo: 'Formas e estilo salvos. O site já está atualizado.' });
   }
 
   // =====================================================================
