@@ -99,3 +99,12 @@ CREATE TABLE IF NOT EXISTS lembranca_itens (
   PRIMARY KEY (lembranca_id, convidado_id)
 );
 CREATE INDEX IF NOT EXISTS idx_lembranca_itens_evento ON lembranca_itens(evento_id);
+
+-- Login do administrador master trocado pelo painel (uma linha só). Existindo, vale no lugar dos secrets ADMIN_USER/ADMIN_PASSWORD.
+CREATE TABLE IF NOT EXISTS admin_master (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  usuario TEXT NOT NULL,
+  senha_salt TEXT NOT NULL,
+  senha_hash TEXT NOT NULL,
+  atualizado_em TEXT
+);

@@ -841,6 +841,7 @@
     <a id="voltarPlataforma" class="hd-btn" href="/admin/" hidden>← <span class="rot-longo">Plataforma</span></a>
     <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ver site</a>
     <button id="copiarSite" class="hd-btn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="rot-longo">Copiar link do site</span></button>
+    <button id="btnConta" class="hd-btn" type="button" hidden title="Trocar o login e a senha do administrador geral"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="rot-longo">Minha conta</span></button>
     <button id="btnSair" class="hd-btn sair" type="button">Sair</button>
   </div>
 </header>
@@ -1201,6 +1202,43 @@
     AUTH = auth; avisoSessao = false;
     gravarAuth(auth, document.getElementById('loginLembrar').checked);
     entrarNoApp();
+  });
+  // login e senha do administrador geral (só no painel master)
+  if (!modoEvento) document.getElementById('btnConta').hidden = false;
+  document.getElementById('btnConta').addEventListener('click', async () => {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const atual = await api('/api/admin/conta');
+    if (atual.erro) { toast(atual.erro, 'err'); return; }
+    const usuario = inputTexto(atual.usuario, 'Novo usuário'); usuario.id = 'ct-usuario'; usuario.autocomplete = 'username'; usuario.maxLength = 40;
+    const mkSenha = (id, auto) => { const i = h('input', { type: 'password', id, autocomplete: auto }); return i; };
+    const senhaAtual = mkSenha('ct-senha-atual', 'current-password'), nova = mkSenha('ct-senha-nova', 'new-password'), repete = mkSenha('ct-senha-repete', 'new-password');
+    const mostrar = h('input', { type: 'checkbox', id: 'ct-mostrar' });
+    mostrar.addEventListener('change', () => [senhaAtual, nova, repete].forEach((i) => { i.type = mostrar.checked ? 'text' : 'password'; }));
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(
+      h('p', { class: 'hint', style: 'margin:0 0 12px;', text: 'Este é o login do administrador geral (quem cria eventos e vê todos). Depois de trocar, o login antigo deixa de funcionar. Os logins dos anfitriões não mudam.' }),
+      campoTexto('Usuário', usuario),
+      h('div', { style: 'margin-top:12px;' }, campoTexto('Senha atual (para confirmar que é você)', senhaAtual)),
+      h('div', { class: 'form-linha', style: 'margin-top:12px;' }, campoTexto('Nova senha', nova, 'Ao menos 8 caracteres.'), campoTexto('Repita a nova senha', repete)),
+      h('label', { class: 'check', for: 'ct-mostrar' }, mostrar, 'Mostrar as senhas'), erro);
+    const salvar = async () => {
+      erro.hidden = true;
+      const falha = (t) => { erro.textContent = t; erro.hidden = false; };
+      if (!senhaAtual.value) return falha('Digite a senha atual.');
+      if (nova.value.length < 8) return falha('A nova senha precisa ter ao menos 8 caracteres.');
+      if (nova.value !== repete.value) return falha('As duas senhas novas não são iguais.');
+      const r = await api('/api/admin/conta', 'POST', { senhaAtual: senhaAtual.value, novoUsuario: usuario.value, novaSenha: nova.value });
+      if (r.erro) return falha(r.erro);
+      // a sessão continua aberta com o login novo, do mesmo jeito que estava (lembrado neste aparelho ou não)
+      let lembrado = false; try { lembrado = !!localStorage.getItem(CHAVE_AUTH); } catch (e) { /* segue */ }
+      AUTH = basic(r.usuario, nova.value); gravarAuth(AUTH, lembrado);
+      fecharDialogo(); toast('Login e senha atualizados. Use os novos da próxima vez que entrar.');
+    };
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar novo login', prim: true, fn: salvar }]);
+    abrirDialogo({ titulo: 'Login do administrador geral', largura: '520px' });
+    setTimeout(() => usuario.focus(), 30);
   });
   document.getElementById('btnSair').addEventListener('click', async () => {
     if (!(await confirmar({ titulo: 'Sair do painel?', texto: 'Você vai precisar do usuário e da senha para entrar de novo neste aparelho.', rotulo: 'Sair' }))) return;

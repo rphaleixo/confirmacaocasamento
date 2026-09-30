@@ -26,7 +26,7 @@ export function checkBasicAuth(request, env) {
   return user === env.ADMIN_USER && pass === env.ADMIN_PASSWORD;
 }
 
-function lerBasicAuth(request) {
+export function lerBasicAuth(request) {
   const header = request.headers.get('Authorization') || '';
   if (!header.startsWith('Basic ')) return null;
   let decoded;
@@ -45,12 +45,23 @@ export function novoSalt() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Quem é o solicitante do admin? 'master' (secrets ADMIN_USER/ADMIN_PASSWORD: gerencia todos os
+// Quem é o solicitante do admin? 'master' (login do administrador geral: gerencia todos os
 // eventos) ou 'evento' (login próprio do evento: só enxerga e altera o evento do parâmetro ?e=).
+// Login do administrador master: se ele já foi trocado pelo painel (tabela admin_master), vale o do painel e os secrets
+// ADMIN_USER/ADMIN_PASSWORD deixam de servir; enquanto não foi trocado, valem os secrets.
+export async function masterConfere(env, cred) {
+  if (!cred) return false;
+  try {
+    const row = await env.DB.prepare('SELECT usuario, senha_salt, senha_hash FROM admin_master WHERE id = 1').first();
+    if (row) return cred.user === row.usuario && (await hashSenha(cred.pass, row.senha_salt)) === row.senha_hash;
+  } catch (e) { /* tabela ainda não existe: vale o acesso dos secrets */ }
+  return cred.user === env.ADMIN_USER && cred.pass === env.ADMIN_PASSWORD;
+}
+
 export async function identificarAdmin(request, env) {
   const cred = lerBasicAuth(request);
   if (!cred) return null;
-  if (checkBasicAuth(request, env)) return { tipo: 'master' };
+  if (await masterConfere(env, cred)) return { tipo: 'master' };
   const slug = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
   if (!slug) return null;
   const ev = await env.DB.prepare('SELECT id, admin_usuario, admin_senha_salt, admin_senha_hash FROM eventos WHERE slug = ?').bind(slug).first();

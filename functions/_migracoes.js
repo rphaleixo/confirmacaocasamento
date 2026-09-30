@@ -172,6 +172,19 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '009-admin-master',
+    // login do administrador geral editável pelo painel (senha guardada só como hash com sal)
+    async comandos() {
+      return [`CREATE TABLE IF NOT EXISTS admin_master (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  usuario TEXT NOT NULL,
+  senha_salt TEXT NOT NULL,
+  senha_hash TEXT NOT NULL,
+  atualizado_em TEXT
+)`];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker
