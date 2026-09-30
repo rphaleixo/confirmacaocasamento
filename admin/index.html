@@ -167,6 +167,7 @@
   .tab{display:none;}
   .tab.active{display:block;animation:entra .2s ease;}
   @keyframes entra{from{opacity:.4;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  .painel-id .chip{margin-bottom:6px;} .painel-id h2{font-size:22px;}
   .pag-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;margin-bottom:18px;}
   .pag-head h2{font-size:21px;font-weight:700;}
   .pag-head p{margin:4px 0 0;color:var(--ink-soft);font-size:13.5px;max-width:640px;line-height:1.5;}
@@ -889,6 +890,7 @@
 
   <!-- ===== EVENTO: PAINEL ===== -->
   <section id="tab-painel" class="tab">
+    <div class="pag-head painel-id" id="p-id" hidden><div><span class="chip info sem-ponto" id="p-tipo"></span><h2 id="p-nome"></h2><p id="p-sub"></p></div></div>
     <div class="contagens" id="p-contagens" aria-label="Contagens regressivas"></div>
     <div class="kpis" id="p-kpis">
       <div class="kpi destaque"><div class="lbl">Confirmados</div><div class="v"><span id="p-confirmados">--</span> <small>de <span id="p-cadastrados">--</span></small></div><div class="det" id="p-confirmados-lbl">&nbsp;</div><div class="barra"><i id="p-barra-conf" style="width:0"></i></div></div>
@@ -1558,6 +1560,14 @@
       if (d._nome) { document.getElementById('tituloAdmin').textContent = d._nome; document.title = d._nome + ' • Painel'; }
       const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
       sub.appendChild(h('span', { class: 'hd-badge', text: tipos[d._tipo] || d._tipo || '' }));
+      // tela principal (Painel): diz qual é o tipo de evento e o nome dele
+      const tipoTxt = tipos[d._tipo] || (d._tipo ? d._tipo.charAt(0).toUpperCase() + d._tipo.slice(1) : '');
+      if (tipoTxt) {
+        document.getElementById('p-tipo').textContent = 'Evento do tipo: ' + tipoTxt;
+        document.getElementById('p-nome').textContent = d._nome || eventoAtual;
+        document.getElementById('p-sub').textContent = 'Acompanhe as confirmações, os convites enviados e os prazos deste ' + tipoTxt.toLowerCase() + '.';
+        document.getElementById('p-id').hidden = false;
+      }
       ctDados = Object.assign(ctDados || {}, { 'config.modo_save_the_date': d['config.modo_save_the_date'] || '0' });
       atualizarSTD();
     }).catch(() => {});
