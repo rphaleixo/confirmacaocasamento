@@ -238,6 +238,7 @@
   .rs-linha:hover:not(.cab){background:#FAFBFD;}
   .rs-linha .nm{font-size:14px;font-weight:600;min-width:0;overflow-wrap:anywhere;} .rs-linha .nm small{display:block;font-size:12px;font-weight:400;color:var(--ink-soft);}
   .rs-linha .gr{background:none;border:none;padding:0;color:var(--info);font-size:13px;font-weight:600;text-align:left;cursor:pointer;overflow-wrap:anywhere;}
+  .grupo-todos{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 2px;} .grupo-todos .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);}
   .rs-seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);}
   .rs-seg button{border:none;border-left:1px solid var(--line);background:none;padding:7px 11px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:34px;}
   .rs-seg button:first-child{border-left:none;}
@@ -570,7 +571,7 @@
   .ev-op:hover{border-color:var(--navy);} .ev-op.on{border-color:var(--navy);box-shadow:0 0 0 3px color-mix(in srgb,var(--navy) 18%,transparent);background:var(--surface-2,#F6F8FB);}
   .ev-desenho{width:100%;height:var(--ev-altura,58px);display:flex;align-items:center;justify-content:center;} .ev-desenho svg{width:100%;height:100%;}
   .previa-data{margin:2px 0 12px;padding:9px 12px;border-radius:10px;background:var(--surface-2,#F6F8FB);border:1px solid var(--line);font-size:13px;color:var(--ink-soft);} .previa-data b{color:var(--ink);}
-  .ev-op.base{border-color:var(--navy);border-style:dashed;} .ev-op.ev-pers{cursor:default;} .ev-pers-base{font-size:11.5px;color:var(--ink-soft);}
+  .ev-op.base{border-color:var(--navy);border-style:dashed;} .ev-pers-base{font-size:11.5px;color:var(--ink-soft);}
   .af-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
   .af-chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;min-height:36px;}
   .af-chips button.on{background:var(--navy);border-color:var(--navy);color:#fff;} .af-chips button.mod::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:7px;vertical-align:1px;}
@@ -2539,11 +2540,23 @@
         sel, acaoIcone('Editar', 'Editar dados', () => abrirEditarConvidado(c)), acaoIcone('Link', 'Link individual', () => abrirLinkIndividual(c)), mover));
     });
 
+    // participação do grupo inteiro: um toque marca todas as pessoas (e mostra quando já estão todas iguais)
+    let todosIguais = null;
+    if (g.membros.length) { const r0 = g.membros[0].resposta || ''; if (g.membros.every((m) => (m.resposta || '') === r0)) todosIguais = r0; }
+    const segGrupo = h('div', { class: 'rs-seg', role: 'group', 'aria-label': 'Participação do grupo inteiro' });
+    [['sim', 'Todos vão'], ['nao_sei', 'Todos em dúvida'], ['nao', 'Ninguém vai'], ['', 'Limpar todos']].forEach(([v, r]) => {
+      const b = h('button', { type: 'button', class: (todosIguais === v ? 'on ' : '') + (v || 'limpo'), 'aria-pressed': todosIguais === v ? 'true' : 'false', title: v ? 'Marcar o grupo inteiro: ' + r.toLowerCase() : 'Limpar a resposta de todas as pessoas do grupo', text: r });
+      b.addEventListener('click', () => { if (todosIguais !== v) mudarResposta(g.membros.map((m) => m.id), v); });
+      segGrupo.appendChild(b);
+    });
+    const linhaGrupo = g.membros.length > 1 ? h('div', { class: 'grupo-todos' }, h('span', { class: 'rot', text: 'Grupo inteiro' }), segGrupo) : null;
+
     return h('div', { class: 'grupo' },
       h('div', { class: 'grupo-topo' }, h('span', { class: 'grupo-nome', text: g.nome }), h('span', { class: 'chip ' + g.sit.cls, text: g.sit.rot }), h('span', { class: 'codigo', title: 'Código do link', text: g.codigo }),
         h('a', { href: link, target: '_blank', rel: 'noopener', style: 'font-size:12.5px;font-weight:600;', text: 'ver convite ↗' })),
       acoes,
       meta.length ? h('div', { class: 'grupo-meta' }, meta) : null,
+      linhaGrupo,
       membros);
   }
 
@@ -3199,7 +3212,6 @@
       { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
       { etapa: 'midia', chave: '__sep_layout__', tipo: 'separador', label: '2. Posição dos textos' },
       { etapa: 'midia', chave: 'hero.layout', tipo: 'escolha_visual', personalizavel: true, label: 'Escolha um modelo', padrao: 'classico', altura: 96, colunas: 4, opcoes: OPCOES_LAYOUT, dica: 'Vale para o convite. O Save the Date pode ter outra posição (menu Save the Date). A saudação com o nome de quem foi convidado aparece em todos os modelos; a prévia mostra um exemplo.' },
-      { etapa: 'midia', chave: '__sep_ajuste__', tipo: 'separador', label: '3. Ajuste fino (opcional)' },
       { etapa: 'midia', chave: '__ajuste_fino__', tipo: 'ajuste_fino' },
       { etapa: 'textos', chave: '__nota_textos__', tipo: 'nota', label: 'Cada texto tem o seu interruptor: desligue o que já estiver escrito na sua imagem ou vídeo, para não repetir a informação. O que estiver desligado some do site, mas continua guardado aqui.' },
       { etapa: 'textos', chave: '__bloco_eyebrow__', tipo: 'bloco_texto', liga: 'hero.mostrar_eyebrow', label: 'Texto pequeno acima do nome', campos: [
@@ -4377,9 +4389,12 @@
       const restaurarTudo = () => { Object.entries(ocultos).forEach(([k, i]) => { const [el, prop] = k.split('.'); i.value = padraoDe(el, prop); emitir(i); }); desenharControles(); pintarChips(); avisarPersonalizado(); };
       fs.addEventListener('ajuste-restaurar', restaurarTudo);
       fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.layout') { pintarChips(); avisarPersonalizado(); } });
-      fs.appendChild(h('div', { class: 'ajuste-fino' },
-        h('p', { class: 'dica-campo', style: 'margin:0 0 10px;', text: 'Escolha o elemento e ajuste só ele: alinhamento, altura, tamanho e cor. "Todos os textos" mexe no conjunto. Assim que você ajustar algo, o modelo passa a se chamar "Personalizado". Vale para o convite e para o Save the Date.' }),
+      const painelAjuste = h('div', { class: 'ajuste-fino-wrap', hidden: true }, h('div', { class: 'separador-campo', text: '3. Ajuste fino' }), h('div', { class: 'ajuste-fino' },
+        h('p', { class: 'dica-campo', style: 'margin:0 0 10px;', text: 'Escolha o elemento e ajuste só ele: alinhamento, altura, tamanho e cor. "Todos os textos" mexe no conjunto. Vale para o convite e para o Save the Date. Para voltar a um modelo pronto, escolha-o na lista de modelos acima.' }),
         chips, controles));
+      fs.appendChild(painelAjuste);
+      // o ajuste fino só aparece no modo "Personalizado" (escolhido na lista de modelos ou já em uso)
+      fs.addEventListener('modo-personalizado', (ev) => { painelAjuste.hidden = !ev.detail; });
       desenharControles(); pintarChips();
       setTimeout(avisarPersonalizado, 0);
       return;
@@ -4402,22 +4417,29 @@
             fs.dispatchEvent(new CustomEvent('ajuste-restaurar'));
           }
           oculto.value = op.valor; pintar(); oculto.dispatchEvent(new Event('input', { bubbles: true }));
+          if (campo.personalizavel) fs.dispatchEvent(new CustomEvent('escolha-modelo'));
         });
         grade.appendChild(b);
         return { op, b };
       });
-      // "Personalizado": aparece sozinho quando o modelo recebe ajuste fino; o modelo de origem fica marcado como base
-      let pers = null, personalizado = false;
-      const pintar = () => botoes.forEach(({ op, b }) => { const sel = oculto.value === op.valor; b.classList.toggle('on', sel && !personalizado); b.classList.toggle('base', sel && personalizado); b.setAttribute('aria-checked', String(sel && !personalizado)); });
+      // "Personalizado": opção sempre na lista; ao escolhê-la (ou quando o modelo já tem ajustes) o ajuste fino aparece.
+      // O modelo de origem fica marcado como base.
+      let pers = null, ajustes = false, forcado = false;
+      const modoPers = () => ajustes || forcado;
+      const pintar = () => botoes.forEach(({ op, b }) => { const sel = oculto.value === op.valor; b.classList.toggle('on', sel && !modoPers()); b.classList.toggle('base', sel && modoPers()); b.setAttribute('aria-checked', String(sel && !modoPers())); });
       if (campo.personalizavel) {
-        pers = h('div', { class: 'ev-op on ev-pers', role: 'radio', 'aria-checked': 'true', hidden: true }, h('div', { class: 'ev-desenho', html: '<svg viewBox="0 0 60 100"><rect width="60" height="100" rx="7" fill="#2B4A78"/><circle cx="44" cy="26" r="15" fill="#ffffff14"/><g stroke="#fff" stroke-linecap="round" stroke-width="2.4" opacity=".9"><path d="M12 56h36M12 68h36M12 80h36"/></g><circle cx="22" cy="56" r="4.5" fill="#C9A227"/><circle cx="38" cy="68" r="4.5" fill="#C9A227"/><circle cx="26" cy="80" r="4.5" fill="#C9A227"/></svg>' }), h('b', { text: 'Personalizado' }), h('span', { class: 'ev-pers-base' }));
+        pers = h('button', { type: 'button', role: 'radio', class: 'ev-op ev-pers' }, h('div', { class: 'ev-desenho', html: '<svg viewBox="0 0 60 100"><rect width="60" height="100" rx="7" fill="#2B4A78"/><circle cx="44" cy="26" r="15" fill="#ffffff14"/><g stroke="#fff" stroke-linecap="round" stroke-width="2.4" opacity=".9"><path d="M12 56h36M12 68h36M12 80h36"/></g><circle cx="22" cy="56" r="4.5" fill="#C9A227"/><circle cx="38" cy="68" r="4.5" fill="#C9A227"/><circle cx="26" cy="80" r="4.5" fill="#C9A227"/></svg>' }), h('b', { text: 'Personalizado' }), h('span', { class: 'ev-pers-base' }));
         grade.appendChild(pers);
-        fs.addEventListener('ajuste-personalizado', (ev) => {
-          personalizado = !!ev.detail;
+        const atualizarPers = () => {
           const base = campo.opcoes.find((o) => o.valor === oculto.value);
-          pers.hidden = !personalizado; pers.querySelector('.ev-pers-base').textContent = 'Baseado em ' + (base ? base.label : 'modelo');
+          pers.classList.toggle('on', modoPers()); pers.setAttribute('aria-checked', String(modoPers()));
+          pers.querySelector('.ev-pers-base').textContent = modoPers() ? 'Baseado em ' + (base ? base.label : 'modelo') : 'Ajuste cada elemento';
           pintar();
-        });
+        };
+        pers.addEventListener('click', () => { forcado = true; atualizarPers(); fs.dispatchEvent(new CustomEvent('modo-personalizado', { detail: true })); });
+        fs.addEventListener('ajuste-personalizado', (ev) => { ajustes = !!ev.detail; atualizarPers(); fs.dispatchEvent(new CustomEvent('modo-personalizado', { detail: modoPers() })); });
+        fs.addEventListener('escolha-modelo', () => { forcado = false; atualizarPers(); fs.dispatchEvent(new CustomEvent('modo-personalizado', { detail: modoPers() })); });
+        pers.querySelector('.ev-pers-base').textContent = 'Ajuste cada elemento';
       }
       pintar();
       fs.append(h('label', { class: 'rot-campo', text: campo.label }), grade, oculto);
