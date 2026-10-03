@@ -185,6 +185,19 @@ const MIGRACOES = [
 )`];
     },
   },
+  {
+    id: '010-publicacao',
+    // convite pode ficar "em preparação" até o anfitrião publicar; eventos que já existem continuam publicados
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos'))) return null;
+      const tem = await db.prepare("SELECT 1 AS ok FROM pragma_table_info('eventos') WHERE name = 'publicado'").first();
+      if (tem) return null;
+      return [
+        'ALTER TABLE eventos ADD COLUMN publicado INTEGER NOT NULL DEFAULT 1',
+        'ALTER TABLE eventos ADD COLUMN token_rascunho TEXT',
+      ];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

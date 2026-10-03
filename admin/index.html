@@ -366,6 +366,43 @@
   .cp-espera{font-size:12.5px;color:var(--ink-soft);}
   .cp-txt{padding:9px 12px 11px;background:#fff;} .cp-tit{font-size:14.5px;font-weight:600;color:#111B21;line-height:1.3;overflow-wrap:anywhere;} .cp-desc{font-size:13px;color:#667781;margin-top:2px;line-height:1.35;overflow-wrap:anywhere;} .cp-dom{font-size:12px;color:#8696A0;margin-top:4px;}
   .cp-acoes{margin-top:10px;display:flex;gap:8px;}
+  /* ---------- preparar o convite ---------- */
+  .sw-avancado{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;white-space:nowrap;padding:0 6px;}
+  .faixa-rascunho{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#FFF3D6;color:#5C3A00;border-bottom:1px solid #F0D9A0;padding:9px max(16px,calc((100vw - 1100px)/2));font-size:13px;}
+  .faixa-rascunho .ic{font-size:16px;} .faixa-rascunho .t{flex:1 1 220px;line-height:1.4;}
+  .prep-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin:0 0 16px;box-shadow:var(--sombra-suave,0 6px 18px -12px rgba(11,37,69,.25));}
+  .prep-card.pronto{background:var(--ok-bg);border-color:transparent;}
+  .prep-cab{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;} .prep-cab h3{margin:0;font-size:17px;} .prep-cab p{margin:4px 0 0;color:var(--ink-soft);font-size:13px;}
+  .prep-acoes{display:flex;gap:8px;flex-wrap:wrap;}
+  .prep-barra{height:7px;border-radius:99px;background:var(--muted-bg);margin:12px 0 8px;overflow:hidden;} .prep-barra i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s;}
+  .prep-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px;margin-top:6px;}
+  .prep-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit;min-height:44px;} .prep-item:hover{border-color:var(--navy);}
+  .prep-item .bola{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;color:#fff;flex-shrink:0;} .prep-item.ok .bola{background:var(--ok);border-color:var(--ok);}
+  .prep-item .nm{flex:1;font-size:13.5px;font-weight:600;} .prep-item.ok .nm{font-weight:500;color:var(--ink-soft);} .prep-item .tp{font-size:11.5px;color:var(--ink-faint);white-space:nowrap;}
+  .prep-opc{margin-top:10px;} .prep-opc summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--navy);padding:6px 0;}
+  .prep-rodape{margin-top:10px;display:flex;justify-content:flex-end;}
+  .pulsa{animation:pulsa 1s ease 3;border-radius:10px;} @keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(201,162,39,0);}50%{box-shadow:0 0 0 6px rgba(201,162,39,.45);}}
+  .pb-modo{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:8px;cursor:pointer;} .pb-modo b{display:block;font-size:14px;} .pb-modo small{color:var(--ink-soft);font-size:12.5px;} .ok-aviso{background:var(--ok-bg);color:var(--ok);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;}
+  /* assistente */
+  .assistente{position:fixed;inset:0;z-index:200;background:var(--bg,#F4F6FA);display:flex;flex-direction:column;}
+  body.assistente-aberto{overflow:hidden;}
+  .as-topo{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--navy);color:#fff;} .as-marca{flex:1;display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:600;}
+  .as-pontos{display:flex;gap:5px;} .as-pontos i{width:26px;height:5px;border-radius:9px;background:rgba(255,255,255,.28);} .as-pontos i.ok{background:var(--ok-claro,#7BD6A6);} .as-pontos i.atual{background:#fff;}
+  .as-fechar,.as-ver{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;min-height:36px;} .as-ver{display:none;}
+  .as-miolo{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);}
+  .as-corpo-wrap{overflow:auto;padding:24px 20px 28px;} .as-coluna{max-width:560px;margin:0 auto;} .as-coluna h2{font-size:26px;margin:0 0 6px;} .as-ajuda{color:var(--ink-soft);font-size:14.5px;line-height:1.55;margin:0;}
+  .as-fs{border:none;padding:0;margin:0;min-width:0;background:transparent;box-shadow:none;}
+  .as-previa{overflow:auto;padding:18px;background:var(--surface-2,#EEF1F6);border-left:1px solid var(--line);display:flex;justify-content:center;align-items:flex-start;}
+  .as-rodape{display:flex;gap:10px;align-items:center;padding:12px 16px calc(12px + var(--seguro,0px));background:var(--surface);border-top:1px solid var(--line);} .as-rodape .esp{flex:1;}
+  .as-prazo{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;} .sugestao.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .as-temas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:16px;}
+  .as-tema{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px;cursor:pointer;font:inherit;color:inherit;} .as-tema.on{border-color:var(--navy);box-shadow:0 0 0 3px rgba(30,58,95,.15);} .as-tema b{font-size:13.5px;} .as-tema small{font-size:11.5px;color:var(--ink-soft);line-height:1.35;} .as-tema .mini svg{width:100%;height:auto;display:block;}
+  .as-sug{display:flex;gap:12px;align-items:center;border:1px dashed var(--line);border-radius:14px;padding:12px;margin-top:16px;background:var(--surface);flex-wrap:wrap;} .as-sug .rot{width:100%;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);} .as-sug-mini{width:110px;flex-shrink:0;} .as-sug-txt{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;} .as-sug-txt small{color:var(--ink-soft);}
+  @media (max-width:900px){
+    .as-miolo{grid-template-columns:1fr;} .as-previa{display:none;border:none;} .assistente.previa-aberta .as-previa{display:flex;} .assistente.previa-aberta .as-corpo-wrap{display:none;}
+    .as-ver{display:inline-block;} .as-fechar{font-size:11.5px;padding:6px 10px;} .as-coluna h2{font-size:23px;}
+    .as-rodape .btn{padding-left:12px;padding-right:12px;}
+  }
   .tabela-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);}
   table{width:100%;border-collapse:collapse;}
   th,td{padding:11px 14px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
@@ -847,6 +884,7 @@
     <button id="btnSair" class="hd-btn sair" type="button">Sair</button>
   </div>
 </header>
+<div id="faixaRascunho" class="faixa-rascunho" hidden></div>
 <div class="topbar">
   <nav id="navMaster" class="nav" aria-label="Plataforma">
     <button data-tab="visao" class="active" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Visão geral</button>
@@ -892,6 +930,7 @@
   <!-- ===== EVENTO: PAINEL ===== -->
   <section id="tab-painel" class="tab">
     <div class="pag-head painel-id" id="p-id" hidden><div><span class="chip info sem-ponto" id="p-tipo"></span><h2 id="p-nome"></h2><p id="p-sub"></p></div></div>
+    <div class="prep-card" id="p-prep" hidden></div>
     <div class="contagens" id="p-contagens" aria-label="Contagens regressivas"></div>
     <div class="kpis" id="p-kpis">
       <div class="kpi destaque"><div class="lbl">Confirmados</div><div class="v"><span id="p-confirmados">--</span> <small>de <span id="p-cadastrados">--</span></small></div><div class="det" id="p-confirmados-lbl">&nbsp;</div><div class="barra"><i id="p-barra-conf" style="width:0"></i></div></div>
@@ -1048,6 +1087,31 @@
 </main>
 </div>
 
+<!-- ===== ASSISTENTE: preparar o convite passo a passo ===== -->
+<div id="assistente" class="assistente" hidden role="dialog" aria-modal="true" aria-labelledby="as-titulo">
+  <div class="as-topo">
+    <div class="as-marca"><span id="as-pos"></span><div class="as-pontos" id="as-pontos" aria-hidden="true"></div></div>
+    <button type="button" class="as-ver" id="as-ver">Ver prévia</button>
+    <button type="button" class="as-fechar" id="as-fechar" title="Salvar e continuar depois">Sair e continuar depois</button>
+  </div>
+  <div class="as-miolo">
+    <div class="as-corpo-wrap">
+      <div class="as-coluna">
+        <h2 id="as-titulo"></h2>
+        <p class="as-ajuda" id="as-ajuda"></p>
+        <div id="as-corpo"></div>
+      </div>
+    </div>
+    <aside class="as-previa" id="as-previa" aria-label="Prévia do convite"></aside>
+  </div>
+  <div class="as-rodape">
+    <button type="button" class="btn" id="as-voltar">← Voltar</button>
+    <span class="esp"></span>
+    <button type="button" class="btn fantasma" id="as-pular">Pular este passo</button>
+    <button type="button" class="btn prim" id="as-proximo">Continuar</button>
+  </div>
+</div>
+
 <!-- ===== JANELAS ===== -->
 <dialog id="modal-evento" aria-labelledby="me-titulo">
   <div class="md-head">
@@ -1084,6 +1148,9 @@
   const gerindoEvento = !!eventoAtual; // anfitrião, ou master com ?e=
   let listaEventos = [];
   let tiposCatalogo = [];
+  let AVANCADO = false; // opções avançadas visíveis? (lembrado neste aparelho)
+  try { AVANCADO = localStorage.getItem('rsvp-avancado') === '1'; } catch (e) { /* segue no modo simples */ }
+  const PUB = { publicado: true, token: '' }; // convite publicado? (e o token que abre o site real enquanto está "em breve")
   function urlSite() { return location.origin + '/e/' + eventoAtual + '/'; }
   function urlSiteDe(slug) { return location.origin + '/e/' + slug + '/'; }
   function urlAnfitriao(slug) { return location.origin + '/e/' + slug + '/admin'; }
@@ -1467,7 +1534,7 @@
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
-    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo' }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
@@ -1508,12 +1575,25 @@
     const sub = document.getElementById('subheader');
     const inn = document.getElementById('subheaderIn');
     inn.innerHTML = '';
-    if (area.abas.length > 1) {
-      area.abas.forEach((a) => {
+    const abasVisiveis = area.abas.filter((a) => AVANCADO || !a.avancada || a.tab === tab);
+    if (abasVisiveis.length > 1) {
+      abasVisiveis.forEach((a) => {
         const b = h('button', { type: 'button', class: a.tab === tab ? 'active' : '', 'aria-current': a.tab === tab ? 'page' : null }, a.rotulo);
         b.addEventListener('click', () => navegar(a.tab));
         inn.appendChild(b);
       });
+      if (area.abas.some((a) => a.avancada)) {
+        const chk = h('input', { type: 'checkbox', id: 'sw-avancado' }); chk.checked = AVANCADO;
+        chk.addEventListener('change', () => {
+          AVANCADO = chk.checked;
+          try { localStorage.setItem('rsvp-avancado', AVANCADO ? '1' : '0'); } catch (e) { /* segue */ }
+          adaptarAoTipo(ctDados || {});
+          if (!AVANCADO && abaAtual === 'formas') { navegar('conteudo'); return; }
+          marcarNavEvento(abaAtual);
+          if (abaAtual === 'conteudo') carregarConteudo();
+        });
+        inn.appendChild(h('label', { class: 'sw-avancado', for: 'sw-avancado', title: 'Mostra etapas extras: aparência de cada módulo, formas e estilo' }, chk, h('span', { text: 'Opções avançadas' })));
+      }
       sub.hidden = false;
     } else sub.hidden = true;
   }
@@ -1549,7 +1629,7 @@
     document.getElementById('navMaster').hidden = true;
     document.getElementById('navEvento').hidden = false;
     const ver = document.getElementById('verSite');
-    ver.hidden = false; ver.href = urlSite();
+    ver.hidden = false; ver.href = urlSiteVer();
     const copiarBtn = document.getElementById('copiarSite');
     copiarBtn.hidden = false;
     copiarBtn.addEventListener('click', () => copiar(urlSite(), 'Link do site'));
@@ -1564,6 +1644,7 @@
       const mods = modulosDoTipo(d);
       if (mods && mods.indexOf('presentes') === -1) { const bp = document.querySelector('#navEvento [data-area=presentes]'); if (bp) bp.hidden = true; }
       agendarCompartilhar(Object.assign({}, d));
+      carregarPublicacao();
       if (d._nome) { document.getElementById('tituloAdmin').textContent = d._nome; document.title = d._nome + ' • Painel'; }
       const tipos = { casamento: 'Casamento', aniversario: 'Aniversário' };
       sub.appendChild(h('span', { class: 'hd-badge', text: tipos[d._tipo] || d._tipo || '' }));
@@ -2083,6 +2164,7 @@
   }
 
   async function carregarPainel() {
+    carregarPreparacao();
     api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); } });
     const d = await api('/api/admin/painel');
     if (d.erro) { document.getElementById('p-tbody').textContent = d.erro; return; }
@@ -3511,16 +3593,16 @@
   GRUPOS_CONTEUDO.forEach((g) => {
     const mod = g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null);
     if (!mod || !g.etapas) return;
-    g.etapas.push({ id: 'aparencia', titulo: 'Aparência' });
+    g.etapas.push({ id: 'aparencia', titulo: 'Aparência', avancada: true });
     const opc = mod === 'presente_teaser' ? { semEspaco: true } : mod === 'countdown' ? { semSombra: true, semImagem: true } : {};
     camposAparencia(mod, opc).forEach((c) => g.campos.push(c));
   });
   // rodapé: só a forma do topo
   GRUPOS_CONTEUDO.forEach((g) => {
     if (g.ancora !== 'rodape') return;
-    g.campos.push({ chave: '__sep_ap_forma_footer__', tipo: 'separador', label: 'Forma do topo do rodapé' });
-    g.campos.push({ chave: 'footer.divisoria_forma', tipo: 'escolha_visual', label: 'Como o rodapé começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
-    g.campos.push({ chave: 'footer.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+    g.campos.push({ chave: '__sep_ap_forma_footer__', tipo: 'separador', label: 'Forma do topo do rodapé', avancada: true });
+    g.campos.push({ chave: 'footer.divisoria_forma', tipo: 'escolha_visual', label: 'Como o rodapé começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true), avancada: true });
+    g.campos.push({ chave: 'footer.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA, avancada: true });
   });
 
 
@@ -3555,7 +3637,14 @@
       });
     GRUPOS_ATIVOS = GRUPOS_CONTEUDO
       .filter((g) => !g.toggle || !modulos || modulos.includes(g.toggle))
-      .map((g) => ({ ...g, campos: ajustar(g.campos) }));
+      .map((g) => ({ ...g, campos: ajustar(g.campos) }))
+      .map((g) => {
+        // modo simples: etapas e campos avançados (Aparência, formas) ficam escondidos até ligar "Opções avançadas"
+        if (AVANCADO) return g;
+        const etapas = g.etapas ? g.etapas.filter((e) => !e.avancada) : g.etapas;
+        const ok = (c) => !c.avancada && (!g.etapas || !c.etapa || c.etapa === 'previa' || etapas.some((e) => e.id === c.etapa));
+        return { ...g, etapas, campos: g.campos.filter(ok) };
+      });
   }
 
   async function carregarConteudo() {
@@ -3602,7 +3691,7 @@
       }
       atualizarEstadoItem(i);
     });
-    renderConteudoGrupo();
+    if (!aplicarAlvoPendente()) renderConteudoGrupo();
   }
   function iconeDoGrupo(g) {
     const porToggle = { countdown: '⏳', presente_teaser: '🎁', timeline: '📖', padrinhos: '🤵', madrinhas_pais: '👨‍👩‍👧', mapa: '📍', galeria: '📷', presentes: '🎁', recados: '💬' };
@@ -4987,7 +5076,7 @@
       avisoDesligado();
       // guarda onde o convidado (o anfitrião) estava rolando: o site novo volta exatamente para lá, sem pular para o início do módulo
       lerRolagem();
-      const f = h('iframe', { src: urlSite() + '?previa=1#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
+      const f = h('iframe', { src: urlSite() + '?previa=1' + qsRascunho('&') + '#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
       aguardando = f;
       tela.appendChild(f);
     };
@@ -5225,7 +5314,7 @@
     }
     if (!opcoes.semCabecalho && grupo.ancora && eventoAtual) {
       const ancoraPublica = window.ANCORAS_MODULOS.de(grupo.ancora);
-      dir.appendChild(h('a', { class: 'btn sm', href: urlSite() + '#' + ancoraPublica, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Ver no site' }));
+      dir.appendChild(h('a', { class: 'btn sm', href: urlSite() + qsRascunho('?') + '#' + ancoraPublica, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Ver no site' }));
       const copiarLink = btn('Copiar link do módulo', () => {
         navigator.clipboard.writeText(urlSite() + '#' + ancoraPublica);
         toast('Link copiado: ' + urlSite() + '#' + ancoraPublica);
@@ -5356,7 +5445,7 @@
     const chk = h('input', { type: 'checkbox', id: 'ap-leg' }); chk.checked = true;
     const legAtiva = h('label', { class: 'switch', for: 'ap-leg', style: 'margin:0 0 10px;' }, chk, h('span', { class: 'trilho' }), modo === 'cores' ? 'Mostrar o papel de cada cor' : 'Mostrar onde cada fonte é usada');
     const titulo = h('div', { style: 'font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;' }, modo === 'cores' ? 'Prévia das cores' : 'Prévia da tipografia',
-      h('a', { href: urlSite(), target: '_blank', rel: 'noopener', style: 'font-size:12.5px;', text: 'Abrir site ↗' }));
+      h('a', { href: urlSiteVer(), target: '_blank', rel: 'noopener', style: 'font-size:12.5px;', text: 'Abrir site ↗' }));
     const mk = h('div', { class: 'mk modo-' + modo });
     const nomes = (ehAniv ? 'Helena' : 'Ana &amp; Beto') + '<span class="rt fnt in">Título</span>';
     mk.innerHTML =
@@ -5571,6 +5660,387 @@
   // =====================================================================
   let recadosDados = [];
   let filtroRecados = 'pendentes';
+  // =====================================================================
+  //  PREPARAR O CONVITE: checklist, assistente passo a passo, temas prontos e publicação
+  //  (só o que diz respeito ao convite e ao Save the Date; convidados ficam de fora)
+  // =====================================================================
+  function qsRascunho(prefixo) { return !PUB.publicado && PUB.token ? prefixo + 'rascunho=' + PUB.token : ''; }
+  function urlSiteVer() { return urlSite() + qsRascunho('?'); }
+
+  // ---- temas prontos: um clique define cores, fontes, forma das divisórias e estilo da contagem ----
+  const TEMAS = [
+    { id: 'classico-dourado', nome: 'Clássico dourado', tipos: ['casamento'], desc: 'Azul-marinho e dourado, elegante e atemporal', cores: ['#0B2545', '#2F5D9A', '#C9A227', '#EAF1FB', '#14213D'], fontes: ['cormorant-garamond', 'inter'], forma: 'onda', contagem: ['caixas', 'suave'] },
+    { id: 'jardim', nome: 'Jardim romântico', tipos: ['casamento'], desc: 'Verde oliva, folhagens e muita delicadeza', cores: ['#3F4B2B', '#6B7A45', '#C9A227', '#F3F2E9', '#26301A'], fontes: ['playfair-display', 'lora'], forma: 'folhagem', contagem: ['circulos', 'suave'] },
+    { id: 'boho', nome: 'Boho terracota', tipos: ['casamento'], desc: 'Tons de terra, manuscrita e clima de campo', cores: ['#8A3B24', '#B5643F', '#D6A759', '#FBF1E7', '#3B1D10'], fontes: ['sacramento', 'josefin-sans'], forma: 'marolas', contagem: ['relogio', 'suave'] },
+    { id: 'festa-colorida', nome: 'Festa colorida', tipos: ['aniversario'], desc: 'Roxo, amarelo e bandeirinhas de festa', cores: ['#AE2CC8', '#8E2AA3', '#DFC911', '#FFE9E7', '#3B0F47'], fontes: ['fredoka', 'quicksand'], forma: 'bandeirinhas', contagem: ['placar', 'suave'] },
+    { id: 'confete-azul', nome: 'Confete azul', tipos: ['aniversario'], desc: 'Azul vibrante com toques de coral e confete', cores: ['#1F3A93', '#3F6FD8', '#FF7A59', '#EEF3FF', '#14214D'], fontes: ['baloo-2', 'poppins'], forma: 'confete', contagem: ['circulos', 'suave'] },
+    { id: 'pastel-doce', nome: 'Pastel doce', tipos: ['aniversario', 'casamento'], desc: 'Rosa suave, bolhas e um ar delicado', cores: ['#8A4B63', '#C08497', '#D6A759', '#FFF1F5', '#3B1F28'], fontes: ['gilda-display', 'quicksand'], forma: 'bolhas', contagem: ['caixas', 'claro'] },
+  ];
+  function chavesDoTema(t) {
+    const k = { 'aparencia.tema': t.id, 'aparencia.cor_primaria': t.cores[0], 'aparencia.cor_secundaria': t.cores[1], 'aparencia.cor_destaque': t.cores[2], 'aparencia.cor_fundo': t.cores[3], 'aparencia.cor_texto': t.cores[4] };
+    if (t.fontes) { k['aparencia.fonte_titulo'] = t.fontes[0]; k['aparencia.fonte_texto'] = t.fontes[1]; }
+    if (t.forma) k['layout.divisoria_forma'] = t.forma;
+    if (t.contagem) { k['countdown.layout'] = t.contagem[0]; k['countdown.fundo'] = t.contagem[1]; }
+    return k;
+  }
+  // cores tiradas da foto da capa: escurece a mais presente para a cor principal e busca um destaque vivo
+  function paletaDaFoto(url) {
+    return new Promise((resolve) => {
+      if (!url) return resolve(null);
+      const img = new Image(); img.crossOrigin = 'anonymous';
+      img.onerror = () => resolve(null);
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas'); c.width = 48; c.height = 48;
+          const x = c.getContext('2d'); x.drawImage(img, 0, 0, 48, 48);
+          const px = x.getImageData(0, 0, 48, 48).data, baldes = new Map();
+          for (let i = 0; i < px.length; i += 4) {
+            if (px[i + 3] < 200) continue;
+            const r = px[i] >> 4, g = px[i + 1] >> 4, b = px[i + 2] >> 4, k = (r << 8) | (g << 4) | b;
+            const o = baldes.get(k) || { n: 0, r: 0, g: 0, b: 0 }; o.n++; o.r += px[i]; o.g += px[i + 1]; o.b += px[i + 2]; baldes.set(k, o);
+          }
+          const lista = Array.from(baldes.values()).map((o) => { const r = o.r / o.n, g = o.g / o.n, b = o.b / o.n; const [hh, ss, ll] = rgbParaHsl(r, g, b); return { n: o.n, h: hh, s: ss, l: ll }; });
+          if (!lista.length) return resolve(null);
+          const util = lista.filter((o) => o.l > 0.1 && o.l < 0.92);
+          const base = (util.length ? util : lista).slice().sort((a, b) => (b.n * (0.4 + b.s)) - (a.n * (0.4 + a.s)))[0];
+          const vivos = lista.filter((o) => o.s > 0.35 && o.l > 0.25 && o.l < 0.75 && distHue(o.h, base.h) > 35).sort((a, b) => (b.s * Math.sqrt(b.n)) - (a.s * Math.sqrt(a.n)));
+          const dest = vivos[0] ? hslParaHex(vivos[0].h, Math.min(0.85, Math.max(0.5, vivos[0].s)), 0.5) : '#C9A227';
+          const s0 = Math.max(0.3, Math.min(0.7, base.s));
+          resolve({ cores: [hslParaHex(base.h, s0, 0.2), hslParaHex(base.h, Math.max(0.3, s0 - 0.1), 0.38), dest, hslParaHex(base.h, 0.45, 0.95), hslParaHex(base.h, 0.35, 0.1)] });
+        } catch (e) { resolve(null); }
+      };
+      img.src = url;
+    });
+  }
+  function distHue(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+  function rgbParaHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let h = 0, s = 0;
+    if (mx !== mn) {
+      const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hslParaHex(h, s, l) {
+    const a = s * Math.min(l, 1 - l), f = (n) => { const k = (n + h / 30) % 12; const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return Math.round(255 * c).toString(16).padStart(2, '0'); };
+    return '#' + f(0) + f(8) + f(4);
+  }
+  function miniTema(cores) {
+    return '<svg viewBox="0 0 100 46" aria-hidden="true"><rect width="100" height="46" rx="7" fill="' + cores[3] + '"/><rect width="100" height="22" rx="7" fill="' + cores[0] + '"/><rect y="14" width="100" height="8" fill="' + cores[0] + '"/><rect x="26" y="8" width="48" height="5" rx="2.5" fill="#fff"/><rect x="14" y="30" width="30" height="8" rx="4" fill="' + cores[2] + '"/><rect x="50" y="30" width="36" height="8" rx="4" fill="' + cores[1] + '"/></svg>';
+  }
+
+  // ---- o que falta no convite (calculado pelo que já foi preenchido) ----
+  function tarefasConvite(d) {
+    const aniv = d._tipo === 'aniversario', mods = modulosDoTipo(d);
+    const ativo = (m) => (!mods || mods.includes(m)) && d['secao.' + m + '.ativa'] !== '0';
+    const vazio = (k) => !String(d[k] === undefined || d[k] === null ? '' : d[k]).trim();
+    const mudou = (k, pad) => !vazio(k) && String(d[k]).trim() !== pad;
+    const json = (k) => { try { const v = JSON.parse(d[k] || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    const algum = (pref) => Object.keys(d).some((k) => k.indexOf(pref) === 0 && !vazio(k));
+    const lista = [
+      { id: 'nomes', essencial: true, min: 1, titulo: aniv ? 'Nome do aniversariante' : 'Nomes do casal', passo: 'nomes', feito: aniv ? mudou('hero.noiva', '') : (mudou('hero.noiva', 'Noiva') && mudou('hero.noivo', 'Noivo')), alvo: { grupo: 'Capa', etapa: 'textos', chave: 'hero.noiva' } },
+      { id: 'data', essencial: true, min: 1, titulo: 'Dia e hora', passo: 'data', feito: !vazio('hero.data_iso'), alvo: { grupo: 'Capa', etapa: 'data', chave: 'hero.data_iso' } },
+      { id: 'local', essencial: true, min: 2, modulo: 'mapa', titulo: 'Local do evento', passo: 'local', feito: !vazio('mapa.maps_url') || !vazio('mapa.lat') || mudou('mapa.local_nome', 'Copacabana Palace'), alvo: { grupo: 'Localização', chave: '__lugar__' } },
+      { id: 'capa', essencial: true, min: 1, titulo: 'Foto ou vídeo da capa', passo: 'capa', feito: !vazio('hero.foto_url') || !vazio('hero.video_url'), alvo: { grupo: 'Capa', etapa: 'midia', chave: '__midia__' } },
+      { id: 'prazo', essencial: true, min: 1, modulo: 'rsvp', titulo: 'Prazo para confirmar presença', passo: 'data', feito: !vazio('hero.prazo_iso'), alvo: { grupo: 'Capa', etapa: 'data', chave: 'hero.prazo_iso' } },
+      { id: 'visual', essencial: true, min: 1, titulo: 'Escolher o visual (cores e letras)', passo: 'tema', feito: !vazio('aparencia.tema') || !vazio('aparencia.cor_primaria'), alvo: { aba: 'cores' } },
+      { id: 'historia', modulo: 'timeline', min: 5, titulo: 'Contar a história de vocês', feito: algum('timeline.node'), alvo: { grupo: 'Linha do tempo' } },
+      { id: 'padrinhos', modulo: 'padrinhos', min: 3, titulo: 'Padrinhos e madrinhas', feito: json('padrinhos.pessoas').length > 0, alvo: { grupo: 'Padrinhos e madrinhas' } },
+      { id: 'pais', modulo: 'madrinhas_pais', min: 3, titulo: 'Pais e daminhas', feito: json('madrinhas_pais.pessoas').length > 0, alvo: { grupo: 'Pais e daminhas' } },
+      { id: 'galeria', modulo: 'galeria', min: 3, titulo: 'Fotos da galeria', feito: [1, 2, 3, 4, 5, 6].some((n) => !vazio('galeria.foto' + n + '_url')), alvo: { grupo: 'Galeria' } },
+      { id: 'presentes', modulo: 'presentes', min: 3, titulo: 'Como presentear (lista, PIX ou dicas)', feito: !vazio('presentes.chave_pix') || json('presentes.itens').length > 0 || json('presentes.infos').length > 0 || (!vazio('presentes.cta_url') && d['presentes.cta_url'] !== '#'), alvo: { grupo: 'Presentes' } },
+      { id: 'whatsapp', min: 1, titulo: 'Imagem do link no WhatsApp', feito: !vazio('compartilhar.imagem_url') || !vazio('compartilhar.imagem_propria'), alvo: { grupo: 'Compartilhamento (WhatsApp)' } },
+    ];
+    return lista.filter((t) => !t.modulo || ativo(t.modulo)).map((t) => Object.assign({}, t, { opcional: !t.essencial, tipoEvento: d._tipo }));
+  }
+
+  // ---- ir direto ao lugar certo e destacar o campo ----
+  let ALVO_PENDENTE = null;
+  function destacarCampo(chave) {
+    const el = document.querySelector('[data-chave="' + (window.CSS && CSS.escape ? CSS.escape(chave) : chave) + '"]');
+    if (!el) return;
+    const alvo = el.type === 'hidden' ? (el.previousElementSibling || el.parentElement) : el;
+    if (!alvo) return;
+    alvo.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    alvo.classList.add('pulsa'); setTimeout(() => alvo.classList.remove('pulsa'), 3000);
+  }
+  function aplicarAlvoPendente() {
+    const a = ALVO_PENDENTE; ALVO_PENDENTE = null;
+    if (!a || !a.grupo) return false;
+    const i = GRUPOS_ATIVOS.findIndex((g) => g.titulo === a.grupo);
+    if (i < 0) return false;
+    ctGrupoAtivo = i;
+    if (a.etapa && GRUPOS_ATIVOS[i].etapas && GRUPOS_ATIVOS[i].etapas.some((e) => e.id === a.etapa)) etapaAtiva[GRUPOS_ATIVOS[i].titulo] = a.etapa;
+    renderConteudoGrupo();
+    if (a.chave) setTimeout(() => destacarCampo(a.chave), 500);
+    return true;
+  }
+  function irParaTarefa(t) {
+    fecharAssistente();
+    const a = t.alvo || {};
+    if (a.aba) { navegar(a.aba); return; }
+    ALVO_PENDENTE = a; navegar('conteudo');
+  }
+
+  // ---- cartão "Preparar seu convite" no Painel e faixa de aviso enquanto não publicou ----
+  let CONT_PREP = null;
+  async function carregarPublicacao() {
+    const r = await api('/api/admin/publicacao');
+    if (r && !r.erro) { PUB.publicado = !!r.publicado; PUB.token = r.token || ''; }
+    const ver = document.getElementById('verSite'); if (ver && !ver.hidden) ver.href = urlSiteVer();
+    desenharFaixaRascunho();
+  }
+  function desenharFaixaRascunho() {
+    const f = document.getElementById('faixaRascunho');
+    if (!f) return;
+    f.hidden = PUB.publicado || !eventoAtual;
+    f.innerHTML = '';
+    if (f.hidden) return;
+    f.append(h('span', { class: 'ic', text: '🚧' }), h('div', { class: 't' }, h('b', { text: 'Seu convite ainda não está publicado. ' }), 'Quem abrir o link vê a página "Em breve".'),
+      btn('Continuar montando', () => abrirAssistente(), 'sm'), btn('Publicar', () => abrirPublicar(), 'sm prim'));
+  }
+  async function carregarPreparacao() {
+    const box = document.getElementById('p-prep');
+    if (!box) return;
+    const [d] = await Promise.all([api('/api/conteudo'), carregarPublicacao()]);
+    if (!d || d.erro) { box.hidden = true; return; }
+    CONT_PREP = d;
+    desenharPreparacao(d);
+    // primeiro acesso a um convite novo: abre o assistente uma vez
+    try {
+      const chave = 'rsvp-assist-visto:' + eventoAtual;
+      const ess = tarefasConvite(d).filter((t) => t.essencial);
+      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => t.feito).length <= 1) { localStorage.setItem(chave, '1'); abrirAssistente(); }
+    } catch (e) { /* sem armazenamento: não abre sozinho */ }
+  }
+  function desenharPreparacao(d) {
+    const box = document.getElementById('p-prep');
+    const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial), opc = tarefas.filter((t) => t.opcional);
+    const feitos = ess.filter((t) => t.feito).length, pend = ess.filter((t) => !t.feito), prox = pend[0] || opc.find((t) => !t.feito);
+    const pronto = !pend.length;
+    box.innerHTML = ''; box.hidden = false;
+    box.className = 'prep-card' + (pronto && PUB.publicado ? ' pronto' : '');
+    const pct = ess.length ? Math.round(feitos / ess.length * 100) : 100;
+    const item = (t) => {
+      const b = h('button', { type: 'button', class: 'prep-item' + (t.feito ? ' ok' : '') },
+        h('span', { class: 'bola', 'aria-hidden': 'true', text: t.feito ? '✓' : '' }), h('span', { class: 'nm', text: t.titulo }),
+        t.feito ? h('span', { class: 'tp', text: 'feito' }) : h('span', { class: 'tp', text: '~' + t.min + ' min' }));
+      b.addEventListener('click', () => (t.passo && !t.feito ? abrirAssistente(t.passo) : irParaTarefa(t)));
+      return b;
+    };
+    const cab = h('div', { class: 'prep-cab' },
+      h('div', {}, h('h3', { text: pronto ? (PUB.publicado ? 'Seu convite está pronto' : 'Tudo certo para publicar') : 'Prepare seu convite' }),
+        h('p', { text: pronto ? (PUB.publicado ? 'Os convidados já veem o site. Que tal caprichar nos extras?' : 'Falta só publicar para os convidados verem.') : feitos + ' de ' + ess.length + ' passos essenciais feitos. Cada passo leva poucos minutos.' })),
+      h('div', { class: 'prep-acoes' },
+        !PUB.publicado ? btn(pronto ? 'Publicar convite' : 'Revisar e publicar', () => abrirPublicar(), pronto ? 'prim' : '') : null,
+        !pronto ? btn(feitos ? 'Continuar' : 'Começar', () => abrirAssistente(pend[0] && pend[0].passo), 'prim') : null));
+    const barra = h('div', { class: 'prep-barra', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }, h('i', { style: 'width:' + pct + '%' }));
+    box.append(cab, barra);
+    const lista = h('div', { class: 'prep-lista' });
+    ess.forEach((t) => lista.appendChild(item(t)));
+    box.appendChild(lista);
+    if (opc.length) {
+      const pend2 = opc.filter((t) => !t.feito).length;
+      const det = h('details', { class: 'prep-opc', open: !pronto ? null : '' }, h('summary', { text: 'Deixe ainda mais seu' + (pend2 ? ' (' + pend2 + ' sugestões)' : '') }), h('div', { class: 'prep-lista' }, ...opc.map(item)));
+      box.appendChild(det);
+    }
+    if (PUB.publicado) box.appendChild(h('div', { class: 'prep-rodape' }, btn('Voltar para "Em breve"', async () => {
+      if (!(await confirmar({ titulo: 'Voltar para "Em breve"?', texto: 'Os convidados passam a ver uma página de "Em breve" no lugar do convite, até você publicar de novo. Nada do que você preencheu se perde.', rotulo: 'Voltar para Em breve' }))) return;
+      const r = await api('/api/admin/publicacao', 'POST', { publicado: false }); if (r.erro) { toast(r.erro, 'err'); return; }
+      PUB.publicado = false; desenharFaixaRascunho(); desenharPreparacao(d); toast('O convite voltou para "Em breve".');
+    }, 'sm fantasma')));
+  }
+
+  // ---- publicar: confere o que falta e escolhe entre convite completo e Save the Date ----
+  async function abrirPublicar() {
+    const d = (await api('/api/conteudo')) || {};
+    if (d.erro) { toast(d.erro, 'err'); return; }
+    CONT_PREP = d;
+    montarPassos(0, []); delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial), pend = ess.filter((t) => !t.feito);
+    const opcPend = tarefas.filter((t) => t.opcional && !t.feito && t.modulo);
+    corpo.appendChild(h('p', { class: 'hint', style: 'margin:0 0 12px;', text: 'Ao publicar, o link do convite passa a mostrar o site para quem receber. Antes disso, os convidados veem uma página de "Em breve".' }));
+    if (pend.length) {
+      corpo.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 12px;' }, h('b', { text: 'Ainda falta: ' }), pend.map((t) => t.titulo.toLowerCase()).join(', ') + '. Dá para publicar assim mesmo e completar depois.'));
+    } else corpo.appendChild(h('div', { class: 'ok-aviso', style: 'margin:0 0 12px;', text: '✓ Todos os passos essenciais estão feitos.' }));
+    let modo = 'convite';
+    const opcModo = (id, tit, sub) => {
+      const r = h('input', { type: 'radio', name: 'pb-modo', id: 'pb-' + id }); r.checked = modo === id; r.addEventListener('change', () => { modo = id; });
+      return h('label', { class: 'pb-modo', for: 'pb-' + id }, r, h('span', {}, h('b', { text: tit }), h('small', { text: sub })));
+    };
+    corpo.append(opcModo('convite', 'Convite completo', 'Todos os módulos ligados e a confirmação de presença aberta.'), opcModo('std', 'Só o Save the Date', 'O site mostra só a capa com a data. Você liga o convite completo quando quiser.'));
+    let esconder = null;
+    if (opcPend.length) {
+      esconder = h('input', { type: 'checkbox', id: 'pb-esconder' }); esconder.checked = true;
+      corpo.append(h('label', { class: 'check', for: 'pb-esconder', style: 'margin-top:14px;' }, esconder, 'Esconder o que ainda não preenchi (' + opcPend.map((t) => t.titulo.toLowerCase()).join(', ') + '). Dá para ligar depois.'));
+    }
+    const erro = h('div', { class: 'erro-campo', hidden: true }); corpo.appendChild(erro);
+    const publicar = async () => {
+      const extras = {};
+      if (esconder && esconder.checked) opcPend.forEach((t) => { extras['secao.' + t.modulo + '.ativa'] = '0'; });
+      extras['config.modo_save_the_date'] = modo === 'std' ? '1' : '0';
+      const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
+      Object.assign(ctDados, extras);
+      const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; }
+      PUB.publicado = true; desenharFaixaRascunho();
+      mostrarPublicado();
+      if (typeof atualizarSTD === 'function') atualizarSTD();
+      carregarPreparacao();
+    };
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Publicar agora', prim: true, fn: publicar }]);
+    abrirDialogo({ titulo: 'Publicar o convite', largura: '540px' });
+  }
+  function mostrarPublicado() {
+    const corpo = corpoDialogo(); const link = urlSite();
+    corpo.append(h('div', { style: 'text-align:center;padding:6px 0;' }, h('div', { style: 'font-size:40px;', text: '🎉' }), h('h3', { style: 'margin:6px 0 4px;', text: 'Convite publicado!' }),
+      h('p', { class: 'hint', text: 'Agora quem abrir o link vê o convite de verdade. Quando for compartilhar com os convidados, use o link de cada grupo (na área Convidados).' }),
+      h('div', { class: 'copiavel', style: 'margin-top:12px;' }, h('div', { class: 't' }, h('code', { text: link })))));
+    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }, { rotulo: 'Copiar link do site', fn: () => copiar(link, 'Link do site') }, { rotulo: 'Ver o convite', prim: true, fn: () => window.open(urlSiteVer(), '_blank', 'noopener') }]);
+    document.getElementById('me-titulo').textContent = 'Publicado';
+  }
+
+  // ---- assistente passo a passo (uma pergunta por tela, com a prévia do site ao lado) ----
+  const ASSIST = { ativo: false, passo: 0, passos: [], previa: null };
+  function passosDoAssistente(d) {
+    const aniv = d._tipo === 'aniversario', mods = modulosDoTipo(d);
+    const ativo = (m) => (!mods || mods.includes(m)) && d['secao.' + m + '.ativa'] !== '0';
+    const p = [{ id: 'nomes', ancora: 'hero' }, { id: 'data', ancora: 'hero' }];
+    if (ativo('mapa')) p.push({ id: 'local', ancora: 'map' });
+    p.push({ id: 'capa', ancora: 'hero' }, { id: 'tema', ancora: 'hero' }, { id: 'fim', ancora: 'hero' });
+    return p.map((x) => Object.assign({ aniv }, x));
+  }
+  function fecharAssistente() { const a = document.getElementById('assistente'); if (a) a.hidden = true; ASSIST.ativo = false; document.body.classList.remove('assistente-aberto'); }
+  async function abrirAssistente(passoId) {
+    const d = (await api('/api/conteudo')) || {};
+    if (d.erro) { toast(d.erro, 'err'); return; }
+    ctDados = Object.assign(ctDados || {}, d); CONT_PREP = d;
+    ASSIST.passos = passosDoAssistente(d); ASSIST.ativo = true;
+    const i = ASSIST.passos.findIndex((x) => x.id === passoId);
+    ASSIST.passo = i >= 0 ? i : Math.max(0, ASSIST.passos.findIndex((x) => { const t = tarefasConvite(d).find((q) => q.passo === x.id && q.essencial); return t && !t.feito; }));
+    document.getElementById('assistente').hidden = false; document.body.classList.add('assistente-aberto');
+    desenharPasso();
+  }
+  const TEXTOS_PASSO = {
+    nomes: (aniv) => aniv ? ['Quem faz aniversário?', 'O nome aparece na capa, no título do site e na imagem que acompanha o link.'] : ['Quem vai se casar?', 'Os nomes aparecem na capa, no título do site e na imagem que acompanha o link.'],
+    data: () => ['Quando vai ser?', 'A data alimenta a contagem regressiva, o "salvar na agenda" e o texto da capa. O prazo de confirmação é sugerido por nós.'],
+    local: () => ['Onde vai ser?', 'Cole o link do local no Google Maps: o nome, o endereço e o mapa se preenchem sozinhos.'],
+    capa: () => ['Uma foto para a capa', 'É a primeira coisa que o convidado vê. Pode ser uma foto de vocês ou de um vídeo curto.'],
+    tema: () => ['Escolha o visual', 'Um clique define cores, letras e o estilo do site. Você pode mudar tudo depois.'],
+    fim: () => ['Quase lá!', 'Confira como o convite está ficando. Dá para publicar agora ou continuar depois.'],
+  };
+  function textoCampo(chave, rotulo, valor, placeholder, dica) {
+    const i = h('input', { type: 'text', 'data-chave': chave, placeholder: placeholder || null, autocomplete: 'off' }); i.value = valor || '';
+    const w = h('div', { style: 'margin-top:14px;' }, h('label', { text: rotulo }), i); if (dica) w.appendChild(h('div', { class: 'dica-campo', text: dica })); return w;
+  }
+  async function desenharPasso() {
+    const raiz = document.getElementById('assistente');
+    const d = Object.assign({}, ctDados), aniv = d._tipo === 'aniversario';
+    const passo = ASSIST.passos[ASSIST.passo], n = ASSIST.passos.length;
+    const [tit, ajuda] = TEXTOS_PASSO[passo.id](aniv);
+    const corpo = document.getElementById('as-corpo'); corpo.innerHTML = '';
+    document.getElementById('as-titulo').textContent = tit; document.getElementById('as-ajuda').textContent = ajuda;
+    document.getElementById('as-pos').textContent = 'Passo ' + (ASSIST.passo + 1) + ' de ' + n;
+    const pontos = document.getElementById('as-pontos'); pontos.innerHTML = '';
+    ASSIST.passos.forEach((x, k) => pontos.appendChild(h('i', { class: k < ASSIST.passo ? 'ok' : k === ASSIST.passo ? 'atual' : '' })));
+    const fs = h('fieldset', { class: 'as-fs' }); corpo.appendChild(fs);
+    const mudarPadrao = (k, pad) => (String(d[k] === undefined ? '' : d[k]).trim() === pad ? '' : String(d[k] === undefined ? '' : d[k]));
+    if (passo.id === 'nomes') {
+      if (aniv) { fs.append(textoCampo('hero.noiva', 'Nome do aniversariante', mudarPadrao('hero.noiva', ''), 'Ex.: Helena'), textoCampo('hero.idade', 'Idade ou destaque (opcional)', d['hero.idade'] || '', 'Ex.: 5 anos')); }
+      else fs.append(textoCampo('hero.noiva', 'Nome da noiva', mudarPadrao('hero.noiva', 'Noiva'), 'Ex.: Ana'), textoCampo('hero.noivo', 'Nome do noivo', mudarPadrao('hero.noivo', 'Noivo'), 'Ex.: Beto'));
+    } else if (passo.id === 'data') {
+      fs.append(h('div', { style: 'margin-top:14px;' }));
+      renderCampoConteudo(fs, { chave: 'hero.data_iso', tipo: 'data_hora', label: 'Dia e hora do evento' });
+      ['hero.data_display', 'hero.horario_display', 'hero.prazo_display', 'hero.prazo_horario_display'].forEach((k) => { const i = h('input', { type: 'hidden', 'data-chave': k }); i.value = d[k] === undefined ? '' : d[k]; fs.appendChild(i); });
+      const rsvpAtivo = !modulosDoTipo(d) || modulosDoTipo(d).includes('rsvp');
+      const lig = (k, v) => { const e = fs.querySelector('[data-chave="' + k + '"]'); if (e) { e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); } };
+      const cx = h('div', { class: 'as-prazo' }); 
+      if (rsvpAtivo) { fs.appendChild(h('div', { style: 'margin-top:18px;' }, h('label', { text: 'Até quando os convidados podem confirmar?' }), h('div', { class: 'dica-campo', text: 'Depois do prazo a confirmação fecha sozinha. Em branco, as respostas ficam sempre abertas.' }), cx)); }
+      const aoMudarData = () => {
+        const dataIso = (fs.querySelector('[data-chave="hero.data_iso"]') || {}).value || ''; const dh = isoParaDataHora(dataIso);
+        lig('hero.data_display', textoSugerido('extenso', dh.data, dh.hora)); lig('hero.horario_display', textoSugerido('hora', dh.data, dh.hora));
+        if (!rsvpAtivo) return; cx.innerHTML = '';
+        if (!dh.data) { cx.appendChild(h('p', { class: 'hint', text: 'Escolha a data do evento para sugerirmos o prazo.' })); return; }
+        const prazoAtual = isoParaDataHora((fs.querySelector('[data-chave="hero.prazo_iso"]') || {}).value || '').data;
+        const base = new Date(dh.data + 'T12:00:00');
+        const sugestoes = [['15 dias antes', 15], ['30 dias antes', 30], ['Na véspera', 1]];
+        sugestoes.forEach(([rot, dias]) => { const dt = new Date(base); dt.setDate(dt.getDate() - dias); const iso = dt.toISOString().slice(0, 10);
+          const b = h('button', { type: 'button', class: 'sugestao' + (prazoAtual === iso ? ' on' : ''), text: rot + ' (' + textoSugerido('curto', iso) + ')' });
+          b.addEventListener('click', () => { lig('hero.prazo_iso', iso + 'T23:59:00-03:00'); lig('hero.prazo_display', textoSugerido('curto', iso)); lig('hero.prazo_horario_display', ''); aoMudarData(); }); cx.appendChild(b); });
+        const sem = h('button', { type: 'button', class: 'sugestao' + (!prazoAtual ? ' on' : ''), text: 'Sem prazo' }); sem.addEventListener('click', () => { lig('hero.prazo_iso', ''); lig('hero.prazo_display', ''); aoMudarData(); }); cx.appendChild(sem);
+      };
+      // prazo guardado entra no formulário como campo escondido
+      const pz = h('input', { type: 'hidden', 'data-chave': 'hero.prazo_iso' }); pz.value = d['hero.prazo_iso'] || ''; fs.appendChild(pz);
+      fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.data_iso') aoMudarData(); });
+      setTimeout(aoMudarData, 0);
+    } else if (passo.id === 'local') {
+      renderCampoConteudo(fs, { chave: '__lugar__', tipo: 'lugar' });
+    } else if (passo.id === 'capa') {
+      renderCampoConteudo(fs, { chave: '__midia__', tipo: 'midia_capa' });
+      const sug = h('div', { class: 'as-sug', hidden: true }); corpo.appendChild(sug);
+      const checarFoto = async () => {
+        const e = fs.querySelector('[data-chave="hero.foto_url"]'); const url = e ? e.value : (d['hero.foto_url'] || '');
+        const pal = await paletaDaFoto(url); sug.innerHTML = '';
+        if (!pal) { sug.hidden = true; return; }
+        sug.hidden = false;
+        sug.append(h('div', { class: 'rot', text: 'Cores da sua foto' }), h('div', { class: 'as-sug-mini', html: miniTema(pal.cores) }), h('div', { class: 'as-sug-txt' }, h('b', { text: 'Quer usar as cores desta foto no site?' }), h('small', { text: 'Você ainda poderá escolher um tema pronto no próximo passo.' }),
+          btn('Usar estas cores', async () => { await salvarChaves({ 'aparencia.cor_primaria': pal.cores[0], 'aparencia.cor_secundaria': pal.cores[1], 'aparencia.cor_destaque': pal.cores[2], 'aparencia.cor_fundo': pal.cores[3], 'aparencia.cor_texto': pal.cores[4], 'aparencia.tema': 'foto' }); toast('Cores da foto aplicadas'); }, 'sm prim')));
+      };
+      fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && /hero\.(foto_url|midia_tipo)/.test(ev.target.dataset.chave || '')) { clearTimeout(ASSIST.tf); ASSIST.tf = setTimeout(checarFoto, 600); } });
+      setTimeout(checarFoto, 200);
+    } else if (passo.id === 'tema') {
+      const grade = h('div', { class: 'as-temas', role: 'radiogroup', 'aria-label': 'Temas prontos' }); fs.appendChild(grade);
+      const lista = TEMAS.filter((t) => t.tipos.includes(d._tipo || 'casamento'));
+      const pintar = () => grade.querySelectorAll('button').forEach((b) => { const on = b.dataset.id === (ctDados['aparencia.tema'] || ''); b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); });
+      const cartao = (id, nome, desc, cores, aoClicar) => { const b = h('button', { type: 'button', role: 'radio', class: 'as-tema', 'data-id': id }, h('div', { class: 'mini', html: miniTema(cores) }), h('b', { text: nome }), h('small', { text: desc })); b.addEventListener('click', async () => { await aoClicar(); pintar(); }); grade.appendChild(b); return b; };
+      const foto = d['hero.foto_url'] || ''; 
+      if (foto) paletaDaFoto(foto).then((pal) => { if (pal) { const b = cartao('foto', 'Cores da sua foto', 'Tiradas da imagem da capa', pal.cores, async () => { await salvarChaves(Object.assign(chavesDoTema({ id: 'foto', cores: pal.cores, fontes: ['cormorant-garamond', 'inter'], forma: 'onda', contagem: ['caixas', 'suave'] }))); toast('Visual aplicado'); }); grade.insertBefore(b, grade.firstChild); pintar(); } });
+      lista.forEach((t) => cartao(t.id, t.nome, t.desc, t.cores, async () => { await salvarChaves(chavesDoTema(t)); toast('Tema "' + t.nome + '" aplicado'); }));
+      pintar();
+    } else if (passo.id === 'fim') {
+      const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial);
+      const ul = h('div', { class: 'prep-lista' });
+      ess.forEach((t) => { const b = h('button', { type: 'button', class: 'prep-item' + (t.feito ? ' ok' : '') }, h('span', { class: 'bola', text: t.feito ? '✓' : '' }), h('span', { class: 'nm', text: t.titulo }), h('span', { class: 'tp', text: t.feito ? 'feito' : 'fazer agora' })); b.addEventListener('click', () => { const i = ASSIST.passos.findIndex((x) => x.id === t.passo); if (i >= 0) { ASSIST.passo = i; desenharPasso(); } }); ul.appendChild(b); });
+      fs.appendChild(ul);
+      fs.appendChild(h('p', { class: 'hint', style: 'margin-top:14px;', text: 'Depois de publicar, a área Convidados ajuda a enviar os links. Os extras (história, padrinhos, galeria, presentes…) ficam no checklist do Painel.' }));
+    }
+    // prévia ao vivo
+    const lado = document.getElementById('as-previa'); lado.innerHTML = '';
+    ASSIST.previa = criarPreviaModulo({ titulo: 'Assistente ' + passo.id, ancora: passo.ancora }, corpo);
+    lado.appendChild(ASSIST.previa.el);
+    // botões
+    const ult = ASSIST.passo === n - 1;
+    const voltar = document.getElementById('as-voltar'), pular = document.getElementById('as-pular'), prox = document.getElementById('as-proximo');
+    voltar.hidden = ASSIST.passo === 0; pular.hidden = ult || passo.id === 'nomes';
+    prox.textContent = ult ? 'Publicar o convite' : 'Continuar';
+    voltar.onclick = () => irPasso(-1, false); pular.onclick = () => irPasso(1, false);
+    prox.onclick = async () => { if (ult) { await salvarPasso(); fecharAssistente(); abrirPublicar(); } else irPasso(1, true); };
+    raiz.querySelector('.as-corpo-wrap').scrollTop = 0;
+  }
+  async function salvarChaves(obj) {
+    const r = await api('/api/admin/conteudo', 'POST', obj);
+    if (r.erro) { toast(r.erro, 'err'); return false; }
+    Object.assign(ctDados, obj);
+    const c = document.getElementById('as-corpo'); if (c) c.dispatchEvent(new Event('input', { bubbles: true }));
+    return true;
+  }
+  async function salvarPasso() {
+    const c = document.getElementById('as-corpo'); const payload = {};
+    c.querySelectorAll('[data-chave]').forEach((e) => { payload[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
+    ['hero.noiva', 'hero.noivo'].forEach((k) => { if (payload[k] === '') delete payload[k]; }); // em branco, fica o que já existia
+    if (!Object.keys(payload).length) return true;
+    return salvarChaves(payload);
+  }
+  async function irPasso(delta, salvar) {
+    if (salvar && !(await salvarPasso())) return;
+    const novo = ASSIST.passo + delta;
+    if (novo < 0 || novo >= ASSIST.passos.length) return;
+    ASSIST.passo = novo; desenharPasso();
+  }
+  document.getElementById('as-fechar').addEventListener('click', async () => { await salvarPasso(); fecharAssistente(); if (abaAtual === 'painel') carregarPreparacao(); else toast('Tudo o que você preencheu foi salvo. Continue quando quiser pelo Painel.'); });
+  document.getElementById('as-ver').addEventListener('click', () => document.getElementById('assistente').classList.toggle('previa-aberta'));
+
   // =====================================================================
   //  LEMBRANÇAS — controle PRIVADO do anfitrião (nada disto vai para o site nem para os convidados)
   // =====================================================================

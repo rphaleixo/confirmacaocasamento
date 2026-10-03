@@ -1,4 +1,5 @@
 import { dadosDeCompartilhamento, tagsDeCompartilhamento } from '../_compartilhar.js';
+import { paginaEmBreve } from '../_embreve.js';
 
 // Cada evento vive em /e/<slug> (site), /e/<slug>/presentes (lista de presentes) e /e/<slug>/admin (painel do anfitrião).
 // O HTML é o mesmo pra todos — a página lê o slug da URL e usa só os dados daquele evento.
@@ -7,8 +8,17 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const url = new URL(request.url);
   const partes = url.pathname.split('/').filter(Boolean); // ['e', slug, 'admin'?]
   const slug = (partes[1] || '').toLowerCase();
-  const evento = slug ? await env.DB.prepare('SELECT id, slug, nome, tipo FROM eventos WHERE slug = ?').bind(slug).first() : null;
+  const evento = slug ? await env.DB.prepare('SELECT id, slug, nome, tipo, publicado, token_rascunho FROM eventos WHERE slug = ?').bind(slug).first() : null;
   if (!evento) return new Response('Evento não encontrado.', { status: 404 });
+
+  // Convite ainda em preparação: o convidado vê "Em breve". O anfitrião vê o site real pelo link com o token do rascunho
+  // (o painel monta esse link sozinho). O painel de administração não é afetado.
+  if (partes[2] !== 'admin' && evento.publicado === 0) {
+    const token = url.searchParams.get('rascunho') || '';
+    if (!evento.token_rascunho || token !== evento.token_rascunho) {
+      return new Response(await paginaEmBreve(env.DB, evento), { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
+    }
+  }
 
   if (partes[2] !== 'admin' && partes[2] !== 'presentes' && url.searchParams.get('previa') !== '1') { // a prévia do painel não conta como visita
     waitUntil(

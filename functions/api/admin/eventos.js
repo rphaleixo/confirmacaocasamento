@@ -57,8 +57,8 @@ export async function onRequestPost({ request, env, data }) {
   const hash = usuario ? await hashSenha(senha, salt) : null;
 
   const res = await db
-    .prepare('INSERT INTO eventos (slug, nome, tipo, criado_em, admin_usuario, admin_senha_salt, admin_senha_hash) VALUES (?, ?, ?, ?, ?, ?, ?)')
-    .bind(slug, nome, tipo, new Date().toISOString(), usuario || null, salt, hash)
+    .prepare('INSERT INTO eventos (slug, nome, tipo, criado_em, admin_usuario, admin_senha_salt, admin_senha_hash, publicado, token_rascunho) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)')
+    .bind(slug, nome, tipo, new Date().toISOString(), usuario || null, salt, hash, novoSalt())
     .run();
   const id = res.meta.last_row_id;
 

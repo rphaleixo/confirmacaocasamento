@@ -10,7 +10,10 @@ CREATE TABLE eventos (
   -- login próprio do painel do evento (senha guardada só como hash)
   admin_usuario TEXT,
   admin_senha_salt TEXT,
-  admin_senha_hash TEXT
+  admin_senha_hash TEXT,
+  -- 0 = convite em preparação: os convidados veem a página "Em breve" (o anfitrião vê o site real com o token do rascunho)
+  publicado INTEGER NOT NULL DEFAULT 1,
+  token_rascunho TEXT
 );
 
 CREATE TABLE grupos (
