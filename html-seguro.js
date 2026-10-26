@@ -10,6 +10,13 @@
     v = String(v || '').trim();
     return (/^#[0-9a-f]{3,8}$/i.test(v) || /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/i.test(v)) ? v : '';
   }
+  // tamanho relativo (em) entre 0,5 e 4; qualquer outro valor é ignorado
+  function tamanhoSeguro(v) {
+    var m = /^(\d*\.?\d+)em$/.exec(String(v || '').trim());
+    if (!m) return '';
+    var n = parseFloat(m[1]);
+    return n >= 0.5 && n <= 4 ? (Math.round(n * 100) / 100) + 'em' : '';
+  }
   function copiar(origem, destino) {
     for (var no = origem.firstChild; no; no = no.nextSibling) {
       if (no.nodeType === 3) { destino.appendChild(document.createTextNode(no.nodeValue)); continue; }
@@ -25,9 +32,9 @@
       }
       if (!PERMITIDAS[tag]) { copiar(no, destino); continue; } // tag desconhecida: fica só o texto de dentro
       if (tag === 'span') {
-        var cs = corSegura(no.style && no.style.color);
-        if (!cs) { copiar(no, destino); continue; }
-        var sp = document.createElement('span'); sp.style.color = cs; copiar(no, sp); destino.appendChild(sp); continue;
+        var cs = corSegura(no.style && no.style.color), ts = tamanhoSeguro(no.style && no.style.fontSize);
+        if (!cs && !ts) { copiar(no, destino); continue; }
+        var sp = document.createElement('span'); if (cs) sp.style.color = cs; if (ts) sp.style.fontSize = ts; copiar(no, sp); destino.appendChild(sp); continue;
       }
       var el = document.createElement(tag === 'strong' ? 'b' : tag === 'em' ? 'i' : tag === 'strike' ? 's' : tag);
       if (tag === 'a') {

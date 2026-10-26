@@ -144,8 +144,12 @@ export function limparHtml(valor) {
         if (/^\s*(https?:|mailto:|tel:|\/|#)/i.test(href)) out += ' href="' + href.replace(/"/g, '&quot;') + '"';
       } else if (tag === 'span') {
         const st = /style\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs);
-        const cor = st ? /color\s*:\s*(#[0-9a-f]{3,8}|rgba?\([\d\s,.]*\))/i.exec(st[1] !== undefined ? st[1] : st[2]) : null;
-        if (cor) out += ' style="color: ' + cor[1] + '"';
+        const css = st ? (st[1] !== undefined ? st[1] : st[2]) : '';
+        const cor = /(?:^|;)\s*color\s*:\s*(#[0-9a-f]{3,8}|rgba?\([\d\s,.]*\))/i.exec(css);
+        const tam = /font-size\s*:\s*(\d*\.?\d+)em/i.exec(css);
+        const em = tam ? parseFloat(tam[1]) : 0;
+        const estilo = (cor ? 'color: ' + cor[1] + ';' : '') + (em >= 0.5 && em <= 4 ? ' font-size: ' + Math.round(em * 100) / 100 + 'em;' : '');
+        if (estilo) out += ' style="' + estilo.trim() + '"';
       } else if (tag === 'font') {
         const c = /color\s*=\s*"?(#[0-9a-f]{3,8})/i.exec(attrs);
         if (c) out += ' color="' + c[1] + '"';

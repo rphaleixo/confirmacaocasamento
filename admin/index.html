@@ -5050,6 +5050,21 @@
     const devolverSel = () => { area.focus(); if (sel) { const s_ = window.getSelection(); s_.removeAllRanges(); s_.addRange(sel); } };
     ['keyup', 'mouseup', 'blur'].forEach((ev) => area.addEventListener(ev, guardarSel));
     const comando = (c, v) => { devolverSel(); try { document.execCommand('styleWithCSS', false, c === 'foreColor'); } catch (e) { /* segue */ } document.execCommand(c, false, v); daArea(); guardarSel(); };
+    // aumentar/diminuir o trecho selecionado: tamanho relativo ao texto em volta (em), de 0,5x a 4x
+    const mudarTamanho = (fator) => {
+      devolverSel();
+      const s_ = window.getSelection();
+      if (!s_ || !s_.rangeCount || s_.isCollapsed) { toast('Selecione o trecho que quer aumentar ou diminuir.'); return; }
+      const r = s_.getRangeAt(0);
+      let no = r.commonAncestorContainer; if (no.nodeType === 3) no = no.parentNode;
+      const alvo = no.closest ? no.closest('span[style*="font-size"]') : null;
+      const dentro = alvo && area.contains(alvo) && alvo !== area;
+      const atual = dentro ? (parseFloat(alvo.style.fontSize) || 1) : 1;
+      const novo = Math.min(4, Math.max(0.5, Math.round(atual * fator * 100) / 100));
+      if (dentro && alvo.textContent === r.toString()) alvo.style.fontSize = novo + 'em';
+      else { const sp = document.createElement('span'); sp.style.fontSize = novo + 'em'; sp.appendChild(r.extractContents()); r.insertNode(sp); s_.removeAllRanges(); const nr = document.createRange(); nr.selectNodeContents(sp); s_.addRange(nr); }
+      daArea(); guardarSel();
+    };
     const botao = (rot, titulo, fn, cls) => { const b = h('button', { type: 'button', class: 'rico-btn ' + (cls || ''), title: titulo, 'aria-label': titulo, html: rot }); b.addEventListener('mousedown', (e) => e.preventDefault()); b.addEventListener('click', fn); return b; };
     const cor = h('input', { type: 'color', class: 'rico-cor', title: 'Cor do trecho selecionado', 'aria-label': 'Cor do trecho selecionado', value: '#C9A227' });
     cor.addEventListener('mousedown', guardarSel);
@@ -5075,7 +5090,8 @@
     fonte.addEventListener('blur', () => { fonte.value = hidden.value; });
     const barra = h('div', { class: 'rico-barra', role: 'toolbar', 'aria-label': 'Formatação de ' + campo.label },
       botao('<b>N</b>', 'Negrito (Ctrl+B)', () => comando('bold')), botao('<i>I</i>', 'Itálico (Ctrl+I)', () => comando('italic')),
-      botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')), cor, dial,
+      botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')),
+      botao('<small>A</small>−', 'Diminuir a letra do trecho selecionado', () => mudarTamanho(1 / 1.15)), botao('A+', 'Aumentar a letra do trecho selecionado', () => mudarTamanho(1.15)), cor, dial,
       botao('🔗', 'Colocar link no trecho selecionado', () => { guardarSel(); const url = window.prompt('Endereço do link (comece com https://):', 'https://'); if (url && /^(https?:|mailto:|tel:)/i.test(url.trim())) comando('createLink', url.trim()); }),
       botao('🔗✕', 'Tirar o link', () => comando('unlink')),
       botao('⌫', 'Limpar a formatação do trecho', () => { comando('removeFormat'); comando('unlink'); }), bHtml);
