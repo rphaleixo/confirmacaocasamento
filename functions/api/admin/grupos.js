@@ -36,3 +36,20 @@ export async function onRequestPost({ request, env }) {
 
   return jsonResponse({ codigo });
 }
+
+// body: { codigo } — exclui o grupo inteiro: todos os convidados dele e o que foi anotado sobre eles nas lembranças
+export async function onRequestDelete({ request, env }) {
+  const evento = await resolverEvento(env.DB, request);
+  if (!evento) return eventoNaoEncontrado();
+  const payload = await request.json().catch(() => ({}));
+  const codigo = String(payload.codigo || '').trim().toUpperCase();
+  const db = env.DB;
+  const g = codigo ? await db.prepare('SELECT codigo FROM grupos WHERE codigo = ? AND evento_id = ?').bind(codigo, evento.id).first() : null;
+  if (!g) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
+  await db.batch([
+    db.prepare('DELETE FROM lembranca_itens WHERE evento_id = ? AND convidado_id IN (SELECT id FROM convidados WHERE codigo_grupo = ?)').bind(evento.id, codigo),
+    db.prepare('DELETE FROM convidados WHERE codigo_grupo = ?').bind(codigo),
+    db.prepare('DELETE FROM grupos WHERE codigo = ? AND evento_id = ?').bind(codigo, evento.id),
+  ]);
+  return jsonResponse({ ok: true });
+}

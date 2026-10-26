@@ -73,3 +73,23 @@ export async function onRequestPatch({ request, env }) {
     .run();
   return jsonResponse({ ok: true });
 }
+
+// body: { id } — remove um convidado (e o que foi anotado sobre ele nas lembranças). Se o grupo ficar vazio, o grupo também sai.
+export async function onRequestDelete({ request, env }) {
+  const evento = await resolverEvento(env.DB, request);
+  if (!evento) return eventoNaoEncontrado();
+  const payload = await request.json().catch(() => ({}));
+  const id = Number(payload.id);
+  if (!id) return jsonResponse({ erro: 'Convidado não informado.' }, 400);
+  const db = env.DB;
+  const c = await db.prepare('SELECT c.id, c.codigo_grupo FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE c.id = ? AND g.evento_id = ?').bind(id, evento.id).first();
+  if (!c) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
+  await db.batch([
+    db.prepare('DELETE FROM lembranca_itens WHERE convidado_id = ? AND evento_id = ?').bind(id, evento.id),
+    db.prepare('DELETE FROM convidados WHERE id = ?').bind(id),
+  ]);
+  const { n } = await db.prepare('SELECT COUNT(*) AS n FROM convidados WHERE codigo_grupo = ?').bind(c.codigo_grupo).first();
+  if (n === 0) await db.prepare('DELETE FROM grupos WHERE codigo = ? AND evento_id = ?').bind(c.codigo_grupo, evento.id).run();
+  else await recalcularStatusGrupo(db, c.codigo_grupo);
+  return jsonResponse({ ok: true, grupoRemovido: n === 0 });
+}

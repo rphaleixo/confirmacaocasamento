@@ -2649,6 +2649,13 @@
     acoes.appendChild(btn('Mensagem', () => copiar(mensagemPara(g, nomeMsg), 'Mensagem'), 'sm', 'copiar'));
     acoes.appendChild(btn('Link', () => copiar(link, 'Link do convite'), 'sm', 'link'));
     acoes.appendChild(btn('Pessoa', () => abrirAdicionar(g.codigo), 'sm', 'mais'));
+    acoes.appendChild(btn('Excluir grupo', async () => {
+      const ok = await confirmar({ titulo: 'Excluir o grupo "' + g.nome + '"?', texto: 'As ' + g.membros.length + ' pessoas do grupo saem da lista, com as respostas e o que foi anotado sobre elas nas lembranças. O link do grupo deixa de funcionar. Não dá para desfazer.', rotulo: 'Excluir grupo', perigo: true });
+      if (!ok) return;
+      const r = await api('/api/admin/grupos', 'DELETE', { codigo: g.codigo });
+      if (r.erro) { toast(r.erro, 'err'); return; }
+      toast('Grupo "' + g.nome + '" excluído'); carregarPainel();
+    }, 'sm fantasma'));
 
     const meta = [];
     if (g.responsavel) meta.push(h('span', { text: g.responsavel.indexOf('manualmente') !== -1 ? 'Confirmado manualmente no painel' : 'Respondido por: ' + g.responsavel + (g.contatoResponsavel ? ' · ' + g.contatoResponsavel : '') }));
@@ -2928,7 +2935,15 @@
       if (d.erro) { erro.textContent = d.erro; erro.hidden = false; return; }
       fecharDialogo(); toast('Dados de ' + nome.value.trim() + ' salvos'); carregarPainel();
     };
-    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
+    const remover = async () => {
+      const so = (gruposPainel.find((g) => g.codigo === c.codigoGrupo) || { membros: [] }).membros.length === 1;
+      const ok = await confirmar({ titulo: 'Remover ' + c.nome + '?', texto: 'A pessoa sai da lista, com a resposta e o que foi anotado sobre ela nas lembranças.' + (so ? ' Como é a única do grupo, o grupo também será excluído e o link dele deixa de funcionar.' : '') + ' Não dá para desfazer.', rotulo: 'Remover convidado', perigo: true });
+      if (!ok) return;
+      const r = await api('/api/admin/convidados', 'DELETE', { id: c.id });
+      if (r.erro) { toast(r.erro, 'err'); return; }
+      fecharDialogo(); toast(c.nome + ' foi removido(a) da lista'); carregarPainel();
+    };
+    montarRodape([{ rotulo: 'Remover convidado', perigo: true, esquerda: true, fn: remover }, { rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
     abrirDialogo({ titulo: 'Editar ' + c.nome, largura: '540px' });
     setTimeout(() => nome.focus(), 30);
   }
