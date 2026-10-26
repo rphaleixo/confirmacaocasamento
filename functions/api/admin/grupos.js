@@ -1,3 +1,4 @@
+import { removerGrupo } from '../../_removidos.js';
 import { jsonResponse, gerarCodigoUnico, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
 export async function onRequestGet({ request, env }) {
@@ -37,19 +38,12 @@ export async function onRequestPost({ request, env }) {
   return jsonResponse({ codigo });
 }
 
-// body: { codigo } — exclui o grupo inteiro: todos os convidados dele e o que foi anotado sobre eles nas lembranças
+// body: { codigo } — tira o grupo inteiro da lista (fica 30 dias em "Removidos recentemente")
 export async function onRequestDelete({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
   if (!evento) return eventoNaoEncontrado();
   const payload = await request.json().catch(() => ({}));
   const codigo = String(payload.codigo || '').trim().toUpperCase();
-  const db = env.DB;
-  const g = codigo ? await db.prepare('SELECT codigo FROM grupos WHERE codigo = ? AND evento_id = ?').bind(codigo, evento.id).first() : null;
-  if (!g) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
-  await db.batch([
-    db.prepare('DELETE FROM lembranca_itens WHERE evento_id = ? AND convidado_id IN (SELECT id FROM convidados WHERE codigo_grupo = ?)').bind(evento.id, codigo),
-    db.prepare('DELETE FROM convidados WHERE codigo_grupo = ?').bind(codigo),
-    db.prepare('DELETE FROM grupos WHERE codigo = ? AND evento_id = ?').bind(codigo, evento.id),
-  ]);
+  if (!codigo || !(await removerGrupo(env.DB, evento.id, codigo))) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
   return jsonResponse({ ok: true });
 }

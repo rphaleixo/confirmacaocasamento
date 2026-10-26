@@ -198,6 +198,21 @@ const MIGRACOES = [
       ];
     },
   },
+  {
+    id: '011-removidos',
+    // "Removidos recentemente": guarda o que o anfitrião tirou da lista por 30 dias
+    async comandos() {
+      return [`CREATE TABLE IF NOT EXISTS removidos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  evento_id INTEGER NOT NULL,
+  tipo TEXT NOT NULL,           -- 'pessoa' | 'grupo'
+  titulo TEXT NOT NULL,
+  detalhe TEXT,
+  dados TEXT NOT NULL,          -- retrato em JSON do que saiu (grupo, pessoas e anotações de lembranças)
+  removido_em TEXT NOT NULL
+)`, 'CREATE INDEX IF NOT EXISTS idx_removidos_evento ON removidos(evento_id)'];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

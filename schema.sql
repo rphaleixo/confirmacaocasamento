@@ -111,3 +111,15 @@ CREATE TABLE IF NOT EXISTS admin_master (
   senha_hash TEXT NOT NULL,
   atualizado_em TEXT
 );
+
+-- Convidados e grupos removidos pelo anfitrião: ficam guardados por 30 dias para poderem ser restaurados.
+CREATE TABLE IF NOT EXISTS removidos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  evento_id INTEGER NOT NULL,
+  tipo TEXT NOT NULL,           -- 'pessoa' | 'grupo'
+  titulo TEXT NOT NULL,
+  detalhe TEXT,
+  dados TEXT NOT NULL,          -- retrato em JSON do que saiu (grupo, pessoas e anotações de lembranças)
+  removido_em TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_removidos_evento ON removidos(evento_id);

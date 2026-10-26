@@ -1049,6 +1049,11 @@
     </div>
   </section>
 
+  <section id="tab-removidos" class="tab">
+    <div class="pag-head"><div><h2>Removidos recentemente</h2><p>Convidados e grupos que você tirou da lista ficam aqui por 30 dias. Dá para restaurar com a resposta e as anotações de lembranças, e depois desse prazo eles somem de vez.</p></div><div class="acoes" id="rm-topo"></div></div>
+    <div id="rm-lista"><div class="carregando">Carregando...</div></div>
+  </section>
+
   <section id="tab-formas" class="tab">
     <div class="pag-head"><div><h2>Formas e estilo</h2><p>O jeito padrão de todas as seções do site: a forma que separa um módulo do outro, o espaço, o tamanho dos elementos, os cantos e as sombras. Cada módulo pode escolher o seu próprio na etapa Aparência.</p></div></div>
     <div id="fm-form"><div class="carregando">Carregando...</div></div>
@@ -1525,6 +1530,7 @@
     tipografia: () => carregarAparencia('tipografia'),
     conteudo: () => carregarConteudo(),
     formas: () => carregarFormas(),
+    removidos: () => carregarRemovidos(),
     ordem: () => carregarOrdem(),
     presentes: () => carregarPresentes(),
     recados: () => carregarRecados(),
@@ -1533,7 +1539,7 @@
   // Menu do evento: 4 áreas, cada uma com suas abas no submenu.
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
-    { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }] },
+    { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }, { tab: 'removidos', rotulo: 'Removidos recentemente' }] },
     { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
@@ -2417,6 +2423,39 @@
     return true;
   }
 
+  // remove pessoas da lista (vão para "Removidos recentemente"); usado na lista de respostas, uma a uma ou em lote
+  async function removerPessoas(ids, nome) {
+    const qtd = ids.length;
+    const ok = await confirmar({ titulo: qtd === 1 ? 'Remover ' + nome + '?' : 'Remover ' + qtd + ' pessoas da lista?', texto: 'Elas saem da lista e vão para "Removidos recentemente", onde ficam 30 dias e podem ser restauradas, com a resposta e as anotações de lembranças. Grupos que ficarem vazios saem junto.', rotulo: 'Remover', perigo: true });
+    if (!ok) return;
+    const r = await api('/api/admin/convidados', 'DELETE', { ids });
+    if (r.erro) { toast(r.erro, 'err'); return; }
+    RS.sel.clear(); toast(qtd === 1 ? nome + ' foi para "Removidos recentemente"' : plural(r.removidos, 'pessoa foi', 'pessoas foram') + ' para "Removidos recentemente"');
+    carregarPainel();
+  }
+  async function carregarRemovidos() {
+    const box = document.getElementById('rm-lista'), topo = document.getElementById('rm-topo');
+    const d = await api('/api/admin/removidos');
+    if (d.erro) { box.textContent = d.erro; return; }
+    topo.innerHTML = '';
+    if (d.itens.length) topo.appendChild(btn('Esvaziar', async () => {
+      if (!(await confirmar({ titulo: 'Esvaziar "Removidos recentemente"?', texto: 'Tudo o que está aqui será apagado de vez, sem como restaurar.', rotulo: 'Apagar de vez', perigo: true }))) return;
+      const r = await api('/api/admin/removidos', 'DELETE', { todos: true }); if (r.erro) { toast(r.erro, 'err'); return; }
+      toast('Lista esvaziada'); carregarRemovidos();
+    }, 'fantasma'));
+    box.innerHTML = '';
+    if (!d.itens.length) { box.appendChild(h('div', { class: 'caixa vazio' }, h('h3', { text: 'Nada removido' }), h('p', { text: 'Quando você tirar um convidado ou um grupo da lista, ele aparece aqui por 30 dias.' }))); return; }
+    d.itens.forEach((it) => {
+      const quando = it.dias === 0 ? 'hoje' : it.dias === 1 ? 'ontem' : 'há ' + it.dias + ' dias';
+      box.appendChild(h('div', { class: 'recado-linha', style: 'margin-bottom:8px;' },
+        h('div', { class: 'topo' }, h('span', { class: 'nome', text: it.titulo }), h('span', { class: 'chip sem-ponto', text: it.tipo === 'grupo' ? 'Grupo' : 'Pessoa' })),
+        h('div', { class: 'data', text: (it.tipo === 'grupo' ? it.detalhe : 'Do grupo ' + it.detalhe) + ' · removido ' + quando + ' · some em ' + plural(it.restam, 'dia', 'dias') }),
+        h('div', { class: 'acoes' },
+          btn('Restaurar', async () => { const r = await api('/api/admin/removidos', 'POST', { id: it.id }); if (r.erro) { toast(r.erro, 'err'); return; } toast(it.titulo + ' voltou para a lista' + (r.aviso ? '. ' + r.aviso : '')); carregarRemovidos(); }, 'sm prim'),
+          btn('Apagar de vez', async () => { if (!(await confirmar({ titulo: 'Apagar "' + it.titulo + '" de vez?', texto: 'Não será mais possível restaurar.', rotulo: 'Apagar de vez', perigo: true }))) return; const r = await api('/api/admin/removidos', 'DELETE', { id: it.id }); if (r.erro) { toast(r.erro, 'err'); return; } carregarRemovidos(); }, 'sm fantasma'))));
+    });
+  }
+
   async function mudarResposta(ids, valor) {
     if (!ids.length) return;
     const r = await api('/api/admin/confirmar', 'POST', { ids, resposta: valor });
@@ -2449,7 +2488,7 @@
     const tel = normalizarTelefoneWhatsapp(c.telefone);
     const wa = tel ? h('a', { class: 'btn', href: linkWhatsapp(tel, mensagemPara(g, chamar)), target: '_blank', rel: 'noopener', title: 'Enviar o convite pelo WhatsApp', html: ICONES.wa + 'WhatsApp' })
       : h('button', { type: 'button', class: 'btn', disabled: true, title: 'Sem telefone cadastrado', html: ICONES.wa + 'WhatsApp' });
-    const acoes = h('div', { class: 'rs-acoes' }, wa, btn('Editar', () => abrirEditarConvidado(c), ''), btn('Link', () => abrirLinkIndividual(c), ''), btn('Mover', () => abrirMoverConvidado(c), ''));
+    const acoes = h('div', { class: 'rs-acoes' }, wa, btn('Editar', () => abrirEditarConvidado(c), ''), btn('Link', () => abrirLinkIndividual(c), ''), btn('Mover', () => abrirMoverConvidado(c), ''), btn('Remover', () => removerPessoas([c.id], c.nome), 'fantasma'));
     const linha = h('div', { class: 'rs-linha' + (mostrarGrupo ? '' : ' sem-grupo') }, chk, nm);
     if (mostrarGrupo) {
       const gr = h('button', { type: 'button', class: 'gr', title: 'Mostrar só este grupo', text: g.nome });
@@ -2476,6 +2515,7 @@
     box.append(h('b', { text: plural(ids.length, 'pessoa selecionada', 'pessoas selecionadas') + ':' }),
       btn('Vão', () => mudarResposta(ids, 'sim'), ''), btn('Não sei', () => mudarResposta(ids, 'nao_sei'), ''), btn('Não vão', () => mudarResposta(ids, 'nao'), ''), btn('Sem resposta', () => mudarResposta(ids, ''), ''),
       btn('Enviar por WhatsApp', () => abrirFilaEnvio({ titulo: 'Enviar para ' + plural(ids.length, 'pessoa selecionada', 'pessoas selecionadas'), entradas: todasPessoas().filter((x) => RS.sel.has(x.c.id)), porGrupoPadrao: false, tipoInicial: 'convite' }), ''),
+      btn('Remover da lista', () => removerPessoas(ids), 'perigo'),
       btn('Limpar seleção', () => { RS.sel.clear(); desenharRespostas(); }, 'fantasma'));
   }
 
@@ -2650,11 +2690,11 @@
     acoes.appendChild(btn('Link', () => copiar(link, 'Link do convite'), 'sm', 'link'));
     acoes.appendChild(btn('Pessoa', () => abrirAdicionar(g.codigo), 'sm', 'mais'));
     acoes.appendChild(btn('Excluir grupo', async () => {
-      const ok = await confirmar({ titulo: 'Excluir o grupo "' + g.nome + '"?', texto: 'As ' + g.membros.length + ' pessoas do grupo saem da lista, com as respostas e o que foi anotado sobre elas nas lembranças. O link do grupo deixa de funcionar. Não dá para desfazer.', rotulo: 'Excluir grupo', perigo: true });
+      const ok = await confirmar({ titulo: 'Excluir o grupo "' + g.nome + '"?', texto: 'As ' + g.membros.length + ' pessoas do grupo saem da lista e vão para "Removidos recentemente", onde ficam 30 dias e podem ser restauradas. O link do grupo deixa de funcionar até a restauração.', rotulo: 'Excluir grupo', perigo: true });
       if (!ok) return;
       const r = await api('/api/admin/grupos', 'DELETE', { codigo: g.codigo });
       if (r.erro) { toast(r.erro, 'err'); return; }
-      toast('Grupo "' + g.nome + '" excluído'); carregarPainel();
+      toast('Grupo "' + g.nome + '" foi para "Removidos recentemente"'); carregarPainel();
     }, 'sm fantasma'));
 
     const meta = [];
@@ -2937,11 +2977,11 @@
     };
     const remover = async () => {
       const so = (gruposPainel.find((g) => g.codigo === c.codigoGrupo) || { membros: [] }).membros.length === 1;
-      const ok = await confirmar({ titulo: 'Remover ' + c.nome + '?', texto: 'A pessoa sai da lista, com a resposta e o que foi anotado sobre ela nas lembranças.' + (so ? ' Como é a única do grupo, o grupo também será excluído e o link dele deixa de funcionar.' : '') + ' Não dá para desfazer.', rotulo: 'Remover convidado', perigo: true });
+      const ok = await confirmar({ titulo: 'Remover ' + c.nome + '?', texto: 'A pessoa sai da lista e vai para "Removidos recentemente", onde fica 30 dias e pode ser restaurada.' + (so ? ' Como é a única do grupo, o grupo também sai e o link dele deixa de funcionar até a restauração.' : ''), rotulo: 'Remover convidado', perigo: true });
       if (!ok) return;
       const r = await api('/api/admin/convidados', 'DELETE', { id: c.id });
       if (r.erro) { toast(r.erro, 'err'); return; }
-      fecharDialogo(); toast(c.nome + ' foi removido(a) da lista'); carregarPainel();
+      fecharDialogo(); toast(c.nome + ' foi para "Removidos recentemente"'); carregarPainel();
     };
     montarRodape([{ rotulo: 'Remover convidado', perigo: true, esquerda: true, fn: remover }, { rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
     abrirDialogo({ titulo: 'Editar ' + c.nome, largura: '540px' });

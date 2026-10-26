@@ -1,3 +1,4 @@
+import { removerPessoas } from '../../_removidos.js';
 import { jsonResponse, recalcularStatusGrupo, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
 
 const limpar = (v) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 60);
@@ -74,22 +75,14 @@ export async function onRequestPatch({ request, env }) {
   return jsonResponse({ ok: true });
 }
 
-// body: { id } — remove um convidado (e o que foi anotado sobre ele nas lembranças). Se o grupo ficar vazio, o grupo também sai.
+// body: { id } ou { ids: [..] } — tira convidados da lista (ficam 30 dias em "Removidos recentemente"). Grupo que fica vazio sai junto.
 export async function onRequestDelete({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
   if (!evento) return eventoNaoEncontrado();
   const payload = await request.json().catch(() => ({}));
-  const id = Number(payload.id);
-  if (!id) return jsonResponse({ erro: 'Convidado não informado.' }, 400);
-  const db = env.DB;
-  const c = await db.prepare('SELECT c.id, c.codigo_grupo FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE c.id = ? AND g.evento_id = ?').bind(id, evento.id).first();
-  if (!c) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
-  await db.batch([
-    db.prepare('DELETE FROM lembranca_itens WHERE convidado_id = ? AND evento_id = ?').bind(id, evento.id),
-    db.prepare('DELETE FROM convidados WHERE id = ?').bind(id),
-  ]);
-  const { n } = await db.prepare('SELECT COUNT(*) AS n FROM convidados WHERE codigo_grupo = ?').bind(c.codigo_grupo).first();
-  if (n === 0) await db.prepare('DELETE FROM grupos WHERE codigo = ? AND evento_id = ?').bind(c.codigo_grupo, evento.id).run();
-  else await recalcularStatusGrupo(db, c.codigo_grupo);
-  return jsonResponse({ ok: true, grupoRemovido: n === 0 });
+  const ids = Array.from(new Set((Array.isArray(payload.ids) ? payload.ids : [payload.id]).map(Number).filter(Number.isInteger))).slice(0, 500);
+  if (!ids.length) return jsonResponse({ erro: 'Convidado não informado.' }, 400);
+  const n = await removerPessoas(env.DB, evento.id, ids);
+  if (!n) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
+  return jsonResponse({ ok: true, removidos: n });
 }
