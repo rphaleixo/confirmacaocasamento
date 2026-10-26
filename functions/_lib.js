@@ -127,7 +127,7 @@ export function eventoNaoEncontrado() {
 }
 
 // Texto formatado dos campos de exibição: só algumas tags passam (mesma lista do site). É uma segunda barreira; o site também limpa ao exibir.
-const CHAVE_RICA = /(^|\.)(eyebrow|titulo|texto|sucesso_texto|sem_codigo_texto|infos_titulo|externa_titulo|externa_texto|lista_opcao_titulo|lista_opcao_texto|pix_titulo|pix_texto|lista_texto)$|^timeline\.node\d+\.(ano|titulo|texto)$/;
+const CHAVE_RICA = /(^|\.)(eyebrow|titulo|texto|sucesso_texto|sem_codigo_texto|infos_titulo|externa_titulo|externa_texto|lista_opcao_titulo|lista_opcao_texto|pix_titulo|pix_texto|lista_texto)$|^hero\.(noiva|noivo|idade|convite_prefixo|data_display|horario_display|cta_label|prazo_display|prazo_horario_display)$|^timeline\.node\d+\.(ano|titulo|texto)$/;
 const TAGS_OK = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'strike', 'br', 'a', 'span', 'small', 'mark', 'sub', 'sup', 'font', 'div', 'p']);
 export function ehChaveRica(chave) { return CHAVE_RICA.test(String(chave || '')); }
 export function limparHtml(valor) {

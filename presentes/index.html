@@ -257,8 +257,8 @@
     }
   }
   function nomeDoEvento() {
-    if (conteudo._tipo === 'aniversario') return t('hero.noiva', conteudo._nome || '');
-    const n = [t('hero.noiva', ''), t('hero.noivo', '')].filter(Boolean).join(' & ');
+    if (conteudo._tipo === 'aniversario') return window.HTML_SEGURO ? window.HTML_SEGURO.texto(t('hero.noiva', conteudo._nome || '')) : t('hero.noiva', conteudo._nome || '');
+    const n = [t('hero.noiva', ''), t('hero.noivo', '')].map((v) => (window.HTML_SEGURO ? window.HTML_SEGURO.texto(v) : v)).filter(Boolean).join(' & ');
     return n || conteudo._nome || '';
   }
   function indisponivel(titulo, texto) {

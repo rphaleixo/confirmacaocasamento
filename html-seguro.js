@@ -4,7 +4,7 @@
   var PERMITIDAS = { b: 1, strong: 1, i: 1, em: 1, u: 1, s: 1, strike: 1, br: 1, a: 1, span: 1, small: 1, mark: 1, sub: 1, sup: 1 };
   var REMOVER = { script: 1, style: 1, iframe: 1, object: 1, embed: 1, noscript: 1, template: 1, svg: 1, math: 1, link: 1, meta: 1, title: 1, head: 1, textarea: 1, select: 1, button: 1, form: 1, input: 1 };
   // campos de texto de exibição que aceitam formatação (nomes, datas, links e botões continuam texto simples)
-  var RICO = /(^|\.)(eyebrow|titulo|texto|sucesso_texto|sem_codigo_texto|infos_titulo|externa_titulo|externa_texto|lista_opcao_titulo|lista_opcao_texto|pix_titulo|pix_texto|lista_texto)$|^timeline\.node\d+\.(ano|titulo|texto)$/;
+  var RICO = /(^|\.)(eyebrow|titulo|texto|sucesso_texto|sem_codigo_texto|infos_titulo|externa_titulo|externa_texto|lista_opcao_titulo|lista_opcao_texto|pix_titulo|pix_texto|lista_texto)$|^hero\.(noiva|noivo|idade|convite_prefixo|data_display|horario_display|cta_label|prazo_display|prazo_horario_display)$|^timeline\.node\d+\.(ano|titulo|texto)$/;
 
   function corSegura(v) {
     v = String(v || '').trim();

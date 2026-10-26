@@ -3330,10 +3330,11 @@
   // Monta o que a imagem precisa a partir do conteúdo do evento (mesmas regras de padrão do site).
   function opCompartilhar(d) {
     const CAT = window.FONTES_CATALOGO;
-    const v = (k, pad) => (d[k] === undefined || d[k] === null || String(d[k]).trim() === '' ? pad : String(d[k]).trim());
+    const ST = (x) => window.HTML_SEGURO.texto(x); // os textos da capa aceitam formatação: na imagem entra só o texto
+    const v = (k, pad) => (d[k] === undefined || d[k] === null || String(d[k]).trim() === '' ? pad : ST(String(d[k])).trim());
     const aniv = d._tipo === 'aniversario';
-    const dataTxt = window.FORMATA_DATA(v('hero.data_iso', ''), d['hero.data_formato'] || 'texto', d['hero.dia_semana'] || 'nao', d['hero.data_display'] === undefined ? '12 de junho de 2027' : d['hero.data_display']);
-    const hor = d['hero.horario_display'] === undefined ? 'às 15h00' : String(d['hero.horario_display']).trim();
+    const dataTxt = window.FORMATA_DATA(v('hero.data_iso', ''), d['hero.data_formato'] || 'texto', d['hero.dia_semana'] || 'nao', d['hero.data_display'] === undefined ? '12 de junho de 2027' : ST(d['hero.data_display']));
+    const hor = d['hero.horario_display'] === undefined ? 'às 15h00' : ST(String(d['hero.horario_display'])).trim();
     const foto = d['compartilhar.usar_foto'] === '0' ? '' : (d['hero.midia_tipo'] === 'video' ? d['hero.video_poster_url'] : d['hero.foto_url']) || '';
     return {
       estilo: v('compartilhar.estilo', 'foto'),
@@ -4081,7 +4082,7 @@
       let ultimo = null, seq = 0, agenda = null;
       const textos = (d) => {
         const aniv = d._tipo === 'aniversario';
-        const n1 = String(d['hero.noiva'] === undefined ? (aniv ? '' : 'Noiva') : d['hero.noiva']).trim(), n2 = String(d['hero.noivo'] === undefined ? 'Noivo' : d['hero.noivo']).trim();
+        const n1 = window.HTML_SEGURO.texto(String(d['hero.noiva'] === undefined ? (aniv ? '' : 'Noiva') : d['hero.noiva'])).trim(), n2 = window.HTML_SEGURO.texto(String(d['hero.noivo'] === undefined ? 'Noivo' : d['hero.noivo'])).trim();
         const nomes = aniv ? n1 : (n1 && n2 ? n1 + ' & ' + n2 : n1 || n2);
         const t = String(d['compartilhar.msg_titulo'] || '').trim() || (nomes ? (aniv ? 'Aniversário de ' : 'Casamento de ') + nomes : (eventoAtual || 'Convite'));
         const op = opCompartilhar(d);

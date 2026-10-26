@@ -905,13 +905,17 @@
   // Escreve um texto e esconde o elemento inteiro quando o texto é vazio (sem buracos nem botões vazios)
   function definir(el, valor) { if (!el) return; el.textContent = valor; el.classList.toggle('vazio', valor === ''); }
   // Data do evento como aparece na capa: formato e dia da semana escolhidos no painel (Capa › Data e prazo)
-  function dataHero() {
+  // data da capa: a versão "Rico" mantém a formatação do painel (negrito, cor…); dataHero() é só texto, para os outros lugares
+  function dataHeroRico() {
     return window.FORMATA_DATA(tOu('hero.data_iso', ''), t('hero.data_formato', 'texto'), t('hero.dia_semana', 'nao'), t('hero.data_display', '12 de junho de 2027'));
   }
+  function dataHero() { return window.HTML_SEGURO.texto(dataHeroRico()); }
+  // texto de um campo que aceita formatação, para usar onde só cabe texto simples (título da aba, rodapé, agenda…)
+  function tt(chave, padrao) { return window.HTML_SEGURO.texto(t(chave, padrao)); }
   // Prazo de confirmação como aparece no site: a data e, se preenchido no painel, o horário limite ("01 de maio às 23h59")
   function prazoCompleto() {
-    const hora = t('hero.prazo_horario_display', '').trim();
-    return t('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
+    const hora = tt('hero.prazo_horario_display', '').trim();
+    return tt('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
   }
   // Texto formatado (negrito, cor, link...): passa pela limpeza antes de entrar na página
   function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -991,7 +995,7 @@
     return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(localCompleto());
   }
   function tituloEvento() {
-    return ehAniversario() ? 'Aniversário de ' + t('hero.noiva', '') : 'Casamento de ' + t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
+    return ehAniversario() ? 'Aniversário de ' + tt('hero.noiva', '') : 'Casamento de ' + tt('hero.noiva', 'Noiva') + ' & ' + tt('hero.noivo', 'Noivo');
   }
   // Link do Google Agenda com data, duração de 5h e endereço
   function linkAgenda() {
@@ -1096,19 +1100,19 @@
     aplicar('heroEyebrow', 'hero.eyebrow');
     aplicar('nomeNoiva', 'hero.noiva');
     aplicar('nomeNoivo', 'hero.noivo');
-    definir($('heroData'), dataHero());
+    definirRico($('heroData'), dataHeroRico());
     aplicar('heroHorario', 'hero.horario_display');
     aplicar('heroCta', 'hero.cta_label');
     document.title = ehAniversario()
-      ? t('hero.noiva', 'Aniversário') + ' • Aniversário'
-      : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo') + ' • Casamento';
+      ? tt('hero.noiva', 'Aniversário') + ' • Aniversário'
+      : tt('hero.noiva', 'Noiva') + ' & ' + tt('hero.noivo', 'Noivo') + ' • Casamento';
     if (ehAniversario()) {
       // aniversário: um nome só (sem "&"), com a idade logo abaixo
       document.querySelector('#hero .amp').style.display = 'none';
       document.getElementById('nomeNoivo').style.display = 'none';
-      if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); idade.textContent = t('hero.idade', ''); idade.hidden = false; }
+      if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); definirRico(idade, t('hero.idade', '')); idade.hidden = false; }
     }
-    definir(document.getElementById('deadlineChip'), prazoCompleto() ? 'confirme até ' + prazoCompleto() : '');
+    definirRico(document.getElementById('deadlineChip'), prazoCompleto() ? 'confirme até ' + (t('hero.prazo_display', '01 de maio') + (t('hero.prazo_horario_display', '').trim() ? ' ' + t('hero.prazo_horario_display', '').trim() : '')) : '');
     definir(document.getElementById('stickyPrazo'), prazoCompleto() ? t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', prazoCompleto()) : '');
     montarMidiaCapa();
     aplicarTextosCapa();
@@ -1204,7 +1208,7 @@
       document.querySelector('footer').style.display = 'none';
       document.querySelector('.frame').style.paddingBottom = '90px'; // espaço para a barra fixa não cobrir o último módulo
     }
-    document.getElementById('footerNomes').textContent = ehAniversario() ? t('hero.noiva', '') : t('hero.noiva', 'Noiva') + ' & ' + t('hero.noivo', 'Noivo');
+    document.getElementById('footerNomes').textContent = ehAniversario() ? tt('hero.noiva', '') : tt('hero.noiva', 'Noiva') + ' & ' + tt('hero.noivo', 'Noivo');
     document.getElementById('footerDataLocal').textContent = dataHero() + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
@@ -1739,7 +1743,7 @@
       // na prévia do painel não há convite de verdade: mostra uma saudação de exemplo para o anfitrião ver onde ela fica
       if (window.__previa && t('hero.mostrar_convite', '1') !== '0') {
         const convite = $('heroConvite'); const prefixo = t('hero.convite_prefixo', 'Convite para');
-        convite.textContent = (prefixo ? prefixo + ' ' : '') + (ehAniversario() ? 'Ana, Beto e Carla' : 'Ana e Beto'); convite.hidden = false;
+        definirRico(convite, (prefixo ? prefixo + ' ' : '') + escHtml(ehAniversario() ? 'Ana, Beto e Carla' : 'Ana e Beto')); convite.hidden = false;
       }
       return; // mantém a mensagem "sem código" já visível por padrão
     }
@@ -1799,7 +1803,7 @@
         {
           const convite = $('heroConvite');
           const prefixo = t('hero.convite_prefixo', 'Convite para');
-          convite.textContent = (prefixo ? prefixo + ' ' : '') + listaNomes(pessoas.map(function (p) { return p.chamar; }));
+          definirRico(convite, (prefixo ? prefixo + ' ' : '') + escHtml(listaNomes(pessoas.map(function (p) { return p.chamar; }))));
           convite.hidden = t('hero.mostrar_convite', '1') === '0' || !pessoas.length;
           $('rsvpGrupoNome').textContent = data.escopo === 'individual' ? pessoas[0].nome : data.grupo;
         }
