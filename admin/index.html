@@ -1940,7 +1940,7 @@
     });
   }
   async function revogarAcesso(ev) {
-    const ok = await confirmar({ titulo: 'Revogar acesso do anfitrião', texto: 'O anfitrião de "' + ev.nome + '" (usuário ' + ev.anfitriaoUsuario + ') não vai mais conseguir entrar. O evento, os convidados e o site continuam iguais, e você pode criar um novo acesso depois.', rotulo: 'Revogar acesso', perigo: true });
+    const ok = await confirmar({ titulo: 'Revogar acesso do anfitrião', texto: 'O anfitrião de "' + ev.nome + '" (usuário ' + ev.anfitriaoUsuario + ') não vai mais conseguir entrar, nem com a senha nem com o Google, e as sessões abertas dele são encerradas. O evento, os convidados e o site continuam iguais, e você pode criar um novo acesso depois.', rotulo: 'Revogar acesso', perigo: true });
     if (!ok) return;
     const d = await apiEventos('DELETE', { slug: ev.slug });
     if (d.erro) { toast(d.erro, 'err'); return; }

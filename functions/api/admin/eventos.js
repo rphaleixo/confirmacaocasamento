@@ -143,5 +143,15 @@ export async function onRequestDelete({ request, env, data }) {
     .bind(slug)
     .run();
   if (!res.meta.changes) return jsonResponse({ erro: 'Evento não encontrado.' }, 404);
+  // revogar de verdade: some também o acesso por Google, as sessões abertas e os convites de acesso ainda não usados deste evento
+  const ev = await env.DB.prepare('SELECT id FROM eventos WHERE slug = ?').bind(slug).first();
+  if (ev) {
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM admin_google WHERE evento_id = ?').bind(ev.id),
+      env.DB.prepare("DELETE FROM sessoes WHERE tipo = 'evento' AND evento_id = ?").bind(ev.id),
+      env.DB.prepare('DELETE FROM convites_acesso WHERE evento_id = ? AND usado_em IS NULL').bind(ev.id),
+      env.DB.prepare('DELETE FROM codigos_troca WHERE evento_id = ?').bind(ev.id),
+    ]);
+  }
   return jsonResponse({ ok: true });
 }
