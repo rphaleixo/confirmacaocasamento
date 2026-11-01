@@ -15,6 +15,11 @@
   "r2_buckets": [
     { "binding": "MEDIA", "bucket_name": "confirmacaocasamento-media" }
   ],
-  // Domínio próprio (vemnafesta.com e *.vemnafesta.com): as rotas voltam a ser ligadas aqui quando o domínio estiver Active na Cloudflare.
+  // Domínio próprio: vemnafesta.com (apex) como Custom Domain e todos os subdomínios (um por evento) por uma rota com curinga.
+  // Requer o registro DNS * (AAAA 100:: com proxy ligado) no domínio.
+  "routes": [
+    { "pattern": "vemnafesta.com", "custom_domain": true },
+    { "pattern": "*.vemnafesta.com/*", "zone_name": "vemnafesta.com" }
+  ],
   "observability": { "enabled": true }
 }
