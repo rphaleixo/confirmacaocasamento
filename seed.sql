@@ -143,3 +143,10 @@ UPDATE grupos SET status_confirmacao = CASE
   WHEN (SELECT COUNT(*) FROM convidados c WHERE c.codigo_grupo = grupos.codigo AND c.confirmado = 0) = 0 THEN 'Confirmado'
   ELSE 'Parcial' END
  WHERE status_abertura = 'Aberto';
+
+-- Garante que os 6 estados de grupo apareçam: um grupo em que todos responderam "não"
+-- (Não vão) e um que abriu o convite sem responder (Abriu, sem resposta).
+UPDATE convidados SET confirmado = 0, resposta = 'nao' WHERE codigo_grupo = (SELECT codigo FROM grupos WHERE status_confirmacao = 'Parcial' ORDER BY codigo LIMIT 1);
+UPDATE grupos SET status_confirmacao = 'Aguardando resposta' WHERE codigo = (SELECT codigo FROM grupos WHERE status_confirmacao = 'Parcial' ORDER BY codigo LIMIT 1);
+UPDATE convidados SET confirmado = 0, resposta = NULL WHERE codigo_grupo = (SELECT codigo FROM grupos WHERE status_abertura = 'Não aberto' ORDER BY codigo LIMIT 1);
+UPDATE grupos SET status_abertura = 'Aberto', data_abertura = datetime('now'), status_confirmacao = 'Aguardando resposta' WHERE codigo = (SELECT codigo FROM grupos WHERE status_abertura = 'Não aberto' ORDER BY codigo LIMIT 1);
