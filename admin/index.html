@@ -5473,7 +5473,7 @@
       form.querySelectorAll('[data-chave^="savethedate."]').forEach((e) => { payload[e.dataset.chave] = e.value; });
       const d = await api('/api/admin/conteudo', 'POST', payload);
       acao.disabled = false;
-      if (d.erro) { toast(d.erro, 'erro'); return; }
+      if (d.erro) { toast(d.erro, 'err'); return; }
       Object.assign(ctDados, payload);
       atualizarSTD();
       toast(ligar ? 'Save the Date ligado. O site já mostra só a capa.' : 'Save the Date desligado. A confirmação de presença está aberta.');

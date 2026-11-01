@@ -131,3 +131,15 @@ INSERT INTO convidados (nome, telefone, codigo_grupo, confirmado, tipo) VALUES
 ('Patrícia Nunes', '(71) 98532-0054', 'UNRF7A', 0, 'adulto'),
 ('Bruno Nascimento', '(31) 99595-5938', 'G4AWB6', 0, 'adulto'),
 ('Letícia Lima', '(24) 95149-2885', '749NX4', 0, 'adulto');
+
+-- Coerência dos dados de exemplo: quem tem confirmado=1 respondeu "sim", e o grupo que já
+-- respondeu conta como aberto. Alguns "não sei" e "não" para o painel mostrar todos os status.
+UPDATE convidados SET resposta = 'sim' WHERE confirmado = 1 AND resposta IS NULL;
+UPDATE convidados SET resposta = 'nao' WHERE confirmado = 0 AND id % 7 = 0 AND codigo_grupo IN (SELECT codigo_grupo FROM convidados WHERE confirmado = 1);
+UPDATE convidados SET resposta = 'nao_sei' WHERE confirmado = 0 AND resposta IS NULL AND id % 5 = 0 AND codigo_grupo IN (SELECT codigo_grupo FROM convidados WHERE confirmado = 1);
+UPDATE grupos SET status_abertura = 'Aberto', data_abertura = datetime('now') WHERE codigo IN (SELECT codigo_grupo FROM convidados WHERE resposta IS NOT NULL);
+UPDATE grupos SET status_confirmacao = CASE
+  WHEN (SELECT COUNT(*) FROM convidados c WHERE c.codigo_grupo = grupos.codigo AND c.confirmado = 1) = 0 THEN 'Aguardando resposta'
+  WHEN (SELECT COUNT(*) FROM convidados c WHERE c.codigo_grupo = grupos.codigo AND c.confirmado = 0) = 0 THEN 'Confirmado'
+  ELSE 'Parcial' END
+ WHERE status_abertura = 'Aberto';
