@@ -12,5 +12,10 @@
   "r2_buckets": [
     { "binding": "MEDIA", "bucket_name": "confirmacaocasamento-media" }
   ],
+  // Domínio próprio: o deploy cria o DNS e o certificado sozinho, mas só funciona depois que vemnafesta.com estiver ativo na Cloudflare (Add a domain).
+  "routes": [
+    { "pattern": "vemnafesta.com", "custom_domain": true },
+    { "pattern": "www.vemnafesta.com", "custom_domain": true }
+  ],
   "observability": { "enabled": true }
 }
