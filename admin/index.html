@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script src="/rotas.js"></script>
 <script src="/fontes.js"></script>
 <script src="/formas.js"></script>
 <script src="/compartilhar.js"></script>
@@ -1146,7 +1147,7 @@
   //  - /admin/?e=<slug> = admin master gerindo um evento específico (mesmo painel do anfitrião).
   //  Todas as chamadas /api/ levam ?e=<slug do evento sendo gerido>.
   // =====================================================================
-  const matchEvento = location.pathname.match(/^\/e\/([^\/]+)\/admin/);
+  const matchEvento = window.ROTAS.casarAdmin();
   const modoEvento = !!matchEvento;
   const slugUrl = new URLSearchParams(location.search).get('e');
   let eventoAtual = modoEvento ? decodeURIComponent(matchEvento[1]).toLowerCase() : (slugUrl || null);
@@ -1156,9 +1157,9 @@
   let AVANCADO = false; // opções avançadas visíveis? (lembrado neste aparelho)
   try { AVANCADO = localStorage.getItem('rsvp-avancado') === '1'; } catch (e) { /* segue no modo simples */ }
   const PUB = { publicado: true, token: '' }; // convite publicado? (e o token que abre o site real enquanto está "em breve")
-  function urlSite() { return location.origin + '/e/' + eventoAtual + '/'; }
-  function urlSiteDe(slug) { return location.origin + '/e/' + slug + '/'; }
-  function urlAnfitriao(slug) { return location.origin + '/e/' + slug + '/admin'; }
+  function urlSite() { return window.ROTAS.urlSite(eventoAtual); }
+  function urlSiteDe(slug) { return window.ROTAS.urlSite(slug); }
+  function urlAnfitriao(slug) { return window.ROTAS.urlAdmin(slug); }
 
   // =====================================================================
   //  ENTRADA (login próprio, sem a janela nativa do navegador)
@@ -1775,7 +1776,7 @@
       const card = h('div', { class: 'evento' },
         h('div', { style: 'min-width:0' },
           h('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;' }, h('span', { class: 'nome', text: ev.nome }), h('span', { class: 'chip info sem-ponto', text: ev.tipoNome })),
-          h('div', { class: 'end', text: '/e/' + ev.slug })),
+          h('div', { class: 'end', text: window.ROTAS.endereco(ev.slug) })),
         h('div', { class: 'stats' },
           stat('Confirmados', ev.confirmados, 'de ' + ev.convidados),
           stat('Resposta', ev.convidados ? taxa + '%' : '—'),
@@ -1807,7 +1808,7 @@
       if (ev.anfitriaoUsuario) acoes.appendChild(btn('Revogar', () => revogarAcesso(ev), 'sm'));
       tbody.appendChild(h('tr', {},
         h('td', {}, h('div', { class: 't-nome', text: ev.nome }), h('div', { class: 't-sub', text: ev.tipoNome })),
-        h('td', {}, h('div', { style: 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;' }, h('code', { class: 'codigo', text: '/e/' + ev.slug + '/admin' }), btn('Copiar', () => copiar(urlAnfitriao(ev.slug), 'Link do painel'), 'xs fantasma', 'copiar'))),
+        h('td', {}, h('div', { style: 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;' }, h('code', { class: 'codigo', text: window.ROTAS.endereco(ev.slug) + '/admin' }), btn('Copiar', () => copiar(urlAnfitriao(ev.slug), 'Link do painel'), 'xs fantasma', 'copiar'))),
         h('td', {}, ev.anfitriaoUsuario ? h('span', { class: 'chip ok', text: ev.anfitriaoUsuario }) : h('span', { class: 'chip', text: 'Sem acesso' })),
         h('td', {}, acoes)));
     });
@@ -1914,7 +1915,7 @@
         const s = slugifyLocal(slug.value);
         if (!s) { status.className = 'erro-campo'; status.textContent = 'Informe um endereço com letras e números.'; return false; }
         if (!slugDisponivel(s)) { status.className = 'erro-campo'; status.textContent = 'Esse endereço já está em uso por outro evento.'; return false; }
-        status.className = 'ok-campo'; status.textContent = '✓ Disponível: ' + location.host + '/e/' + s;
+        status.className = 'ok-campo'; status.textContent = '✓ Disponível: ' + window.ROTAS.endereco(s);
         return true;
       };
       const atualizarRodape = () => { est.nome = nome.value; est.slug = slugifyLocal(slug.value); rod.querySelector('.prim').disabled = !(est.nome.trim() && validar()); };
@@ -1923,7 +1924,7 @@
       slug.addEventListener('blur', () => { slug.value = slugifyLocal(slug.value); });
       nome.id = 'me-nome'; slug.id = 'me-slug';
       corpo.appendChild(campoTexto('Nome do evento', nome, 'Aparece no painel. O texto do site você edita depois.'));
-      corpo.appendChild(h('div', {}, h('label', { for: 'me-slug', text: 'Endereço do site' }), h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: location.host + '/e/' }), slug), status,
+      corpo.appendChild(h('div', {}, h('label', { for: 'me-slug', text: 'Endereço do site' }), h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: window.ROTAS.antes() }), slug, window.ROTAS.depois() ? h('span', { class: 'pre', text: window.ROTAS.depois() }) : null), status,
         h('div', { class: 'dica-campo', text: 'É o link que os convidados vão receber. Dá para trocar depois, mas os links já enviados deixam de funcionar.' })));
       const mesmoTipo = listaEventos.filter((e) => e.tipo === est.tipo);
       if (mesmoTipo.length) {
@@ -1941,7 +1942,7 @@
     }
 
     if (est.passo === 2) {
-      corpo.appendChild(el('p', 'O anfitrião é quem cuida do evento no dia a dia (noivos, aniversariante ou organizador). Ele entra em ' + location.host + '/e/' + est.slug + '/admin e só enxerga este evento.', 'margin:0 0 14px;color:var(--ink-soft);line-height:1.5;'));
+      corpo.appendChild(el('p', 'O anfitrião é quem cuida do evento no dia a dia (noivos, aniversariante ou organizador). Ele entra em ' + window.ROTAS.endereco(est.slug) + '/admin e só enxerga este evento.', 'margin:0 0 14px;color:var(--ink-soft);line-height:1.5;'));
       const usuario = inputTexto(est.usuario || est.slug); usuario.id = 'me-usuario';
       const senha = campoSenha(est.senha);
       const opcao = (valor, titulo, desc) => {
@@ -1965,7 +1966,7 @@
       const linha = (a, b, passo) => tab.appendChild(h('tr', {}, h('td', { text: a }), h('td', {}, b, ' ', h('button', { type: 'button', class: 'link', style: 'font-size:12px;margin-left:6px;', text: 'alterar', onclick: () => { est.passo = passo; renderNovo(est); } }))));
       linha('Tipo', tipo ? tipo.nome : est.tipo, 0);
       linha('Nome', est.nome, 1);
-      linha('Endereço', location.host + '/e/' + est.slug, 1);
+      linha('Endereço', window.ROTAS.endereco(est.slug), 1);
       linha('Ponto de partida', est.copiarDe ? 'Cópia de /e/' + est.copiarDe : 'Padrão do tipo', 1);
       linha('Anfitrião', est.criarLogin ? 'Usuário "' + est.usuario + '"' : 'Definir depois', 2);
       corpo.appendChild(el('p', 'Confira antes de criar:', 'margin:0 0 8px;color:var(--ink-soft);'));
@@ -2017,7 +2018,7 @@
     sel.value = ev.tipo;
     const status = h('div'); const erroBox = h('div', { class: 'erro-campo', hidden: true });
     corpo.appendChild(campoTexto('Nome do evento', nome));
-    corpo.appendChild(h('div', {}, h('label', { for: 'ed-slug', text: 'Endereço do site' }), h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: location.host + '/e/' }), slug), status));
+    corpo.appendChild(h('div', {}, h('label', { for: 'ed-slug', text: 'Endereço do site' }), h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: window.ROTAS.antes() }), slug, window.ROTAS.depois() ? h('span', { class: 'pre', text: window.ROTAS.depois() }) : null), status));
     const chkSlug = h('input', { type: 'checkbox', id: 'ed-entendi' });
     const aviso = h('div', { hidden: true },
       h('div', { class: 'aviso-perigo', html: ICONES.alerta + '<span>Mudar o endereço faz <b>todos os links já enviados</b> aos convidados e o link do painel do anfitrião pararem de funcionar. Você vai precisar reenviar os convites.</span>' }),
@@ -2056,7 +2057,7 @@
     montarPassos(0, []);
     delete dlgEvento.dataset.fixo;
     const corpo = corpoDialogo();
-    corpo.appendChild(el('p', 'O anfitrião entra em ' + location.host + '/e/' + ev.slug + '/admin' + (ev.anfitriaoUsuario ? '. A senha atual deixa de valer assim que você salvar.' : '.'), 'margin:0;color:var(--ink-soft);line-height:1.5;'));
+    corpo.appendChild(el('p', 'O anfitrião entra em ' + window.ROTAS.endereco(ev.slug) + '/admin' + (ev.anfitriaoUsuario ? '. A senha atual deixa de valer assim que você salvar.' : '.'), 'margin:0;color:var(--ink-soft);line-height:1.5;'));
     const usuario = inputTexto(ev.anfitriaoUsuario || ev.slug); usuario.id = 'an-usuario';
     const senha = campoSenha(gerarSenha());
     const erroBox = h('div', { class: 'erro-campo', hidden: true });
@@ -5148,7 +5149,7 @@
       avisoDesligado();
       // guarda onde o convidado (o anfitrião) estava rolando: o site novo volta exatamente para lá, sem pular para o início do módulo
       lerRolagem();
-      const f = h('iframe', { src: urlSite() + '?previa=1' + qsRascunho('&') + '#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
+      const f = h('iframe', { src: window.ROTAS.urlMesmaOrigem(eventoAtual) + '?previa=1' + qsRascunho('&') + '#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
       aguardando = f;
       tela.appendChild(f);
     };

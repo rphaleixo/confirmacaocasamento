@@ -27,10 +27,11 @@
   #erroEvento.mostra{display:flex;} #erroEvento .cx{max-width:380px;} #erroEvento h1{font-size:20px;margin:0 0 8px;} #erroEvento p{margin:0 0 16px;color:#5B6678;line-height:1.5;font-size:14.5px;}
   #erroEvento button{border:none;background:#1F3A5F;color:#fff;border-radius:999px;padding:12px 22px;font-size:14px;cursor:pointer;}
 </style>
+<script src="/rotas.js"></script>
 <script>
   // Já começa a buscar o conteúdo do evento enquanto o resto da página carrega (o resto do código usa esta busca)
   (function () {
-    var m = location.pathname.match(/^\/e\/([^\/]+)/);
+    var m = window.ROTAS.casar();
     var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
     if (/[?&]previa=1/.test(location.search) && window.parent !== window) {
       // Prévia dentro do painel: recebe o conteúdo (inclusive o que ainda não foi salvo) do painel, na mesma origem
@@ -971,7 +972,7 @@
   };
 
   // Evento vem da URL /e/<slug>; sem slug (link antigo /?c=CODIGO) a API usa o primeiro evento.
-  const eventoMatch = window.location.pathname.match(/^\/e\/([^\/]+)/);
+  const eventoMatch = window.ROTAS.casar();
   const EVENTO_QS = eventoMatch ? 'e=' + encodeURIComponent(eventoMatch[1]) : '';
   function api(caminho, extra) {
     const qs = [EVENTO_QS, extra].filter(Boolean).join('&');
@@ -1557,7 +1558,7 @@
   }
   function urlListaPresentes() {
     const c = new URLSearchParams(window.location.search).get('c');
-    return (eventoMatch ? '/e/' + eventoMatch[1] + '/presentes' : '/presentes/') + (c ? '?c=' + encodeURIComponent(c) : '');
+    return (eventoMatch ? window.ROTAS.prefixo(eventoMatch[1]) + '/presentes' : '/presentes/') + (c ? '?c=' + encodeURIComponent(c) : '');
   }
   // Cores próprias dos demais módulos (Site › módulo › Cores). Em branco vale o visual do site.
   function aplicarCoresModulos() {

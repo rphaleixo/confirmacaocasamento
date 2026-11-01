@@ -5,17 +5,19 @@
   "name": "confirmacaocasamento",
   "main": ".build/_worker.js/index.js",
   "compatibility_date": "2026-09-05",
-  "assets": { "directory": ".", "binding": "ASSETS" },
+  // run_worker_first: nestas páginas o Worker olha o endereço antes de entregar o arquivo (é assim que nome.vemnafesta.com mostra o convite de "nome")
+  "assets": { "directory": ".", "binding": "ASSETS", "run_worker_first": ["/", "/admin", "/admin/", "/presentes", "/presentes/", "/exemplo", "/exemplo/*"] },
   "d1_databases": [
     { "binding": "DB", "database_name": "confirmacaocasamento", "database_id": "0ece6983-d130-4724-841c-18288f1ddaa1" }
   ],
   "r2_buckets": [
     { "binding": "MEDIA", "bucket_name": "confirmacaocasamento-media" }
   ],
-  // Domínio próprio: o deploy cria o DNS e o certificado sozinho, mas só funciona depois que vemnafesta.com estiver ativo na Cloudflare (Add a domain).
+  // Domínio próprio: vemnafesta.com (apex) como Custom Domain e todos os subdomínios (um por evento) por uma rota com curinga.
+  // Antes do deploy: o domínio precisa estar ativo na Cloudflare e ter o registro DNS * (AAAA 100:: com proxy ligado). Veja o passo a passo.
   "routes": [
     { "pattern": "vemnafesta.com", "custom_domain": true },
-    { "pattern": "www.vemnafesta.com", "custom_domain": true }
+    { "pattern": "*.vemnafesta.com/*", "zone_name": "vemnafesta.com" }
   ],
   "observability": { "enabled": true }
 }

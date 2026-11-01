@@ -1,6 +1,8 @@
 // Roda antes de TODA rota de /functions: garante que o banco está na versão que o código espera
 // e transforma qualquer exceção em uma mensagem legível (em vez do "Error 1101" da Cloudflare).
 import { garantirMigracoes } from './_migracoes.js';
+import { BASE, rotaDeEndereco } from './_enderecos.js';
+import { onRequestGet as paginaDoEvento } from './e/[[path]].js';
 
 const LIMITE_MS = 2500; // se a atualização do banco passar disso, mostra a tela de carregamento
 
@@ -43,6 +45,14 @@ export async function onRequest({ request, env, next, waitUntil }) {
     ? new Response(JSON.stringify({ erro: 'Erro interno: ' + ((e && e.message) || e) }), { status: 500, headers: { 'content-type': 'application/json; charset=utf-8' } })
     : telaErro(e));
 
+  // Endereços: nome.vemnafesta.com vira /e/nome/..., vemnafesta.com/exemplo e /e/... redirecionam, www vai para o endereço principal
+  const rota = rotaDeEndereco(new URL(request.url));
+  if (rota.tipo === 'redirecionar') return Response.redirect(rota.para, rota.status);
+  if (rota.tipo === 'estatico') return rota.url ? next(new Request(rota.url, request)) : next(); // landing e painel geral: arquivos, sem banco
+  if (rota.tipo === 'exemplo') {
+    try { const ex = await env.DB.prepare("SELECT slug FROM eventos WHERE slug IN ('exemplo', 'casamento') ORDER BY slug = 'exemplo' DESC LIMIT 1").first(); return Response.redirect('https://' + ((ex && ex.slug) || 'casamento') + '.' + BASE + '/' + rota.resto, 302); } catch (e) { return Response.redirect('https://casamento.' + BASE + '/', 302); }
+  }
+
   try {
     if (!env.DB) throw new Error('Binding "DB" (banco D1) não está configurado neste projeto Pages.');
     const migracao = garantirMigracoes(env.DB).then(() => 'ok');
@@ -57,7 +67,8 @@ export async function onRequest({ request, env, next, waitUntil }) {
             headers: { 'content-type': 'application/json; charset=utf-8', 'retry-after': '3' },
           });
     }
-    return await next();
+    // nome.vemnafesta.com: entrega a mesma página que /e/nome/... (o endereço no navegador não muda)
+    return rota.tipo === 'reescrever' ? await paginaDoEvento({ request: new Request(rota.url, request), env, waitUntil }) : await next();
   } catch (e) {
     return erro(e);
   }

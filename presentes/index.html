@@ -13,10 +13,11 @@
   html:not(.pronto) body{background:#F2F3F5 !important;}
   html:not(.pronto) body > *{visibility:hidden;}
 </style>
+<script src="/rotas.js"></script>
 <script>
-  // Já começa a buscar o conteúdo do evento (a página é /e/<slug>/presentes)
+  // Já começa a buscar o conteúdo do evento (a página é /e/<slug>/presentes ou slug.vemnafesta.com/presentes)
   (function () {
-    var m = location.pathname.match(/^\/e\/([^\/]+)/);
+    var m = window.ROTAS.casar();
     var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
     window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
     setTimeout(function () { document.documentElement.classList.add('pronto'); }, 15000);
@@ -210,12 +211,12 @@
     minimal: { link: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Montserrat:wght@300;400;500;600&display=swap', display: "'Cormorant Garamond',serif", body: "'Montserrat',sans-serif" },
   };
 
-  const eventoMatch = window.location.pathname.match(/^\/e\/([^\/]+)/);
+  const eventoMatch = window.ROTAS.casar();
   const EVENTO_QS = eventoMatch ? 'e=' + encodeURIComponent(eventoMatch[1]) : '';
   function api(caminho) { return '/api/' + caminho + (EVENTO_QS ? '?' + EVENTO_QS : ''); }
   const codigo = new URLSearchParams(location.search).get('c');
   // volta para a seção de presentes do convite, mantendo o link pessoal do convidado
-  const urlConvite = (eventoMatch ? '/e/' + eventoMatch[1] + '/' : '/') + (codigo ? '?c=' + encodeURIComponent(codigo) : '') + '#presentes';
+  const urlConvite = (eventoMatch ? window.ROTAS.prefixo(eventoMatch[1]) + '/' : '/') + (codigo ? '?c=' + encodeURIComponent(codigo) : '') + '#presentes';
   $('voltar').href = urlConvite; $('indVoltar').href = urlConvite;
 
   let toastTimer;

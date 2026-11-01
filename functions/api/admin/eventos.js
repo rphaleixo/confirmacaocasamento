@@ -1,6 +1,7 @@
 // Gestão transversal da plataforma — SÓ o admin master. O anfitrião (login do evento) recebe 403.
 import { jsonResponse, hashSenha, novoSalt } from '../../_lib.js';
 import { TIPOS, tipoDe, padroesIniciais } from '../../_tipos.js';
+import { RESERVADOS } from '../../_enderecos.js';
 
 const SOMENTE_MASTER = () => jsonResponse({ erro: 'Só o administrador master gerencia eventos.' }, 403);
 
@@ -10,6 +11,7 @@ function slugify(texto) {
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     .slice(0, 40);
 }
+const RESERVADO = () => jsonResponse({ erro: 'Esse nome é reservado pela plataforma. Escolha outro para o endereço.' }, 400);
 
 // GET — lista todos os eventos com dados de uso
 export async function onRequestGet({ env, data }) {
@@ -42,6 +44,7 @@ export async function onRequestPost({ request, env, data }) {
   if (!nome) return jsonResponse({ erro: 'Dê um nome ao evento.' }, 400);
   const slug = slugify(payload.slug || nome);
   if (!slug) return jsonResponse({ erro: 'Endereço inválido: use letras e números.' }, 400);
+  if (RESERVADOS.has(slug)) return RESERVADO();
 
   const db = env.DB;
   const existente = await db.prepare('SELECT 1 FROM eventos WHERE slug = ?').bind(slug).first();
@@ -119,6 +122,7 @@ export async function onRequestPatch({ request, env, data }) {
   const novoNome = (payload.novoNome || '').trim() || evento.nome;
   const novoSlug = payload.novoSlug ? slugify(payload.novoSlug) : slug;
   if (!novoSlug) return jsonResponse({ erro: 'Endereço inválido: use letras e números.' }, 400);
+  if (novoSlug !== slug && RESERVADOS.has(novoSlug)) return RESERVADO();
   if (novoSlug !== slug) {
     const existente = await db.prepare('SELECT 1 FROM eventos WHERE slug = ?').bind(novoSlug).first();
     if (existente) return jsonResponse({ erro: 'Já existe um evento com esse endereço.' }, 400);
