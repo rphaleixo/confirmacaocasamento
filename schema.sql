@@ -139,3 +139,19 @@ CREATE TABLE IF NOT EXISTS admin_google (
   criado_em TEXT,
   PRIMARY KEY (email, evento_id)
 );
+
+-- Convite de acesso do anfitrião (link de uso único) e código curto de troca de sessão entre vemnafesta.com e o subdomínio do evento.
+CREATE TABLE IF NOT EXISTS convites_acesso (
+  token_hash TEXT PRIMARY KEY,
+  evento_id INTEGER NOT NULL,
+  criado_em TEXT,
+  expira_em TEXT NOT NULL,
+  usado_em TEXT
+);
+CREATE TABLE IF NOT EXISTS codigos_troca (
+  codigo_hash TEXT PRIMARY KEY,
+  tipo TEXT NOT NULL,
+  evento_id INTEGER,
+  email TEXT,
+  expira_em TEXT NOT NULL
+);

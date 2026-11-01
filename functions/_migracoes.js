@@ -231,6 +231,24 @@ const MIGRACOES = [
 )`];
     },
   },
+  {
+    id: '013-convite-de-acesso',
+    async comandos() {
+      return [`CREATE TABLE IF NOT EXISTS convites_acesso (
+  token_hash TEXT PRIMARY KEY,
+  evento_id INTEGER NOT NULL,
+  criado_em TEXT,
+  expira_em TEXT NOT NULL,
+  usado_em TEXT
+)`, `CREATE TABLE IF NOT EXISTS codigos_troca (
+  codigo_hash TEXT PRIMARY KEY,
+  tipo TEXT NOT NULL,
+  evento_id INTEGER,
+  email TEXT,
+  expira_em TEXT NOT NULL
+)`];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

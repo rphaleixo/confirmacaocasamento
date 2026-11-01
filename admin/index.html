@@ -884,7 +884,7 @@
     <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ver site</a>
     <button id="copiarSite" class="hd-btn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="rot-longo">Copiar link do site</span></button>
     <button id="btnGoogle" class="hd-btn" type="button" hidden title="Quem pode entrar neste painel com a conta Google"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="rot-longo">Acesso Google</span></button>
-    <button id="btnConta" class="hd-btn" type="button" hidden title="Trocar o login e a senha do administrador geral"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="rot-longo">Minha conta</span></button>
+    <button id="btnConta" class="hd-btn" type="button" hidden title="Trocar o usuário e a senha de acesso"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="rot-longo">Minha conta</span></button>
     <button id="btnSair" class="hd-btn sair" type="button">Sair</button>
   </div>
 </header>
@@ -1295,6 +1295,13 @@
     try { cfg = await (await fetchOriginal('/api/google-config')).json(); } catch (e) { cfg = null; }
     if (!cfg || !cfg.clientId) return; // sem Client ID configurado, o botão simplesmente não aparece
     googleIniciado = true;
+    // no endereço de uma festa (nome.vemnafesta.com) o Google roda só em vemnafesta.com: um único endereço autorizado no Google para todas as festas
+    if (modoEvento && window.ROTAS.sub(location.hostname)) {
+      const alvo = document.getElementById('loginGoogleBtn');
+      alvo.appendChild(h('a', { class: 'btn', href: 'https://' + window.ROTAS.BASE + '/entrar/?e=' + encodeURIComponent(eventoAtual), style: 'min-height:44px;border-radius:999px;padding:0 22px;', text: 'Entrar com Google' }));
+      document.getElementById('loginGoogle').hidden = false;
+      return;
+    }
     const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
     s.onload = () => {
       window.google.accounts.id.initialize({ client_id: cfg.clientId, callback: aoEntrarComGoogle, ux_mode: 'popup', auto_select: false });
@@ -1355,10 +1362,39 @@
     desenhar();
   });
 
+  // usuário e senha do anfitrião (criar ou trocar), feitos por ele mesmo
+  async function abrirSenhaAnfitriao() {
+    montarPassos(0, []); delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const atual = await api('/api/admin/senha-anfitriao');
+    if (atual.erro) { toast(atual.erro, 'err'); return; }
+    const usuario = inputTexto(atual.usuario, 'Ex.: helena.mae'); usuario.id = 'sa-usuario'; usuario.autocomplete = 'username'; usuario.maxLength = 40;
+    const mk = (id) => h('input', { type: 'password', id, autocomplete: 'new-password' });
+    const nova = mk('sa-nova'), repete = mk('sa-repete');
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(
+      h('p', { class: 'hint', style: 'margin:0 0 12px;', text: atual.usuario ? 'Troque o usuário ou a senha de entrada deste painel. A senha antiga deixa de valer assim que você salvar.' : 'Crie um usuário e uma senha para entrar neste painel sem depender do Google. Quem já entra com o Google continua entrando.' }),
+      campoTexto('Usuário', usuario),
+      h('div', { class: 'form-linha', style: 'margin-top:12px;' }, campoTexto('Nova senha', nova, 'Mínimo de 8 caracteres.'), campoTexto('Repita a senha', repete)), erro);
+    const salvar = async () => {
+      erro.hidden = true; const falha = (t) => { erro.textContent = t; erro.hidden = false; };
+      if (nova.value.length < 8) return falha('A senha precisa ter pelo menos 8 caracteres.');
+      if (nova.value !== repete.value) return falha('As duas senhas não são iguais.');
+      const r = await api('/api/admin/senha-anfitriao', 'POST', { usuario: usuario.value, senha: nova.value });
+      if (r.erro) return falha(r.erro);
+      if (!/^Bearer /.test(AUTH || '')) { let lembrado = false; try { lembrado = !!localStorage.getItem(CHAVE_AUTH); } catch (e) { /* segue */ } AUTH = basic(r.usuario, nova.value); gravarAuth(AUTH, lembrado); }
+      fecharDialogo(); toast('Usuário e senha salvos.');
+    };
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar', prim: true, fn: salvar }]);
+    abrirDialogo({ titulo: 'Usuário e senha do painel', largura: '480px' });
+    setTimeout(() => usuario.focus(), 30);
+  }
+
   // login e senha do administrador geral (só no painel master)
-  if (!modoEvento) document.getElementById('btnConta').hidden = false;
+  document.getElementById('btnConta').hidden = false;
   document.getElementById('btnGoogle').hidden = false;
   document.getElementById('btnConta').addEventListener('click', async () => {
+    if (modoEvento) { abrirSenhaAnfitriao(); return; }
     montarPassos(0, []);
     delete dlgEvento.dataset.fixo;
     const corpo = corpoDialogo();
@@ -1832,6 +1868,23 @@
     listaEventos = lista;
     desenharEventos();
   }
+  // link de primeiro acesso do anfitrião (uso único, vale 7 dias)
+  async function abrirConviteAcesso(ev) {
+    montarPassos(0, []); delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo(); corpo.appendChild(h('div', { class: 'carregando', text: 'Gerando o link…' }));
+    abrirDialogo({ titulo: 'Convite de acesso', sub: ev.nome, largura: '540px' });
+    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }]);
+    const r = await api('/api/admin/convite-acesso?e=' + encodeURIComponent(ev.slug), 'POST', {});
+    corpo.innerHTML = '';
+    if (r.erro) { corpo.appendChild(h('div', { class: 'erro-campo', text: r.erro })); return; }
+    const msg = 'Oi! Seu painel da festa "' + ev.nome + '" está pronto. Abra este link para criar seu acesso (vale por ' + r.dias + ' dias e só funciona uma vez): ' + r.url;
+    corpo.append(
+      h('p', { class: 'hint', style: 'margin:0 0 10px;', text: 'Mande este link ao anfitrião. Ele escolhe entrar com o Google ou criar um usuário e uma senha, e cai direto no assistente da festa. Só funciona uma vez e vale ' + r.dias + ' dias. Se gerar outro, os anteriores continuam valendo até serem usados ou vencerem.' }),
+      h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('code', { style: 'overflow-wrap:anywhere;', text: r.url }))));
+    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }, { rotulo: 'Copiar mensagem', fn: () => copiar(msg, 'Mensagem') }, { rotulo: 'Copiar link', fn: () => copiar(r.url, 'Link') },
+      { rotulo: 'Enviar por WhatsApp', prim: true, fn: () => window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener') }]);
+  }
+
   function desenharEventos() {
     const box = document.getElementById('ev-tbody');
     const q = slugifyLocal(document.getElementById('ev-busca').value);
@@ -1857,6 +1910,7 @@
         h('div', { class: 'acoes' },
           btn('Gerir evento', () => irParaEvento(ev.slug), 'sm prim'),
           btn('Editar', () => abrirEditarEvento(ev), 'sm'),
+          btn('Convite de acesso', () => abrirConviteAcesso(ev), 'sm'),
           h('a', { class: 'btn sm', href: urlSiteDe(ev.slug), target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Site' })));
       const avisos = [];
       if (ev.recadosPendentes) avisos.push(h('span', { class: 'chip warn', text: plural(ev.recadosPendentes, 'recado para aprovar', 'recados para aprovar') }));
@@ -5956,7 +6010,7 @@
     try {
       const chave = 'rsvp-assist-visto:' + eventoAtual;
       const ess = tarefasConvite(d).filter((t) => t.essencial);
-      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => t.feito).length <= 1) { localStorage.setItem(chave, '1'); abrirAssistente(); }
+      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => !t.feito).length >= 2) { localStorage.setItem(chave, '1'); abrirAssistente(); }
     } catch (e) { /* sem armazenamento: não abre sozinho */ }
   }
   function desenharPreparacao(d) {
@@ -6566,7 +6620,20 @@
     abrirHash(true);
   }
   prepararLogin();
-  if (AUTH) {
+  // voltando do login central (vemnafesta.com): troca o código de uso único por uma sessão neste endereço
+  const codigoTroca = (location.hash.match(/^#codigo=([a-f0-9]{64})$/i) || [])[1];
+  if (codigoTroca) {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* segue */ }
+    fetchOriginal('/api/entrar/trocar' + (eventoAtual ? '?e=' + encodeURIComponent(eventoAtual) : ''), { method: 'POST', body: JSON.stringify({ codigo: codigoTroca }), credentials: 'omit' })
+      .then((r) => r.json().then((d) => ({ ok: r.ok, d })))
+      .then(async (r) => {
+        if (!r.ok || !r.d.token) { mostrarLogin(r.d.erro || 'Não foi possível entrar. Tente de novo.'); return; }
+        const auth = 'Bearer ' + r.d.token; const v = await validarAcesso(auth);
+        if (!v.ok) { mostrarLogin(v.erro); return; }
+        AUTH = auth; avisoSessao = false; gravarAuth(auth, true); entrarNoApp();
+      })
+      .catch(() => mostrarLogin('Sem conexão com o servidor. Confira sua internet.'));
+  } else if (AUTH) {
     // confere em silêncio se o acesso guardado ainda vale
     validarAcesso(AUTH).then((r) => { if (r.ok) entrarNoApp(); else { AUTH = null; apagarAuth(); mostrarLogin(r.erro && /conexão/.test(r.erro) ? r.erro : 'Entre de novo para continuar.'); } });
   } else {

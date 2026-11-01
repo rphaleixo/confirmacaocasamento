@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Entrar • Vem na Festa</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(160deg,#EAF1FB,#fff);color:#14213D;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .c{width:100%;max-width:440px;background:#fff;border:1px solid #D6DEEA;border-radius:22px;padding:30px 24px;box-shadow:0 18px 50px -24px rgba(11,37,69,.35)}
+  .k{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#C9A227;font-weight:700}
+  h1{font-family:Georgia,serif;font-style:italic;font-weight:500;font-size:28px;color:#0B2545;margin:8px 0 6px;line-height:1.2}
+  p{font-size:14.5px;line-height:1.55;color:#4A5568;margin:0 0 14px}
+  label{display:block;font-size:12.5px;font-weight:700;margin:14px 0 5px}
+  input{width:100%;padding:12px 14px;border:1.5px solid #CBD5E1;border-radius:12px;font-size:16px;font-family:inherit}
+  input:focus{outline:none;border-color:#2F5D9A}
+  button.p{width:100%;margin-top:18px;background:#0B2545;color:#fff;border:none;border-radius:999px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+  button.p:disabled{opacity:.6}
+  .ou{display:flex;align-items:center;gap:10px;color:#94A3B8;font-size:12px;margin:20px 0 14px}.ou::before,.ou::after{content:'';flex:1;height:1px;background:#E2E8F0}
+  #gbtn{display:flex;justify-content:center;min-height:44px}
+  .erro{background:#FDECEC;color:#B42318;border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:14px}
+  .dica{font-size:12px;color:#64748B;margin-top:6px}
+</style>
+</head>
+<body>
+<main class="c" id="app"><div class="k">Vem na Festa</div><h1>Um instante…</h1></main>
+<script>
+(function () {
+  var app = document.getElementById('app');
+  var m = location.pathname.match(/^\/entrar\/([A-Za-z0-9]{48})\/?$/);
+  var token = m ? m[1] : null;
+  var slug = new URLSearchParams(location.search).get('e');
+
+  function el(html) { app.innerHTML = html; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function erro(msg) { var e = document.getElementById('erro'); if (e) { e.textContent = msg; e.hidden = !msg; } }
+  function post(url, corpo) {
+    return fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .catch(function () { return { ok: false, d: { erro: 'Sem conexão. Confira sua internet.' } }; });
+  }
+  function botaoGoogle(clientId, aoCredencial) {
+    var s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+    s.onload = function () {
+      google.accounts.id.initialize({ client_id: clientId, callback: function (r) { aoCredencial(r.credential); }, auto_select: false });
+      google.accounts.id.renderButton(document.getElementById('gbtn'), { theme: 'outline', size: 'large', text: 'continue_with', shape: 'pill', locale: 'pt-BR', width: 300 });
+    };
+    document.head.appendChild(s);
+  }
+
+  // ---- 1) primeiro acesso: /entrar/<convite> ----
+  if (token) {
+    fetch('/api/entrar/convite?t=' + token).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); }).then(function (res) {
+      if (!res.ok) { el('<div class="k">Vem na Festa</div><h1>Convite indisponível</h1><p>' + esc(res.d.erro || 'Este convite não vale mais.') + '</p>'); return; }
+      var ev = res.d.evento;
+      el('<div class="k">Seu convite de acesso</div><h1>Bem-vindo(a)! Vamos cuidar de “' + esc(ev.nome) + '”</h1>' +
+        '<p>Escolha como você quer entrar no painel da sua festa. Você pode usar os dois depois, se quiser.</p>' +
+        (res.d.clientId ? '<div id="gbtn"></div><div class="ou">ou crie um usuário e uma senha</div>' : '') +
+        '<form id="f" novalidate><label for="u">Usuário</label><input id="u" autocomplete="username" maxlength="40" placeholder="Ex.: helena.mae">' +
+        '<label for="s">Senha</label><input id="s" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres">' +
+        '<label for="s2">Repita a senha</label><input id="s2" type="password" autocomplete="new-password">' +
+        '<div class="dica">Este link só funciona uma vez.</div><div class="erro" id="erro" hidden></div>' +
+        '<button class="p" id="b" type="submit">Entrar no painel</button></form>');
+      if (res.d.clientId) botaoGoogle(res.d.clientId, function (cred) {
+        post('/api/entrar/convite', { t: token, acao: 'google', credential: cred }).then(function (r) { if (r.ok) location.href = r.d.destino; else erro(r.d.erro || 'Não foi possível entrar com o Google.'); });
+      });
+      document.getElementById('f').addEventListener('submit', function (ev2) {
+        ev2.preventDefault();
+        var u = document.getElementById('u').value.trim(), s = document.getElementById('s').value, s2 = document.getElementById('s2').value;
+        if (u.length < 3) return erro('Escolha um usuário com pelo menos 3 caracteres.');
+        if (s.length < 8) return erro('A senha precisa ter pelo menos 8 caracteres.');
+        if (s !== s2) return erro('As duas senhas não são iguais.');
+        var b = document.getElementById('b'); b.disabled = true; b.textContent = 'Entrando…'; erro('');
+        post('/api/entrar/convite', { t: token, acao: 'senha', usuario: u, senha: s }).then(function (r) {
+          if (r.ok) location.href = r.d.destino; else { b.disabled = false; b.textContent = 'Entrar no painel'; erro(r.d.erro || 'Não foi possível criar o acesso.'); }
+        });
+      });
+    });
+    return;
+  }
+
+  // ---- 2) entrar com o Google em uma festa: /entrar/?e=<festa> ----
+  if (slug) {
+    fetch('/api/google-config').then(function (r) { return r.json(); }).then(function (cfg) {
+      if (!cfg.clientId) { el('<div class="k">Vem na Festa</div><h1>Entrar com o Google</h1><p>Este recurso ainda não está ligado. Volte e use seu usuário e senha.</p>'); return; }
+      el('<div class="k">Painel da festa</div><h1>Entrar com o Google</h1><p>Use a conta Google que foi liberada para cuidar desta festa.</p><div id="gbtn"></div><div class="erro" id="erro" hidden></div>' +
+        '<p class="dica" style="margin-top:16px"><a href="javascript:history.back()">Voltar</a></p>');
+      botaoGoogle(cfg.clientId, function (cred) {
+        post('/api/entrar/google?e=' + encodeURIComponent(slug), { credential: cred, trocar: true }).then(function (r) { if (r.ok) location.href = r.d.destino; else erro(r.d.erro || 'Não foi possível entrar com o Google.'); });
+      });
+    });
+    return;
+  }
+  el('<div class="k">Vem na Festa</div><h1>Entrar</h1><p>Abra o link de acesso que você recebeu, ou o endereço do painel da sua festa.</p>');
+})();
+</script>
+</body>
+</html>

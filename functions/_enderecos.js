@@ -16,6 +16,8 @@ export function rotaDeEndereco(url) {
   const host = url.hostname.toLowerCase();
   const caminho = url.pathname;
   const sub = subdominio(host);
+  // página de primeiro acesso: /entrar/<convite> mostra o mesmo arquivo /entrar/ (o código do convite fica na barra de endereço)
+  if (!sub && /^\/entrar\/[A-Za-z0-9]+\/?$/.test(caminho)) return { tipo: 'estatico', url: url.origin + '/entrar/' };
   const paginaDoEvento = caminho === '/' || /^\/(admin|presentes)\/?$/.test(caminho);
   if (sub) {
     if (paginaDoEvento) return { tipo: 'reescrever', url: url.origin + '/e/' + sub + (caminho === '/' ? '/' : caminho) + url.search };

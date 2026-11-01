@@ -3,7 +3,7 @@
 import { cpSync, rmSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 
 const DESTINO = '.public';
-const PASTAS = ['admin', 'presentes', 'landing'];
+const PASTAS = ['admin', 'presentes', 'landing', 'entrar'];
 const EXTENSOES = /\.(html|js|css|jpg|jpeg|png|svg|webp|ico|webmanifest)$/i;
 
 rmSync(DESTINO, { recursive: true, force: true });
