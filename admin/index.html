@@ -919,9 +919,9 @@
   </section>
 
   <section id="tab-anfitrioes" class="tab">
-    <div class="pag-head"><div><h2>Anfitriões</h2><p>O anfitrião entra pelo painel do próprio evento e só enxerga esse evento. Aqui você cria o acesso, troca a senha ou revoga. Sem acesso de anfitrião, só você gerencia o evento.</p></div></div>
+    <div class="pag-head"><div><h2>Anfitriões</h2><p>O anfitrião entra pelo painel do próprio evento e só enxerga esse evento. É aqui que você cuida de todo o acesso: “Convidar anfitrião” gera um link para ele escolher entrar com o Google ou criar usuário e senha. Sem acesso de anfitrião, só você gerencia o evento.</p></div></div>
     <div class="tabela-wrap"><table>
-      <thead><tr><th>Evento</th><th>Painel do anfitrião</th><th>Usuário</th><th>Ações</th></tr></thead>
+      <thead><tr><th>Evento</th><th>Painel do anfitrião</th><th>Como entra</th><th>Ações</th></tr></thead>
       <tbody id="an-tbody"><tr><td colspan="4" class="carregando">Carregando…</td></tr></tbody>
     </table></div>
   </section>
@@ -1329,15 +1329,17 @@
   }
   // quem pode entrar com a conta Google: o administrador geral (fora de um evento) ou os anfitriões do evento aberto
   if (!AUTH) setTimeout(iniciarLoginGoogle, 0);
-  document.getElementById('btnGoogle').addEventListener('click', async () => {
+  async function abrirContasGoogle(slugAlvo) {
+    const alvo = slugAlvo || eventoAtual;
+    const rotaGE = '/api/admin/google-emails' + (slugAlvo && !eventoAtual ? '?e=' + encodeURIComponent(slugAlvo) : '');
     montarPassos(0, []); delete dlgEvento.dataset.fixo;
-    const geral = !eventoAtual;
+    const geral = !alvo;
     const corpo = corpoDialogo();
     const caixa = h('div'); corpo.appendChild(caixa);
     const erro = h('div', { class: 'erro-campo', hidden: true });
     const campo = inputTexto('', 'nome@gmail.com'); campo.type = 'email'; campo.id = 'gg-email'; campo.autocomplete = 'off';
     const desenhar = async () => {
-      const d = await api('/api/admin/google-emails');
+      const d = await api(rotaGE);
       caixa.innerHTML = '';
       if (d.erro) { caixa.textContent = d.erro; return; }
       caixa.appendChild(h('p', { class: 'hint', style: 'margin:0 0 10px;', text: geral
@@ -1346,12 +1348,12 @@
       if (!d.ativo) caixa.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 10px;', text: 'O botão "Entrar com Google" ainda não está ligado neste site (falta configurar o ID de cliente do Google). Você já pode cadastrar os e-mails.' }));
       (d.fixos || []).forEach((e) => caixa.appendChild(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('b', { text: e }), h('span', { class: 'chip sem-ponto', text: 'definido na hospedagem' })))));
       d.emails.forEach((e) => caixa.appendChild(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('b', { text: e })),
-        btn('Remover', async () => { if (!(await confirmar({ titulo: 'Remover ' + e + '?', texto: 'Essa conta deixa de entrar com o Google e, se estiver com o painel aberto, é desconectada.', rotulo: 'Remover', perigo: true }))) return; const r = await api('/api/admin/google-emails', 'DELETE', { email: e }); if (r.erro) { toast(r.erro, 'err'); return; } desenhar(); }, 'sm fantasma'))));
+        btn('Remover', async () => { if (!(await confirmar({ titulo: 'Remover ' + e + '?', texto: 'Essa conta deixa de entrar com o Google e, se estiver com o painel aberto, é desconectada.', rotulo: 'Remover', perigo: true }))) return; const r = await api(rotaGE, 'DELETE', { email: e }); if (r.erro) { toast(r.erro, 'err'); return; } desenhar(); }, 'sm fantasma'))));
       if (!d.emails.length && !(d.fixos || []).length) caixa.appendChild(h('p', { class: 'hint', text: 'Nenhuma conta liberada ainda.' }));
     };
     const add = async () => {
       erro.hidden = true;
-      const r = await api('/api/admin/google-emails', 'POST', { email: campo.value });
+      const r = await api(rotaGE, 'POST', { email: campo.value });
       if (r.erro) { erro.textContent = r.erro; erro.hidden = false; return; }
       campo.value = ''; toast('E-mail liberado'); desenhar();
     };
@@ -1360,7 +1362,8 @@
     montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }]);
     abrirDialogo({ titulo: 'Acesso com a conta Google', sub: geral ? 'Administrador geral' : 'Anfitriões deste evento', largura: '520px' });
     desenhar();
-  });
+  }
+  document.getElementById('btnGoogle').addEventListener('click', () => abrirContasGoogle());
 
   // usuário e senha do anfitrião (criar ou trocar), feitos por ele mesmo
   async function abrirSenhaAnfitriao() {
@@ -1910,11 +1913,10 @@
         h('div', { class: 'acoes' },
           btn('Gerir evento', () => irParaEvento(ev.slug), 'sm prim'),
           btn('Editar', () => abrirEditarEvento(ev), 'sm'),
-          btn('Convite de acesso', () => abrirConviteAcesso(ev), 'sm'),
           h('a', { class: 'btn sm', href: urlSiteDe(ev.slug), target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Site' })));
       const avisos = [];
       if (ev.recadosPendentes) avisos.push(h('span', { class: 'chip warn', text: plural(ev.recadosPendentes, 'recado para aprovar', 'recados para aprovar') }));
-      if (!ev.anfitriaoUsuario) avisos.push(h('span', { class: 'chip', text: 'Sem anfitrião' }));
+      if (!ev.anfitriaoUsuario && !ev.emailsGoogle) { const sa = h('button', { type: 'button', class: 'chip', style: 'cursor:pointer;border:none;', title: 'Convidar o anfitrião na aba Anfitriões', text: 'Sem anfitrião · convidar' }); sa.addEventListener('click', () => navegar('anfitrioes')); avisos.push(sa); }
       avisos.push(h('span', { class: 'chip sem-ponto', text: ev.ultimaConfirmacao ? 'Última confirmação ' + fmtRelativo(ev.ultimaConfirmacao) : 'Nenhuma confirmação ainda' }));
       card.appendChild(h('div', { class: 'avisos' }, avisos));
       box.appendChild(card);
@@ -1929,13 +1931,20 @@
     listaEventos = lista;
     tbody.innerHTML = '';
     listaEventos.forEach((ev) => {
+      const temSenha = !!ev.anfitriaoUsuario, nGoogle = ev.emailsGoogle || 0, semAcesso = !temSenha && !nGoogle;
       const acoes = h('div', { class: 'acoes' });
-      acoes.appendChild(btn(ev.anfitriaoUsuario ? 'Trocar senha' : 'Criar acesso', () => abrirLoginAnfitriao(ev), ev.anfitriaoUsuario ? 'sm' : 'sm prim'));
-      if (ev.anfitriaoUsuario) acoes.appendChild(btn('Revogar', () => revogarAcesso(ev), 'sm'));
+      acoes.appendChild(btn(semAcesso ? 'Convidar anfitrião' : 'Novo convite', () => abrirConviteAcesso(ev), semAcesso ? 'sm prim' : 'sm'));
+      acoes.appendChild(btn('Contas Google', () => abrirContasGoogle(ev.slug), 'sm'));
+      acoes.appendChild(btn(temSenha ? 'Trocar senha' : 'Definir senha', () => abrirLoginAnfitriao(ev), 'sm'));
+      if (!semAcesso) acoes.appendChild(btn('Revogar tudo', () => revogarAcesso(ev), 'sm fantasma'));
+      const status = h('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;' },
+        temSenha ? h('span', { class: 'chip ok', text: 'Senha: ' + ev.anfitriaoUsuario }) : null,
+        nGoogle ? h('span', { class: 'chip ok', text: nGoogle === 1 ? '1 conta Google' : nGoogle + ' contas Google' }) : null,
+        semAcesso ? h('span', { class: 'chip', text: 'Sem acesso' }) : null);
       tbody.appendChild(h('tr', {},
         h('td', {}, h('div', { class: 't-nome', text: ev.nome }), h('div', { class: 't-sub', text: ev.tipoNome })),
         h('td', {}, h('div', { style: 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;' }, h('code', { class: 'codigo', text: window.ROTAS.endereco(ev.slug) + '/admin' }), btn('Copiar', () => copiar(urlAnfitriao(ev.slug), 'Link do painel'), 'xs fantasma', 'copiar'))),
-        h('td', {}, ev.anfitriaoUsuario ? h('span', { class: 'chip ok', text: ev.anfitriaoUsuario }) : h('span', { class: 'chip', text: 'Sem acesso' })),
+        h('td', {}, status),
         h('td', {}, acoes)));
     });
   }

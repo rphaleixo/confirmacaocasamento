@@ -19,6 +19,7 @@ export async function onRequestGet({ env, data }) {
   const { results } = await env.DB
     .prepare(
       `SELECT e.id, e.slug, e.nome, e.tipo, e.criado_em AS criadoEm, e.admin_usuario AS anfitriaoUsuario,
+              (SELECT COUNT(*) FROM admin_google ag WHERE ag.evento_id = e.id) AS emailsGoogle,
               (SELECT COUNT(*) FROM grupos g WHERE g.evento_id = e.id) AS grupos,
               (SELECT COUNT(*) FROM grupos g WHERE g.evento_id = e.id AND g.status_abertura = 'Aberto') AS gruposAbertos,
               (SELECT COUNT(*) FROM convidados c JOIN grupos g ON g.codigo = c.codigo_grupo WHERE g.evento_id = e.id) AS convidados,
