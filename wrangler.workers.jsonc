@@ -1,0 +1,16 @@
+// Configuração para rodar no Cloudflare Workers (com arquivos estáticos). Convive com o wrangler.toml (Pages) até a troca de endereço.
+// Gerar o código das rotas: npx wrangler@4 pages functions build --outdir=.build/_worker.js
+// Publicar:                 npx wrangler@4 deploy -c wrangler.workers.jsonc
+{
+  "name": "confirmacaocasamento",
+  "main": ".build/_worker.js/index.js",
+  "compatibility_date": "2026-09-05",
+  "assets": { "directory": ".", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "confirmacaocasamento", "database_id": "0ece6983-d130-4724-841c-18288f1ddaa1" }
+  ],
+  "r2_buckets": [
+    { "binding": "MEDIA", "bucket_name": "confirmacaocasamento-media" }
+  ],
+  "observability": { "enabled": true }
+}

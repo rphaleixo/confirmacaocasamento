@@ -1,0 +1,15 @@
+# Não publicar como arquivo do site: código do servidor, banco, configurações e ferramentas
+functions
+.build
+node_modules
+*.sql
+wrangler.toml
+wrangler.workers.jsonc
+.assetsignore
+.gitignore
+package.json
+package-lock.json
+README.md
+_worker.js
+.wrangler
+.dev.vars
