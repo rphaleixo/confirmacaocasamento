@@ -17,6 +17,8 @@
   ],
   // Domínio próprio: vemnafesta.com (apex) como Custom Domain e todos os subdomínios (um por evento) por uma rota com curinga.
   // Requer o registro DNS * (AAAA 100:: com proxy ligado) no domínio.
+  // Mantém também o endereço de testes vemnafesta.aleixo.workers.dev (por padrão o Wrangler o desliga quando há domínio próprio).
+  "workers_dev": true,
   "routes": [
     { "pattern": "vemnafesta.com", "custom_domain": true },
     { "pattern": "*.vemnafesta.com/*", "zone_name": "vemnafesta.com" }
