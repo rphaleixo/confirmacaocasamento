@@ -369,6 +369,7 @@
   .cp-acoes{margin-top:10px;display:flex;gap:8px;}
   /* ---------- preparar o convite ---------- */
   .sw-avancado{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;white-space:nowrap;padding:0 6px;}
+  .login-google{margin-top:16px;text-align:center;} .login-google .ou{display:flex;align-items:center;gap:10px;color:var(--ink-faint);font-size:12px;margin:0 0 12px;} .login-google .ou::before,.login-google .ou::after{content:'';flex:1;height:1px;background:var(--line);} #loginGoogleBtn{display:flex;justify-content:center;min-height:44px;}
   .faixa-rascunho{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#FFF3D6;color:#5C3A00;border-bottom:1px solid #F0D9A0;padding:9px max(16px,calc((100vw - 1100px)/2));font-size:13px;}
   .faixa-rascunho .ic{font-size:16px;} .faixa-rascunho .t{flex:1 1 220px;line-height:1.4;}
   .prep-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin:0 0 16px;box-shadow:var(--sombra-suave,0 6px 18px -12px rgba(11,37,69,.25));}
@@ -866,6 +867,7 @@
     <label class="check" for="loginLembrar"><input type="checkbox" id="loginLembrar"> Continuar conectado neste aparelho</label>
     <div class="login-erro" id="loginErro" role="alert" hidden></div>
     <button type="submit" class="btn prim" id="loginBtn">Entrar</button>
+    <div id="loginGoogle" class="login-google" hidden><div class="ou"><span>ou</span></div><div id="loginGoogleBtn"></div><div class="dica-campo" id="loginGoogleDica"></div></div>
     <p class="login-rodape" id="loginRodape">Esqueceu a senha? Peça um novo acesso a quem criou o seu evento.</p>
   </form>
 </div>
@@ -881,6 +883,7 @@
     <a id="voltarPlataforma" class="hd-btn" href="/admin/" hidden>← <span class="rot-longo">Plataforma</span></a>
     <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ver site</a>
     <button id="copiarSite" class="hd-btn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="rot-longo">Copiar link do site</span></button>
+    <button id="btnGoogle" class="hd-btn" type="button" hidden title="Quem pode entrar neste painel com a conta Google"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="rot-longo">Acesso Google</span></button>
     <button id="btnConta" class="hd-btn" type="button" hidden title="Trocar o login e a senha do administrador geral"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="rot-longo">Minha conta</span></button>
     <button id="btnSair" class="hd-btn sair" type="button">Sair</button>
   </div>
@@ -1284,8 +1287,77 @@
     gravarAuth(auth, document.getElementById('loginLembrar').checked);
     entrarNoApp();
   });
+  // ---- Entrar com Google (administrador geral e anfitriões): o Google confirma quem é; o servidor só deixa entrar e-mails liberados ----
+  let googleIniciado = false;
+  async function iniciarLoginGoogle() {
+    if (googleIniciado) return;
+    let cfg = null;
+    try { cfg = await (await fetchOriginal('/api/google-config')).json(); } catch (e) { cfg = null; }
+    if (!cfg || !cfg.clientId) return; // sem Client ID configurado, o botão simplesmente não aparece
+    googleIniciado = true;
+    const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+    s.onload = () => {
+      window.google.accounts.id.initialize({ client_id: cfg.clientId, callback: aoEntrarComGoogle, ux_mode: 'popup', auto_select: false });
+      window.google.accounts.id.renderButton(document.getElementById('loginGoogleBtn'), { theme: 'outline', size: 'large', text: 'signin_with', shape: 'pill', locale: 'pt-BR', width: 280 });
+      document.getElementById('loginGoogle').hidden = false;
+    };
+    document.head.appendChild(s);
+  }
+  async function aoEntrarComGoogle(resp) {
+    const erro = document.getElementById('loginErro');
+    erro.hidden = true;
+    let r, d;
+    try {
+      const alvo = '/api/entrar/google' + (eventoAtual ? '?e=' + encodeURIComponent(eventoAtual) : '');
+      r = await fetchOriginal(alvo, { method: 'POST', body: JSON.stringify({ credential: resp.credential }), credentials: 'omit' });
+      d = await r.json();
+    } catch (e) { erro.textContent = 'Sem conexão com o servidor. Confira sua internet.'; erro.hidden = false; return; }
+    if (!r.ok || !d.token) { erro.textContent = d.erro || 'Não foi possível entrar com o Google.'; erro.hidden = false; return; }
+    const auth = 'Bearer ' + d.token;
+    const v = await validarAcesso(auth);
+    if (!v.ok) { erro.textContent = v.erro; erro.hidden = false; return; }
+    AUTH = auth; avisoSessao = false;
+    gravarAuth(auth, document.getElementById('loginLembrar').checked);
+    entrarNoApp();
+  }
+  // quem pode entrar com a conta Google: o administrador geral (fora de um evento) ou os anfitriões do evento aberto
+  if (!AUTH) setTimeout(iniciarLoginGoogle, 0);
+  document.getElementById('btnGoogle').addEventListener('click', async () => {
+    montarPassos(0, []); delete dlgEvento.dataset.fixo;
+    const geral = !eventoAtual;
+    const corpo = corpoDialogo();
+    const caixa = h('div'); corpo.appendChild(caixa);
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    const campo = inputTexto('', 'nome@gmail.com'); campo.type = 'email'; campo.id = 'gg-email'; campo.autocomplete = 'off';
+    const desenhar = async () => {
+      const d = await api('/api/admin/google-emails');
+      caixa.innerHTML = '';
+      if (d.erro) { caixa.textContent = d.erro; return; }
+      caixa.appendChild(h('p', { class: 'hint', style: 'margin:0 0 10px;', text: geral
+        ? 'Estas contas Google entram no painel geral como administradoras, pelo botão "Entrar com Google" da tela de entrada. A senha continua funcionando.'
+        : 'Estas contas Google entram neste painel pelo botão "Entrar com Google" da tela de entrada, sem precisar de senha. O e-mail precisa ser exatamente o da conta Google da pessoa.' }));
+      if (!d.ativo) caixa.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 10px;', text: 'O botão "Entrar com Google" ainda não está ligado neste site (falta configurar o ID de cliente do Google). Você já pode cadastrar os e-mails.' }));
+      (d.fixos || []).forEach((e) => caixa.appendChild(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('b', { text: e }), h('span', { class: 'chip sem-ponto', text: 'definido na hospedagem' })))));
+      d.emails.forEach((e) => caixa.appendChild(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('b', { text: e })),
+        btn('Remover', async () => { if (!(await confirmar({ titulo: 'Remover ' + e + '?', texto: 'Essa conta deixa de entrar com o Google e, se estiver com o painel aberto, é desconectada.', rotulo: 'Remover', perigo: true }))) return; const r = await api('/api/admin/google-emails', 'DELETE', { email: e }); if (r.erro) { toast(r.erro, 'err'); return; } desenhar(); }, 'sm fantasma'))));
+      if (!d.emails.length && !(d.fixos || []).length) caixa.appendChild(h('p', { class: 'hint', text: 'Nenhuma conta liberada ainda.' }));
+    };
+    const add = async () => {
+      erro.hidden = true;
+      const r = await api('/api/admin/google-emails', 'POST', { email: campo.value });
+      if (r.erro) { erro.textContent = r.erro; erro.hidden = false; return; }
+      campo.value = ''; toast('E-mail liberado'); desenhar();
+    };
+    campo.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); add(); } });
+    corpo.append(h('div', { style: 'display:flex;gap:8px;align-items:flex-end;margin-top:12px;' }, h('div', { style: 'flex:1;' }, campoTexto('Liberar uma conta Google', campo)), btn('Liberar', add, 'prim')), erro);
+    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }]);
+    abrirDialogo({ titulo: 'Acesso com a conta Google', sub: geral ? 'Administrador geral' : 'Anfitriões deste evento', largura: '520px' });
+    desenhar();
+  });
+
   // login e senha do administrador geral (só no painel master)
   if (!modoEvento) document.getElementById('btnConta').hidden = false;
+  document.getElementById('btnGoogle').hidden = false;
   document.getElementById('btnConta').addEventListener('click', async () => {
     montarPassos(0, []);
     delete dlgEvento.dataset.fixo;

@@ -123,3 +123,19 @@ CREATE TABLE IF NOT EXISTS removidos (
   removido_em TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_removidos_evento ON removidos(evento_id);
+
+-- Entrar com Google: sessões do painel (guardamos só o hash do código) e e-mails Google com acesso (evento_id 0 = administrador geral).
+CREATE TABLE IF NOT EXISTS sessoes (
+  token_hash TEXT PRIMARY KEY,
+  tipo TEXT NOT NULL,            -- 'master' | 'evento'
+  evento_id INTEGER,
+  email TEXT,
+  criado_em TEXT,
+  expira_em TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS admin_google (
+  email TEXT NOT NULL,           -- e-mail da conta Google (minúsculas)
+  evento_id INTEGER NOT NULL,    -- 0 = administrador geral
+  criado_em TEXT,
+  PRIMARY KEY (email, evento_id)
+);

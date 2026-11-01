@@ -213,6 +213,24 @@ const MIGRACOES = [
 )`, 'CREATE INDEX IF NOT EXISTS idx_removidos_evento ON removidos(evento_id)'];
     },
   },
+  {
+    id: '012-entrar-com-google',
+    async comandos() {
+      return [`CREATE TABLE IF NOT EXISTS sessoes (
+  token_hash TEXT PRIMARY KEY,
+  tipo TEXT NOT NULL,            -- 'master' | 'evento'
+  evento_id INTEGER,
+  email TEXT,
+  criado_em TEXT,
+  expira_em TEXT NOT NULL
+)`, `CREATE TABLE IF NOT EXISTS admin_google (
+  email TEXT NOT NULL,           -- e-mail da conta Google (minúsculas)
+  evento_id INTEGER NOT NULL,    -- 0 = administrador geral
+  criado_em TEXT,
+  PRIMARY KEY (email, evento_id)
+)`];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

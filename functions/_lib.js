@@ -1,3 +1,5 @@
+import { buscarSessao } from './_sessao.js';
+
 // Helpers compartilhados pelas rotas de /functions/api. Prefixo "_" faz a Cloudflare Pages
 // ignorar este arquivo como rota — só é importado pelos outros.
 
@@ -59,6 +61,16 @@ export async function masterConfere(env, cred) {
 }
 
 export async function identificarAdmin(request, env) {
+  // Entrar com Google: Authorization: Bearer <código da sessão>
+  const bearer = /^Bearer\s+([a-f0-9]{64})$/i.exec(request.headers.get('Authorization') || '');
+  if (bearer) {
+    const sessao = await buscarSessao(env.DB, bearer[1].toLowerCase());
+    if (!sessao) return null;
+    if (sessao.tipo === 'master') return { tipo: 'master', email: sessao.email };
+    const slugB = (new URL(request.url).searchParams.get('e') || '').trim().toLowerCase();
+    const evB = slugB ? await env.DB.prepare('SELECT id FROM eventos WHERE slug = ?').bind(slugB).first() : null;
+    return evB && evB.id === sessao.eventoId ? { tipo: 'evento', eventoId: evB.id, email: sessao.email } : null;
+  }
   const cred = lerBasicAuth(request);
   if (!cred) return null;
   if (await masterConfere(env, cred)) return { tipo: 'master' };
