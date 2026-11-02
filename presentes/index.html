@@ -111,6 +111,16 @@
   .gift-filtro{display:flex;justify-content:center;gap:6px;margin:0 0 18px;}
   .gift-filtro button{border:1px solid var(--border);background:transparent;color:var(--wine);border-radius:999px;padding:8px 16px;font-size:13px;min-height:40px;}
   .gift-filtro button[aria-pressed=true]{background:var(--wine);color:var(--on-wine);border-color:var(--wine);}
+  .gift-filtros{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 18px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--cream);text-align:left;}
+  .gift-filtros label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-soft);min-width:0;}
+  .gift-filtros input[type=search],.gift-filtros input[type=text],.gift-filtros select{min-height:44px;border:1px solid var(--border);border-radius:10px;padding:0 12px;font:inherit;font-size:14px;color:var(--ink);background:#fff;width:100%;}
+  .gift-filtros .ff-busca{grid-column:1/-1;}
+  .gift-filtros .ff-cat{grid-column:1/-1;}
+  .gift-filtros .ff-linha{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .gift-filtros .ff-chk{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--ink);min-height:44px;}
+  .gift-filtros .ff-chk input{width:20px;height:20px;}
+  .gift-filtros .ff-limpar{border:none;background:none;color:var(--wine);font-size:13px;text-decoration:underline;min-height:44px;padding:0 6px;cursor:pointer;}
+  .gift-item-cat{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--wine-soft);margin-bottom:3px;}
   .gift-itens{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 26px;text-align:left;}
   @media (min-width:640px){.gift-itens{grid-template-columns:1fr 1fr;}}
   .gift-item{background:#fff;color:var(--ink);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center;transition:opacity .3s;}
@@ -173,10 +183,13 @@
       <p id="pgTexto" hidden></p>
     </header>
     <div class="pag-resumo" id="pgResumo"></div>
-    <div class="gift-filtro" id="pgFiltro" hidden>
-      <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
-      <button type="button" data-filtro="livres" aria-pressed="false">Disponíveis</button>
-    </div>
+    <form class="gift-filtros" id="pgFiltro" hidden onsubmit="return false" aria-label="Filtrar presentes">
+      <label class="ff-busca"><span>Buscar por nome</span><input type="search" id="ffBusca" placeholder="Ex.: panela" autocomplete="off"></label>
+      <label class="ff-cat" id="ffCatWrap" hidden><span>Categoria</span><select id="ffCat"><option value="">Todas</option></select></label>
+      <label class="ff-preco" id="ffMinWrap" hidden><span>Valor mínimo</span><input type="text" inputmode="decimal" id="ffMin" placeholder="R$ 0"></label>
+      <label class="ff-preco" id="ffMaxWrap" hidden><span>Valor máximo</span><input type="text" inputmode="decimal" id="ffMax" placeholder="R$ 1000"></label>
+      <div class="ff-linha"><label class="ff-chk"><input type="checkbox" id="ffLivres"> Mostrar apenas disponíveis</label><button type="button" class="ff-limpar" id="ffLimpar">Limpar filtros</button></div>
+    </form>
     <div class="gift-itens" id="pgLista"></div>
     <div class="gift-pix" id="pgPix" hidden>
       <div class="rot" id="pgPixTitulo">Prefere enviar um PIX?</div>
@@ -302,7 +315,7 @@
     definir($('pgTitulo'), t('presentes.lista_titulo', 'Lista de presentes'));
     const texto = t('presentes.lista_texto', '');
     $('pgTexto').innerHTML = window.HTML_SEGURO.limpar(texto); $('pgTexto').hidden = !window.HTML_SEGURO.texto(texto).trim();
-    $('pgFiltro').hidden = itens.length < 5;
+    $('pgFiltro').hidden = itens.length < 5; if (itens.length >= 5) prepararFiltros();
     const pix = t('presentes.chave_pix', ''), qr = t('presentes.pix_qrcode_url', '');
     if ((pix || qr) && t('presentes.mostrar_pix', '0') !== '0') {
       $('pgPix').hidden = false;
@@ -317,29 +330,56 @@
     revelar();
   }, function () { indisponivel('Não conseguimos carregar agora', 'Confira sua internet e tente de novo.'); });
 
-  document.querySelectorAll('#pgFiltro button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      filtro = b.dataset.filtro;
-      document.querySelectorAll('#pgFiltro button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
-      desenhar();
-    });
-  });
+  // ---- filtros: busca, categoria, faixa de valor e só disponíveis ----
+  const fil = { q: '', cat: '', min: null, max: null, livres: false };
+  function numeroBR(txt) { const b = String(txt || '').replace(/[R$\s]/g, ''); if (!b) return null; const n = parseFloat(b.indexOf(',') !== -1 ? b.replace(/\./g, '').replace(',', '.') : b); return isFinite(n) ? n : null; }
+  function norm(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function precoNum(item) {
+    if (typeof item.preco === 'number') return item.preco;
+    const n = numeroBR(item.preco); if (n !== null) return n;
+    // presentes antigos, com o valor só em texto (ex.: "R$ 140"): usa o número quando o texto é só o valor
+    return /^\s*(R\$)?\s*[\d.,]+\s*$/.test(String(item.valor || '')) ? numeroBR(item.valor) : null;
+  }
+  function precoTexto(item) { const n = precoNum(item); return n !== null ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : (item.valor || ''); }
+  function linkPagamento(item) { const l = String(item.link || '').trim(); return /^https:\/\//i.test(l) ? l : ''; }
+  function prepararFiltros() {
+    const cats = Array.from(new Set(itens.map(function (i) { return String(i.categoria || '').trim(); }).filter(Boolean))).sort();
+    const temPreco = itens.some(function (i) { return precoNum(i) !== null; });
+    $('ffCatWrap').hidden = !cats.length; $('ffMinWrap').hidden = !temPreco; $('ffMaxWrap').hidden = !temPreco;
+    cats.forEach(function (c) { const o = document.createElement('option'); o.value = c; o.textContent = c; $('ffCat').appendChild(o); });
+    $('ffBusca').addEventListener('input', function () { fil.q = norm(this.value); desenhar(); });
+    $('ffCat').addEventListener('change', function () { fil.cat = this.value; desenhar(); });
+    $('ffMin').addEventListener('input', function () { fil.min = numeroBR(this.value); desenhar(); });
+    $('ffMax').addEventListener('input', function () { fil.max = numeroBR(this.value); desenhar(); });
+    $('ffLivres').addEventListener('change', function () { fil.livres = this.checked; desenhar(); });
+    $('ffLimpar').addEventListener('click', function () { $('pgFiltro').reset(); fil.q = ''; fil.cat = ''; fil.min = null; fil.max = null; fil.livres = false; desenhar(); });
+  }
+  function passaFiltro(item) {
+    if (fil.livres && item.reservado) return false;
+    if (fil.cat && String(item.categoria || '').trim() !== fil.cat) return false;
+    if (fil.q && norm(item.nome + ' ' + (item.descricao || '')).indexOf(fil.q) === -1) return false;
+    const n = precoNum(item);
+    if (fil.min !== null && (n === null || n < fil.min)) return false;
+    if (fil.max !== null && (n === null || n > fil.max)) return false;
+    return true;
+  }
   const ICONE_PRESENTE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/></svg>';
   function desenhar() {
     const wrap = $('pgLista');
     wrap.innerHTML = '';
     const escolhidos = itens.filter(function (it) { return it.reservado; }).length;
     $('pgResumo').textContent = itens.length + (itens.length === 1 ? ' presente' : ' presentes') + (escolhidos ? ' · ' + escolhidos + (escolhidos === 1 ? ' já escolhido' : ' já escolhidos') : '');
-    itens.filter(function (it) { return filtro === 'todos' || !it.reservado; }).forEach(function (item) {
+    itens.filter(passaFiltro).forEach(function (item) {
       const card = document.createElement('div');
       card.className = 'gift-item' + (item.reservado ? ' reservado' : '');
       if (item.foto) { const img = document.createElement('img'); img.src = item.foto; img.alt = ''; img.loading = 'lazy'; card.appendChild(img); }
       else { const s = document.createElement('div'); s.className = 'sem-img'; s.innerHTML = ICONE_PRESENTE; card.appendChild(s); }
       const info = document.createElement('div'); info.className = 'gift-item-info';
+      if (item.categoria) { const ct = document.createElement('div'); ct.className = 'gift-item-cat'; ct.textContent = item.categoria; info.appendChild(ct); }
       const nome = document.createElement('div'); nome.className = 'gift-item-nome'; nome.textContent = item.nome || '';
       info.appendChild(nome);
       if (item.descricao) { const d = document.createElement('div'); d.className = 'gift-item-desc'; d.textContent = item.descricao; info.appendChild(d); }
-      if (item.valor) { const v = document.createElement('div'); v.className = 'gift-item-valor'; v.textContent = item.valor; info.appendChild(v); }
+      if (precoTexto(item)) { const v = document.createElement('div'); v.className = 'gift-item-valor'; v.textContent = precoTexto(item); info.appendChild(v); }
       card.appendChild(info);
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -351,7 +391,7 @@
     });
     if (!wrap.children.length) {
       const vazio = document.createElement('p'); vazio.className = 'vazio-msg';
-      vazio.textContent = 'Todos os presentes já foram escolhidos.' + ($('pgPix').hidden ? '' : ' A chave PIX continua disponível abaixo.');
+      vazio.textContent = (itens.some(function (it) { return !it.reservado; }) ? 'Nenhum presente com esses filtros.' : 'Todos os presentes já foram escolhidos.') + ($('pgPix').hidden ? '' : ' A chave PIX continua disponível abaixo.');
       wrap.appendChild(vazio);
     }
   }
@@ -381,7 +421,7 @@
   function abrirSheetPresente(item) {
     const pix = chavePix(), qr = qrPix();
     const resumo = '<div class="item-resumo">' + (item.foto ? '<img src="' + esc(item.foto) + '" alt="">' : '') +
-      '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, item.valor].filter(Boolean).join(' · ')) + '</span></div></div>';
+      '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, precoTexto(item)].filter(Boolean).join(' · ')) + '</span></div></div>';
     if (item.reservado) {
       abrirSheet('<h3 id="sheetTitulo">Este presente já foi escolhido</h3><p>Se foi você e mudou de ideia, dá para desfazer a escolha e liberar o presente para outra pessoa.</p>' + resumo +
         '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Manter escolhido</button><button type="button" class="pill solid small" data-acao="desfazer">Desfazer minha escolha</button></div>',
@@ -409,7 +449,10 @@
         item.reservado = reservado;
         desenhar();
         if (!reservado) { fecharSheet(); avisar('Escolha desfeita. O presente voltou para a lista.'); return; }
-        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + ((pix || qr) ? ' Se quiser enviar o valor por PIX, é por aqui:' : '') + '</p>' +
+        const pagar = linkPagamento(item);
+        abrirSheet('<h3 id="sheetTitulo">Obrigado pelo carinho 💛</h3><p>' + esc(item.nome) + ' agora aparece como escolhido.' + (pagar ? ' Para pagar, use o botão abaixo.' : (pix || qr) ? ' Se quiser enviar o valor por PIX, é por aqui:' : '') + '</p>' +
+          (pagar ? '<div class="acoes" style="margin-bottom:12px;"><a class="pill solid small" data-acao="pagar" href="' + esc(pagar) + '" target="_blank" rel="noopener noreferrer">Pagar este presente</a></div>' : '') +
+          (pagar && (pix || qr) ? '<p style="margin:0 0 8px;">Ou, se preferir, envie por PIX:</p>' : '') +
           ((pix || qr) ? '<div class="pix-box">' + (qr ? '<img src="' + esc(qr) + '" alt="QR Code do PIX" style="width:170px;height:170px;object-fit:contain;background:#fff;border-radius:10px;margin:0 auto 8px;display:block;">' : '') + (pix ? '<small>Chave PIX</small><b>' + esc(pix) + '</b><button type="button" class="pill solid small" data-acao="pix">Copiar chave PIX</button>' : '') + '</div>' : '') +
           '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Fechar</button></div>',
           function (corpo) {

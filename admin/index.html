@@ -4944,15 +4944,43 @@
 
     if (campo.tipo === 'lista_presentes') {
       const novoId = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      campoLista(fs, campo, () => ({ id: novoId(), nome: '', descricao: '', valor: '', foto: '', reservado: false }), (item, campos, mudou) => {
+      // categorias já usadas: viram sugestões no campo "Categoria" (digitar uma nova também vale)
+      const idCats = 'cats-' + Math.random().toString(36).slice(2, 7);
+      const listaCats = h('datalist', { id: idCats });
+      const cats = new Set();
+      try { JSON.parse(ctDados[campo.chave] || '[]').forEach((i) => { if (i && String(i.categoria || '').trim()) cats.add(String(i.categoria).trim()); }); } catch (e) { /* sem categorias ainda */ }
+      const atualizarCats = (nova) => { if (nova && nova.trim()) cats.add(nova.trim()); listaCats.innerHTML = ''; Array.from(cats).sort().forEach((c) => listaCats.appendChild(h('option', { value: c }))); };
+      campoLista(fs, campo, () => ({ id: novoId(), nome: '', descricao: '', categoria: '', valor: '', preco: '', link: '', foto: '', reservado: false }), (item, campos, mudou) => {
         if (!item.id) { item.id = novoId(); }
         const chk = h('input', { type: 'checkbox' }); chk.checked = !!item.reservado;
         chk.addEventListener('change', () => { item.reservado = chk.checked; mudou(); });
+        const preco = h('input', { type: 'text', inputmode: 'decimal', placeholder: 'Preço em reais (ex.: 250 ou 1.250,50)', 'aria-label': 'Preço em reais' });
+        // presentes antigos tinham só o "valor sugerido" em texto (ex.: R$ 150): se for só um valor, vira o preço
+        if ((item.preco === '' || item.preco == null) && /^\s*(R\$)?\s*[\d.,]+\s*$/.test(String(item.valor || ''))) {
+          const n0 = parseFloat(String(item.valor).replace(/[R$\s]/g, '').indexOf(',') !== -1 ? String(item.valor).replace(/[R$\s.]/g, '').replace(',', '.') : String(item.valor).replace(/[R$\s]/g, ''));
+          if (isFinite(n0)) item.preco = n0;
+        }
+        preco.value = item.preco === '' || item.preco == null ? '' : String(item.preco).replace('.', ',');
+        preco.addEventListener('input', () => {
+          const bruto = preco.value.trim();
+          if (!bruto) { item.preco = ''; mudou(); return; }
+          // aceita 1.250,50 (padrão brasileiro) e 1250.50
+          const n = parseFloat(bruto.indexOf(',') !== -1 ? bruto.replace(/\./g, '').replace(',', '.') : bruto);
+          item.preco = isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : '';
+          preco.setAttribute('aria-invalid', isFinite(n) && n >= 0 ? 'false' : 'true'); mudou();
+        });
+        const cat = inputLigado(item.categoria, 'Categoria (ex.: Cozinha)', (v) => { item.categoria = v; mudou(); });
+        cat.setAttribute('list', idCats);
+        const link = inputLigado(item.link, 'Link de pagamento (opcional, começa com https://)', (v) => { item.link = v.trim(); link.setAttribute('aria-invalid', !v.trim() || /^https:\/\//i.test(v.trim()) ? 'false' : 'true'); mudou(); });
+        link.type = 'url'; link.setAttribute('aria-label', 'Link de pagamento');
         campos.append(inputLigado(item.nome, 'Nome do presente', (v) => { item.nome = v; mudou(); }),
           inputLigado(item.descricao, 'Descrição (opcional)', (v) => { item.descricao = v; mudou(); }),
-          inputLigado(item.valor, 'Valor sugerido (ex.: R$ 150)', (v) => { item.valor = v; mudou(); }),
+          cat, preco, link,
+          h('div', { class: 'hint', style: 'margin:0;', text: 'Sem link de pagamento, o convidado vê o PIX do evento (se estiver ligado). Com link, o botão "Pagar" abre o seu link.' }),
           h('label', { class: 'check', style: 'margin-top:4px;font-size:12.5px;' }, chk, 'Já foi escolhido por um convidado'));
       }, 'Adicionar presente');
+      atualizarCats();
+      fs.appendChild(listaCats);
       return;
     }
 
