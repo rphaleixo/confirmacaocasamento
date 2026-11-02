@@ -1235,7 +1235,7 @@
     return fetchOriginal(url, opts);
   };
   // Chamada à API que sempre devolve um objeto (ou lista): em falha, { erro: 'mensagem legível' }
-  async function api(url, metodo, corpo) {
+  async function api(url, metodo, corpo, opcoesApi) {
     const opts = metodo ? { method: metodo } : {};
     if (corpo !== undefined) opts.body = typeof corpo === 'string' ? corpo : JSON.stringify(corpo);
     // Consultas e o salvamento do conteúdo (que só grava os mesmos valores de novo) podem ser repetidos sem risco quando a
@@ -1252,11 +1252,49 @@
         // a falha aqui é de rede: o navegador não recebeu resposta nenhuma (internet, DNS, conexão cortada)
         try { console.warn('Falha de rede em ' + url + ' (tentativa ' + (tentativa + 1) + '):', e && (e.name + ': ' + e.message)); } catch (x) { /* segue */ }
         if (tentativa < esperas.length) { await new Promise((ok) => setTimeout(ok, esperas[tentativa])); continue; }
+        // gravações que podem ser repetidas sem efeito colateral ficam guardadas neste aparelho e vão sozinhas quando a internet voltar
+        if (metodo && !(opcoesApi && opcoesApi.semFila) && enfileiravel(url, metodo)) { enfileirar(url, metodo, corpo); return { ok: true, offline: true }; }
         const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
         return { rede: true, erro: (offline ? 'Seu aparelho está sem internet. ' : 'Não consegui falar com o servidor. ') + (metodo ? 'Suas alterações continuam na tela: tente salvar de novo.' : 'Confira sua internet e tente de novo.') };
       }
     }
   }
+  // ---- Fila de alterações sem internet ----
+  // Só entram gravações "idempotentes" (repetir dá o mesmo resultado): conteúdo, respostas, recados, lembranças, edição de grupos e convidados.
+  // Criar algo novo (grupo, convidado, evento) precisa de internet na hora, porque o servidor é quem devolve o código; o que foi digitado
+  // continua na janela para tentar de novo.
+  const ENFILEIRAVEIS = [['POST', /^\/api\/admin\/(conteudo|confirmar|recados\/moderar|recados\/excluir|lembrancas\/item)$/], ['PATCH', /^\/api\/admin\/(grupos|convidados)$/]];
+  const enfileiravel = (url, metodo) => { const caminho = String(url).split('?')[0]; return ENFILEIRAVEIS.some(([m, rx]) => m === metodo && rx.test(caminho)); };
+  const chaveFila = () => 'fila-painel:' + (eventoAtual || 'plataforma');
+  const lerFila = () => { try { return JSON.parse(localStorage.getItem(chaveFila()) || '[]'); } catch (e) { return []; } };
+  const gravarFila = (f) => { try { if (f.length) localStorage.setItem(chaveFila(), JSON.stringify(f)); else localStorage.removeItem(chaveFila()); } catch (e) { /* sem espaço ou bloqueado */ } };
+  function enfileirar(url, metodo, corpo) {
+    const f = lerFila();
+    f.push({ url: String(url).split('?')[0], metodo, corpo: corpo === undefined ? undefined : (typeof corpo === 'string' ? corpo : JSON.stringify(corpo)), ts: Date.now() });
+    gravarFila(f);
+    toast('Sem conexão: a alteração ficou guardada neste aparelho e será enviada sozinha quando a internet voltar.');
+  }
+  let enviandoFila = false;
+  async function enviarFila() {
+    if (enviandoFila || !AUTH || !eventoAtual) return;
+    if (!lerFila().length || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+    enviandoFila = true;
+    let enviados = 0;
+    try {
+      for (;;) {
+        const f = lerFila(); if (!f.length) break;
+        const it = f[0];
+        const d = await api(it.url, it.metodo, it.corpo, { semFila: true });
+        if (d.rede) break; // continua sem internet: tenta depois, na mesma ordem
+        gravarFila(lerFila().slice(1));
+        if (d.erro) toast('Uma alteração guardada neste aparelho não pôde ser enviada: ' + d.erro, 'err'); else enviados++;
+      }
+    } finally { enviandoFila = false; }
+    if (enviados) { toast(plural(enviados, 'alteração guardada foi enviada', 'alterações guardadas foram enviadas') + '. Tudo salvo.'); if (abaAtual && !sujo) { try { abrirAba(abaAtual); } catch (e) { /* segue */ } } }
+  }
+  window.addEventListener('online', () => setTimeout(enviarFila, 600));
+  setInterval(enviarFila, 20000);
+
   async function apiEventos(metodo, corpo) { return api('/api/admin/eventos', metodo, corpo); }
 
   let appIniciado = false;
@@ -3618,12 +3656,11 @@
         { chave: 'hero.cta_label', label: 'Texto do botão' },
       ]},
       { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
-        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes. A cor e o tamanho dos nomes ficam nos campos abaixo.' },
-        { chave: 'hero.convite_nomes_cor', tipo: 'cor_livre', label: 'Cor dos nomes dos convidados', dica: 'Em branco, os nomes seguem a cor do texto da saudação.' },
-        { chave: 'hero.convite_nomes_tamanho', label: 'Tamanho dos nomes dos convidados', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }, { valor: 'gigante', label: 'Gigante' }] },
-        { chave: 'hero.convite_fundo_tipo', label: 'Fundo da saudação', tipo: 'select', padrao: 'com', opcoes: [{ valor: 'com', label: 'Com fundo (pílula)' }, { valor: 'sem', label: 'Sem fundo, só o texto' }] },
-        { chave: 'hero.convite_fundo_cor', tipo: 'cor_livre', label: 'Cor do fundo', dica: 'Em branco, o fundo é translúcido, na cor do estilo da capa.', se: { chave: 'hero.convite_fundo_tipo', valor: 'com' } },
-        { chave: 'hero.convite_fundo_tamanho', label: 'Tamanho do fundo (e do texto da saudação)', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }] },
+        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes.' },
+        { chave: 'hero.convite_estilo', label: 'Estilo da saudação', tipo: 'select', padrao: 'padrao', opcoes: [{ valor: 'padrao', label: 'Padrão (fundo translúcido)' }, { valor: 'botao', label: 'Igual ao botão de confirmar' }, { valor: 'sem', label: 'Só o texto, sem fundo' }, { valor: 'personalizado', label: 'Personalizado (escolher as cores)' }], dica: '"Igual ao botão de confirmar" copia o fundo claro e a letra do botão que fica logo abaixo, na capa.' },
+        { chave: 'hero.convite_tamanho', label: 'Tamanho', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }], dica: 'Vale para o texto inteiro (o que vem antes e os nomes) e para o fundo.' },
+        { chave: 'hero.convite_cor_texto', tipo: 'cor_livre', label: 'Cor do texto e dos nomes', se: { chave: 'hero.convite_estilo', valor: 'personalizado' } },
+        { chave: 'hero.convite_cor_fundo', tipo: 'cor_livre', label: 'Cor do fundo', se: { chave: 'hero.convite_estilo', valor: 'personalizado' } },
       ]},
       { etapa: 'data', chave: '__sep_data_evento__', tipo: 'separador', label: 'Data do evento' },
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
@@ -5707,7 +5744,7 @@
     sincronizando = true;
     try {
       for (const [k, r] of pendentes) {
-        const d = await api('/api/admin/conteudo', 'POST', r.chaves);
+        const d = await api('/api/admin/conteudo', 'POST', r.chaves, { semFila: true });
         if (d.rede) break; // continua sem internet: tenta de novo depois
         if (d.erro) { r.pendente = false; gravarRascunhoLocal(k, r); continue; } // o servidor recusou: não insiste, mas o rascunho continua guardado
         apagarRascunhoLocal(k);
@@ -5804,7 +5841,7 @@
       const payload = coletar();
       // campos que geram algo ao salvar (ex.: a imagem de compartilhamento) acrescentam suas chaves ao envio
       for (const gancho of (fs._antesDeSalvar || [])) { try { Object.assign(payload, await gancho(payload)); } catch (e) { /* segue sem elas */ } }
-      const d = await api('/api/admin/conteudo', 'POST', payload);
+      const d = await api('/api/admin/conteudo', 'POST', payload, { semFila: true });
       btnSalvar.disabled = false; btnSalvar.textContent = opcoes.rotuloSalvar || 'Salvar alterações';
       if (d.erro) {
         if (d.rede) {

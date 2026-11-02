@@ -260,7 +260,8 @@
   @keyframes riseIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
   .hero-convite{display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:0 .35em;margin:0 auto 14px;padding:calc(6px * var(--conv-esc,1)) calc(14px * var(--conv-esc,1));border-radius:999px;background:color-mix(in srgb, var(--cream) 14%, transparent);border:1px solid color-mix(in srgb, var(--wine-pale) 35%, transparent);font-size:calc(12.5px * var(--conv-esc,1));color:var(--cream);backdrop-filter:blur(6px);}
   .hero-convite.sem-fundo{background:none !important;border-color:transparent !important;backdrop-filter:none;padding-left:0;padding-right:0;}
-  .convite-nomes{font-size:calc(1em * var(--conv-nomes-esc,1));color:var(--conv-nomes-cor,inherit);line-height:1.2;}
+  /* "igual ao botão": mesmo fundo, cor e letra do botão de confirmar */
+  .hero .hero-convite.estilo-botao{background:var(--cream);color:var(--wine);border-color:transparent;box-shadow:var(--shadow-romance);backdrop-filter:none;font-family:var(--font-display);font-weight:500;letter-spacing:.01em;font-size:calc(17px * var(--conv-esc,1));padding:calc(10px * var(--conv-esc,1)) calc(22px * var(--conv-esc,1));}
   .deadline-chip{text-align:center;font-size:12px;color:var(--wine-pale);margin-top:12px;letter-spacing:.02em;}
 
   /* ---------- DIVISÓRIAS ORGÂNICAS ---------- */
@@ -951,24 +952,26 @@
   }
   // Texto formatado (negrito, cor, link...): passa pela limpeza antes de entrar na página
   function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  // Saudação "Convite para <nomes>": o texto antes dos nomes é formatado no painel; os nomes têm cor e tamanho próprios,
-  // e o fundo (a pílula) pode mudar de cor, de tamanho ou sumir.
   function montarSaudacao(el, nomes) {
     const prefixo = t('hero.convite_prefixo', 'Convite para');
-    definirRico(el, prefixo || ''); // o texto antes dos nomes passa pelo limpador de HTML (que não aceita classes)...
-    const sp = document.createElement('span'); sp.className = 'convite-nomes'; sp.textContent = nomes; el.appendChild(sp); // ...por isso os nomes entram depois, já com a própria classe
+    definirRico(el, (prefixo ? prefixo + ' ' : '') + escHtml(nomes));
     estiloSaudacao();
   }
+  // Estilo da saudação: padrão (translúcido), igual ao botão de confirmar, só texto ou personalizado (cor do texto e do fundo).
+  // O tamanho vale para o texto inteiro (o que vem antes e os nomes) e para o fundo.
   function estiloSaudacao() {
     const el = document.getElementById('heroConvite'); if (!el) return;
     const cor = function (k) { const v = String(t(k, '')).trim(); return /^#[0-9a-f]{3,8}$/i.test(v) ? v : ''; };
-    const esc = function (tab, k, pad) { const v = tab[t(k, pad)]; return v === undefined ? tab[pad] : v; };
-    el.style.setProperty('--conv-esc', String(esc({ pequeno: 0.85, normal: 1, grande: 1.3, enorme: 1.7 }, 'hero.convite_fundo_tamanho', 'normal')));
-    el.style.setProperty('--conv-nomes-esc', String(esc({ pequeno: 0.9, normal: 1, grande: 1.3, enorme: 1.7, gigante: 2.2 }, 'hero.convite_nomes_tamanho', 'normal')));
-    if (cor('hero.convite_nomes_cor')) el.style.setProperty('--conv-nomes-cor', cor('hero.convite_nomes_cor')); else el.style.removeProperty('--conv-nomes-cor');
-    el.classList.toggle('sem-fundo', t('hero.convite_fundo_tipo', 'com') === 'sem');
-    if (cor('hero.convite_fundo_cor') && t('hero.convite_fundo_tipo', 'com') !== 'sem') { el.style.background = cor('hero.convite_fundo_cor'); el.style.borderColor = 'color-mix(in srgb, ' + cor('hero.convite_fundo_cor') + ' 60%, white)'; el.style.backdropFilter = 'none'; }
-    else { el.style.background = ''; el.style.borderColor = ''; el.style.backdropFilter = ''; }
+    const estilo = t('hero.convite_estilo', 'padrao');
+    const tam = { pequeno: 0.85, normal: 1, grande: 1.3, enorme: 1.7 }[t('hero.convite_tamanho', 'normal')] || 1;
+    el.style.setProperty('--conv-esc', String(tam));
+    el.classList.toggle('estilo-botao', estilo === 'botao');
+    el.classList.toggle('sem-fundo', estilo === 'sem');
+    el.style.color = ''; el.style.background = ''; el.style.borderColor = ''; el.style.backdropFilter = '';
+    if (estilo === 'personalizado') {
+      if (cor('hero.convite_cor_texto')) el.style.color = cor('hero.convite_cor_texto');
+      if (cor('hero.convite_cor_fundo')) { el.style.background = cor('hero.convite_cor_fundo'); el.style.borderColor = 'color-mix(in srgb, ' + cor('hero.convite_cor_fundo') + ' 60%, white)'; el.style.backdropFilter = 'none'; }
+    } else if (estilo === 'sem' && cor('hero.convite_cor_texto')) el.style.color = cor('hero.convite_cor_texto');
   }
   function definirRico(el, valor) {
     if (!el) return;
