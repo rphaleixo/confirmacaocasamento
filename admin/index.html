@@ -5971,6 +5971,13 @@
   // =====================================================================
   const GRUPO_LISTA_PRESENTES = { titulo: 'Lista de presentes', campos: [
     { chave: 'presentes.lista_texto', label: 'Texto de apresentação da página (opcional)', tipo: 'textarea', dica: 'Aparece no alto da página da lista. Ex.: "Escolha com carinho. Se preferir, também aceitamos PIX."' },
+    // o PIX também fica aqui (além de Site › Conteúdo › Presentes › Como presentear), para o anfitrião achar fácil
+    { chave: '__bloco_pix_lista__', tipo: 'bloco_texto', liga: 'presentes.mostrar_pix', padrao: '0', recolhe: true, label: 'PIX', sub: 'Mostra a chave com botão "Copiar" e/ou o QR Code do seu banco, na página da lista e no convite. Não processamos pagamento: o dinheiro cai direto na sua conta.', campos: [
+      { chave: 'presentes.pix_titulo', label: 'Título' },
+      { chave: 'presentes.pix_texto', label: 'Texto de apoio (opcional)', tipo: 'textarea', dica: 'Ex.: "Se preferir, envie o valor por PIX. Nome do favorecido: Ana Souza."' },
+      { chave: 'presentes.chave_pix', label: 'Chave PIX', dica: 'Aparece com o botão "Copiar". Pode deixar em branco se quiser mostrar só o QR Code.' },
+      { chave: 'presentes.pix_qrcode_url', label: 'QR Code do PIX', tipo: 'imagem_direta', dica: 'Envie o QR Code do PIX gerado no aplicativo do seu banco (um print serve). Ele leva o convidado direto para a sua conta. A imagem é mostrada como veio, sem recorte, para continuar legível.' },
+    ]},
     { chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
   ]};
   // ?teste=1: a página usa o acesso do painel e mostra a lista inteira (sem precisar do código de um convite); nada é gravado
