@@ -400,7 +400,9 @@
   }
   function reservar(item, reservado, btn, pix, qr) {
     btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
-    fetch(api('presentes/reservar') + (codigo ? (EVENTO_QS ? '&' : '?') + 'c=' + encodeURIComponent(codigo) : ''), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
+    // modo teste (aberto pelo painel): simula a escolha, sem gravar nada
+    const enviar = window.ROTAS.emTeste() ? function () { return Promise.resolve(new Response('{"ok":true}')); } : fetch;
+    enviar(api('presentes/reservar') + (codigo ? (EVENTO_QS ? '&' : '?') + 'c=' + encodeURIComponent(codigo) : ''), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); return; }
@@ -419,5 +421,8 @@
   }
 </script>
 <a class="vnf-selo" href="https://vemnafesta.com" target="_blank" rel="noopener">Feito com <span>Vem na Festa</span></a>
+<script>
+  if (window.ROTAS.emTeste()) { var fb = document.createElement('div'); fb.textContent = 'Modo teste: só você vê isto. As escolhas de presente não são salvas.'; fb.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:9px 12px;background:#17202E;color:#fff;font:600 12px system-ui,sans-serif;text-align:center'; document.body.insertBefore(fb, document.body.firstChild); document.body.style.paddingTop = '36px'; }
+</script>
 </body>
 </html>

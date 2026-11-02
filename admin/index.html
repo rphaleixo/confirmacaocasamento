@@ -5950,7 +5950,8 @@
     { chave: 'presentes.lista_texto', label: 'Texto de apresentação da página (opcional)', tipo: 'textarea', dica: 'Aparece no alto da página da lista. Ex.: "Escolha com carinho. Se preferir, também aceitamos PIX."' },
     { chave: 'presentes.itens', label: 'Presentes', tipo: 'lista_presentes' },
   ]};
-  function urlListaPresentesAdmin() { return urlSite() + 'presentes'; }
+  // ?teste=1: a página usa o acesso do painel e mostra a lista inteira (sem precisar do código de um convite); nada é gravado
+  function urlListaPresentesAdmin() { return urlSite() + 'presentes?teste=1'; }
   async function carregarPresentes() {
     const form = document.getElementById('pr-form');
     const d = await api('/api/conteudo');
@@ -5973,10 +5974,10 @@
             }, 'sm'))));
         }
         caixa.appendChild(h('div', { class: 'atalho-lista', style: 'margin-bottom:16px;' },
-          h('div', { style: 'min-width:0;' }, h('b', { text: 'Página da lista' }), h('span', { style: 'overflow-wrap:anywhere;', text: url })),
+          h('div', { style: 'min-width:0;' }, h('b', { text: 'Página da lista' }), h('span', { style: 'overflow-wrap:anywhere;', text: urlSite() + 'presentes' })),
           h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;' },
             h('a', { class: 'btn sm', href: url, target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Abrir página' }),
-            btn('Copiar link', () => copiar(url, 'Link da lista de presentes'), 'sm', 'link'))));
+            btn('Copiar link', () => copiar(urlSite() + 'presentes', 'Link da lista de presentes'), 'sm', 'link'))));
       },
     });
   }
