@@ -1,5 +1,6 @@
 import { dadosDeCompartilhamento, tagsDeCompartilhamento } from '../_compartilhar.js';
 import { paginaEmBreve } from '../_embreve.js';
+import { acessoCompleto } from '../_acesso.js';
 
 // Cada evento vive em /e/<slug> (site), /e/<slug>/presentes (lista de presentes) e /e/<slug>/admin (painel do anfitrião).
 // O HTML é o mesmo pra todos — a página lê o slug da URL e usa só os dados daquele evento.
@@ -13,14 +14,15 @@ export async function onRequestGet({ request, env, waitUntil }) {
 
   // Convite ainda em preparação: o convidado vê "Em breve". O anfitrião vê o site real pelo link com o token do rascunho
   // (o painel monta esse link sozinho). O painel de administração não é afetado.
-  if (partes[2] !== 'admin' && evento.publicado === 0) {
+  const ehPreview = partes[2] === 'preview' || partes[2] === 'teste';
+  if (partes[2] !== 'admin' && !ehPreview && evento.publicado === 0) {
     const token = url.searchParams.get('rascunho') || '';
     if (!evento.token_rascunho || token !== evento.token_rascunho) {
       return new Response(await paginaEmBreve(env.DB, evento), { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } });
     }
   }
 
-  if (partes[2] !== 'admin' && partes[2] !== 'presentes' && url.searchParams.get('previa') !== '1') { // a prévia do painel não conta como visita
+  if (partes[2] !== 'admin' && partes[2] !== 'presentes' && !ehPreview && url.searchParams.get('previa') !== '1') { // a prévia do painel não conta como visita
     waitUntil(
       env.DB
         .prepare("INSERT INTO acessos (evento_id, dia, visitas) VALUES (?, date('now'), 1) ON CONFLICT(evento_id, dia) DO UPDATE SET visitas = visitas + 1")
@@ -32,12 +34,19 @@ export async function onRequestGet({ request, env, waitUntil }) {
 
   const destino = partes[2] === 'admin' ? '/admin/' : partes[2] === 'presentes' ? '/presentes/' : '/';
   const pagina = await env.ASSETS.fetch(new URL(destino, url));
+  // /preview e /teste: o convite como o convidado vê, para o anfitrião conferir. Só mostra tudo a quem está logado no painel.
+  if (ehPreview) {
+    const cab = new Headers(pagina.headers); cab.set('cache-control', 'no-store'); cab.set('x-robots-tag', 'noindex, nofollow'); cab.delete('etag');
+    return new Response(pagina.body, { status: pagina.status, headers: cab });
+  }
   if (partes[2]) return pagina;
 
   // Site do convite: injeta título, descrição e imagem de compartilhamento (miniatura do WhatsApp) já no HTML,
   // porque quem gera a prévia do link não executa JavaScript. Se algo falhar, a página segue sem as tags.
   try {
-    const d = await dadosDeCompartilhamento(env.DB, evento, url.origin);
+    const { results: cfg } = await env.DB.prepare("SELECT chave, valor FROM conteudo WHERE evento_id = ? AND chave = 'rsvp.modo'").bind(evento.id).all();
+    const completo = await acessoCompleto(request, env, evento, Object.fromEntries(cfg.map((r) => [r.chave, r.valor])));
+    const d = await dadosDeCompartilhamento(env.DB, evento, url.origin, completo);
     const tags = tagsDeCompartilhamento(d);
     const saida = new HTMLRewriter()
       .on('head', { element(el) { el.prepend(tags, { html: true }); } })

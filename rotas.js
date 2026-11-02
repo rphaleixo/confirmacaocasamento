@@ -35,6 +35,28 @@
     // para a prévia dentro do painel: precisa ser da MESMA origem do painel (no painel geral, o caminho /e/<slug> do próprio endereço)
     urlMesmaOrigem: function (slug) { return sub(location.hostname) ? location.origin + '/' : location.origin + '/e/' + slug + '/'; },
     urlAdmin: function (slug) { return R.urlSite(slug) + 'admin'; },
+    // /preview e /teste: o convite como o convidado vê, para o anfitrião conferir (só mostra tudo a quem está logado no painel)
+    emTeste: function () { return /^(\/e\/[^\/]+)?\/(preview|teste)\/?$/.test(location.pathname) || /[?&]teste=1/.test(location.search); },
+    // o que o /preview está mostrando: 'pessoal' (convidado com link pessoal), 'encerrado' (prazo acabou) ou 'generico' (link sem código)
+    verTeste: function () { var v = new URLSearchParams(location.search).get('ver'); return ['pessoal', 'encerrado', 'generico'].indexOf(v) !== -1 ? v : 'pessoal'; },
+    urlPreview: function (slug) { return R.urlSite(slug) + 'preview'; },
+    // cabeçalho de acesso guardado pelo painel (para o /preview mostrar tudo ao anfitrião)
+    acesso: function () {
+      var s = R.slug(), chaves = s ? ['rsvp-acesso:evento:' + s, 'rsvp-acesso:master'] : ['rsvp-acesso:master'];
+      for (var i = 0; i < chaves.length; i++) { try { var v = sessionStorage.getItem(chaves[i]) || localStorage.getItem(chaves[i]); if (v) return v; } catch (e) { /* segue */ } }
+      return '';
+    },
+    // parâmetros que a API de conteúdo usa para decidir o que mostrar (código do convite e token do rascunho)
+    consultaAcesso: function () {
+      var p = new URLSearchParams(location.search), r = [];
+      ['c', 'rascunho'].forEach(function (k) { if (p.get(k)) r.push(k + '=' + encodeURIComponent(p.get(k))); });
+      return r.join('&');
+    },
+    buscarConteudo: function () {
+      var s = R.slug(), q = [s ? 'e=' + encodeURIComponent(s) : '', R.consultaAcesso()].filter(Boolean).join('&');
+      var op = {}; if (R.emTeste()) { var a = R.verTeste() === 'generico' ? '' : R.acesso(); if (a) op.headers = { Authorization: a }; op.credentials = 'omit'; }
+      return fetch('/api/conteudo' + (q ? '?' + q : ''), op).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    },
     urlPresentes: function (slug) { return R.urlSite(slug) + 'presentes'; },
     // como o endereço aparece escrito para a pessoa
     endereco: function (slug) { return nosso(location.hostname) ? slug + '.' + BASE : location.host + '/e/' + slug; },

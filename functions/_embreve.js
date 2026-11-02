@@ -17,8 +17,8 @@ export async function paginaEmBreve(db, evento) {
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>${e(nomes ? nomes + ' · Em breve' : 'Convite em breve')}</title>
 <style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(160deg,${fundo},#fff);color:${texto};font-family:Georgia,'Times New Roman',serif;text-align:center}
-.c{max-width:420px;padding:44px 28px;border:1px solid ${dest};border-radius:22px;background:rgba(255,255,255,.7)}
+.v{position:fixed;left:0;right:0;bottom:16px;text-align:center;font:12px system-ui,sans-serif;color:inherit;opacity:.75;text-decoration:none}.v:hover{opacity:1}.c{max-width:420px;padding:44px 28px;border:1px solid ${dest};border-radius:22px;background:rgba(255,255,255,.7)}
 .s{display:block;width:60px;height:2px;background:${dest};margin:18px auto}
 h1{font-size:30px;font-weight:500;margin:0 0 6px;color:${prim};font-style:italic}p{margin:8px 0 0;font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;opacity:.85}.k{font-family:system-ui,sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:${dest};margin-bottom:12px}</style></head>
-<body><main class="c"><div class="k">Em breve</div><h1>${e(nomes || 'Seu convite')}</h1><span class="s"></span><p>O convite está sendo preparado com carinho.</p><p>Volte em alguns instantes e confirme sua presença.</p></main></body></html>`;
+<body><main class="c"><div class="k">Em breve</div><h1>${e(nomes || 'Seu convite')}</h1><span class="s"></span><p>O convite está sendo preparado com carinho.</p><p>Volte em alguns instantes e confirme sua presença.</p></main><a class="v" href="https://vemnafesta.com" target="_blank" rel="noopener">Feito com <u>Vem na Festa</u></a></body></html>`;
 }

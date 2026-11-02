@@ -3,10 +3,13 @@
 // então não dá pra restringir quem desmarca; aceitável pro MVP (mesmo padrão de simplicidade
 // do resto do produto).
 import { jsonResponse, resolverEvento, eventoNaoEncontrado } from '../../_lib.js';
+import { acessoCompleto } from '../../_acesso.js';
 
 export async function onRequestPost({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
   if (!evento) return eventoNaoEncontrado();
+  const cfg = await env.DB.prepare("SELECT valor FROM conteudo WHERE evento_id = ? AND chave = 'rsvp.modo'").bind(evento.id).first();
+  if (!(await acessoCompleto(request, env, evento, { 'rsvp.modo': cfg && cfg.valor }))) return jsonResponse({ erro: 'Abra a lista pelo link pessoal que você recebeu.' }, 403);
   const payload = await request.json().catch(() => ({}));
   const id = payload.id;
   const reservado = !!payload.reservado;

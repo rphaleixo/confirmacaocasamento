@@ -633,6 +633,26 @@
   .cl-livre{width:40px;height:36px;padding:2px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;}
   .fl-amostra{margin-top:8px;padding:9px 12px;border:1px dashed var(--line);border-radius:9px;font-size:20px;color:var(--ink);background:var(--surface-2,#F6F8FB);}
   .rico-cor{width:34px;height:34px;padding:3px;border:none;background:none;cursor:pointer;}
+  /* seletor de cor com confirmação */
+  #modal-cor{max-width:380px;}
+  #modal-cor .cor-corpo{padding:16px 18px 6px;display:flex;flex-direction:column;gap:14px;}
+  #modal-cor .cor-previa{height:84px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);display:grid;place-items:center;font:700 15px var(--mono);background-clip:padding-box;}
+  #modal-cor .cor-previa small{display:block;font:600 11px var(--font);opacity:.85;text-align:center;}
+  #modal-cor .cor-grupo-t{font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 6px;}
+  #modal-cor .cor-paleta{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  #modal-cor .cor-op{display:flex;flex-direction:column;align-items:center;gap:4px;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:8px 2px 6px;font-size:10.5px;color:var(--ink-soft);cursor:pointer;min-height:56px;}
+  #modal-cor .cor-op i{display:block;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);}
+  #modal-cor .cor-op.on{border-color:var(--navy);box-shadow:0 0 0 2px rgba(31,58,95,.18);color:var(--ink);}
+  #modal-cor .cor-linha{display:flex;gap:8px;align-items:stretch;}
+  #modal-cor .cor-linha input[type=text]{flex:1;min-width:0;font-family:var(--mono);text-transform:uppercase;}
+  #modal-cor .cor-linha input[type=color]{width:52px;height:44px;padding:3px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;}
+  #modal-cor .cor-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 18px 16px;border-top:1px solid var(--line-soft);margin-top:8px;}
+  #modal-cor .cor-foot .esq{margin-right:auto;}
+  .cor-botao{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font:600 12.5px var(--font);color:var(--ink);}
+  .cor-botao i{display:inline-block;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2);}
+  .rico-area.fundo-escuro{background:#2E3646;caret-color:#fff;} .rico-area.fundo-medio{background:#7D889C;}
+  .rico-area.fundo-escuro:empty::before,.rico-area.fundo-medio:empty::before{color:#cbd3e1;}
+  .rico-aviso-fundo{font-size:11.5px;color:var(--ink-soft);padding:4px 10px;background:var(--surface-2);border-top:1px solid var(--line-soft);}
   .rico-area{min-height:44px;padding:9px 11px;line-height:1.5;outline:none;overflow-wrap:anywhere;}
   .rico-area.multi{min-height:96px;}
   .rico-area:empty::before{content:attr(data-ph);color:var(--ink-faint);pointer-events:none;}
@@ -704,7 +724,7 @@
   .papel{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;}
   .papel.sel{border-color:var(--ink);box-shadow:0 4px 14px rgba(15,23,42,.18);}
   .papel .amostra{position:relative;height:58px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin:0;}
-  .papel .amostra input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0;}
+  .papel .amostra{border:none;width:100%;font-family:var(--mono);}
   .papel .nome{font-weight:700;font-size:13.5px;} .papel .uso{font-size:11.5px;color:var(--ink-soft);line-height:1.4;min-height:48px;}
   .papel .trocar{border:1px dashed var(--line);background:var(--surface-2);border-radius:8px;padding:6px;font-size:12px;cursor:pointer;color:var(--ink);font-weight:600;}
   .papel.sel .trocar{background:var(--ink);color:#fff;border-style:solid;}
@@ -881,7 +901,7 @@
   </div>
   <div class="hd-acoes">
     <a id="voltarPlataforma" class="hd-btn" href="/admin/" hidden>← <span class="rot-longo">Plataforma</span></a>
-    <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Ver site</a>
+    <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Testar convite</a>
     <button id="copiarSite" class="hd-btn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="rot-longo">Copiar link do site</span></button>
     <button id="btnGoogle" class="hd-btn" type="button" hidden title="Quem pode entrar neste painel com a conta Google"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="rot-longo">Acesso Google</span></button>
     <button id="btnConta" class="hd-btn" type="button" hidden title="Trocar o usuário e a senha de acesso"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="rot-longo">Minha conta</span></button>
@@ -1122,7 +1142,8 @@
 </div>
 
 <!-- ===== JANELAS ===== -->
-<dialog id="modal-evento" aria-labelledby="me-titulo">
+<dialog id="modal-cor" aria-labelledby="cor-titulo"></dialog>
+  <dialog id="modal-evento" aria-labelledby="me-titulo">
   <div class="md-head">
     <h3 id="me-titulo"></h3>
     <div class="sub" id="me-sub" hidden></div>
@@ -3562,6 +3583,7 @@
       { etapa: 'data', chave: '__bloco_data__', tipo: 'bloco_texto', liga: 'hero.mostrar_data', label: 'Data na capa', campos: [
         { chave: 'hero.data_formato', label: 'Formato da data', tipo: 'select', opcoes: window.FORMATOS_DATA },
         { chave: 'hero.dia_semana', label: 'Dia da semana', tipo: 'select', opcoes: window.DIAS_SEMANA, dica: 'Ex.: "Quarta, 16/12/26". Vale também no rodapé do site.' },
+        { chave: 'hero.data_tamanho', label: 'Tamanho da data na capa', tipo: 'select', opcoes: [{ valor: 'normal', label: 'Normal' }, { valor: 'pequena', label: 'Pequena' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme (destaque)' }], dica: 'Vale para o convite e para o Save the Date. Para mexer também em posição e cor, use o modelo Personalizado na primeira etapa.' },
         { chave: '__previa_data__', tipo: 'previa_data' },
         { chave: 'hero.data_display', label: 'Data como aparece no site (texto livre)', se: { chave: 'hero.data_formato', valor: 'texto' } },
       ]},
@@ -3662,12 +3684,16 @@
       ...[1,2,3,4,5,6].map((n) => ({ chave: `galeria.foto${n}_url`, label: `Foto ${n}`, tipo: 'foto', aspecto: 1, dica: n === 1 ? 'Tamanho ideal: 1200×1200px (quadrada). Espaços sem foto não aparecem no site.' : '' })),
     ]},
     { titulo: 'Confirmação de presença', ancora: 'rsvp', campos: [
+      { chave: 'rsvp.modo', label: 'Como os convidados entram?', tipo: 'select', padrao: 'codigo', opcoes: [{ valor: 'codigo', label: 'Só com o link pessoal (cada grupo confirma presença)' }, { valor: 'aberto', label: 'Evento aberto: não precisa confirmar, vale o link para todos' }], dica: 'No modo com link pessoal, quem abre o site sem o link do convite NÃO vê data, horário, local nem presentes. No evento aberto, o site mostra tudo para qualquer pessoa e some a confirmação de presença.' },
       { chave: 'rsvp.eyebrow', label: 'Texto pequeno' },
       { chave: 'rsvp.titulo', label: 'Título' },
       { chave: 'rsvp.texto', label: 'Texto de apoio', tipo: 'textarea' },
       { chave: 'rsvp.cta_label', label: 'Texto do botão de confirmar' },
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },
+      { chave: 'rsvp.encerrado_texto', label: 'Mensagem depois do prazo, para quem não respondeu', tipo: 'textarea', dica: 'Quem já respondeu continua vendo as próprias respostas, sem poder mudar. Em branco: "O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite."' },
+      { chave: 'hero.cta_label_encerrado', label: 'Botão da capa depois do prazo', dica: 'Em branco: "Ver minha resposta".' },
+      { chave: 'hero.texto_depois', label: 'Frase na capa depois do evento', dica: 'Depois do dia da festa o botão some e esta frase aparece. Em branco: "Obrigado por celebrar este dia com a gente!".' },
     ]},
     { titulo: 'Presentes', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'como', titulo: 'Como presentear' }], campos: [
       { etapa: 'textos', chave: 'presentes.eyebrow', label: 'Texto pequeno' },
@@ -4916,7 +4942,9 @@
         const card = h('div', { class: 'papel' });
         const input = h('input', { type: 'color', 'data-chave': item.chave, 'aria-label': 'Cor ' + item.label });
         input.value = ctDados[item.chave] || '#1F3A5F';
-        const amostra = h('label', { class: 'amostra', title: 'Clique para escolher a cor' }, input);
+        input.type = 'hidden';
+        const amostra = h('button', { type: 'button', class: 'amostra', title: 'Clique para escolher a cor', 'aria-label': 'Escolher a cor ' + item.label }, input);
+        amostra.addEventListener('click', async () => { const r = await escolherCor({ titulo: item.label, atual: input.value }); if (r) { input.value = r; input.dispatchEvent(new Event('input', { bubbles: true })); } });
         const hex = h('input', { type: 'text', class: 'cor-hex', maxlength: '7', placeholder: '#RRGGBB', 'aria-label': 'Código da cor ' + item.label });
         const trocar = h('button', { type: 'button', class: 'trocar', text: '⇄ Trocar' });
         const pintar = () => { amostra.style.background = input.value; amostra.style.color = contrasteTexto(input.value); hex.value = input.value.toUpperCase(); hex.removeAttribute('aria-invalid'); checarContraste && inputs['aparencia.cor_texto'] && inputs['aparencia.cor_fundo'] && inputs['aparencia.cor_primaria'] && checarContraste(); };
@@ -5060,14 +5088,14 @@
       const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave, id: idCampo }); hidden.value = /^#[0-9a-f]{3,8}$/i.test(ctDados[campo.chave] || '') ? ctDados[campo.chave] : '';
       const atual = h('span', { class: 'cl-atual' });
       const dial = h('div', { class: 'cl-dial', role: 'group', 'aria-label': 'Cores da paleta do site' });
-      const livre = h('input', { type: 'color', class: 'cl-livre', title: 'Outra cor', 'aria-label': 'Outra cor para ' + campo.label, value: hidden.value || '#C9A227' });
+      const livre = h('button', { type: 'button', class: 'cor-botao', title: 'Escolher outra cor', 'aria-label': 'Escolher outra cor para ' + campo.label }, h('i', { style: 'background:conic-gradient(#e44,#ec4,#4c6,#4ce,#64e,#e4a,#e44)' }), h('span', { text: 'Outra cor' }));
       const definir_ = (v) => { hidden.value = v; pintar(); hidden.dispatchEvent(new Event('input', { bubbles: true })); };
       const amostras = CORES_DA_PALETA.map(([k, nome, pad]) => {
         const c = ctDados[k] || pad;
         const b = h('button', { type: 'button', class: 'rico-amostra', title: nome + ' da paleta (' + c.toUpperCase() + ')', 'aria-label': 'Usar a cor ' + nome.toLowerCase() + ' da paleta', style: 'background:' + c + ';' });
         b.addEventListener('click', () => definir_(c)); dial.appendChild(b); return [c, b];
       });
-      livre.addEventListener('input', () => definir_(livre.value));
+      livre.addEventListener('click', async () => { const r = await escolherCor({ titulo: campo.label, atual: hidden.value, padrao: 'Padrão do estilo', fundo: ctDados['aparencia.cor_fundo'] || '' }); if (r !== null) definir_(r); });
       const pintar = () => {
         const v = hidden.value;
         atual.style.background = v || 'repeating-linear-gradient(45deg,#fff,#fff 4px,#E9EDF3 4px,#E9EDF3 8px)';
@@ -5166,6 +5194,63 @@
 
   // Caixa de texto com formatação: negrito, itálico, sublinhado, cor, link e edição direta do HTML.
   // O valor guardado é o HTML (limpo); o campo escondido com data-chave leva esse valor ao "Salvar" e à prévia.
+  // Seletor de cor com confirmação: nada muda no site até apertar "Usar esta cor".
+  // opcoes: { titulo, atual ('#rrggbb' ou ''), padrao (rótulo do botão que limpa a cor, opcional), fundo (cor de fundo p/ avisar contraste) }
+  // devolve a cor escolhida ('#rrggbb'), '' (voltar ao padrão) ou null (cancelou)
+  function escolherCor(opcoes) {
+    opcoes = opcoes || {};
+    const dlg = document.getElementById('modal-cor');
+    const valido = (v) => /^#[0-9a-f]{6}$/i.test(String(v || '').trim());
+    let valor = valido(opcoes.atual) ? opcoes.atual.toLowerCase() : '';
+    return new Promise((resolve) => {
+      let resultado = null;
+      dlg.innerHTML = '';
+      const previa = h('div', { class: 'cor-previa', 'aria-live': 'polite' });
+      const hex = h('input', { type: 'text', maxlength: '7', placeholder: '#RRGGBB', 'aria-label': 'Código da cor' });
+      const nativo = h('input', { type: 'color', 'aria-label': 'Escolher a cor numa paleta completa', title: 'Escolher numa paleta completa' });
+      const avisoC = h('div', { class: 'dica-campo', hidden: true });
+      const ops = [];
+      const pintar = (daDigitacao) => {
+        previa.style.background = valor || 'repeating-linear-gradient(45deg,#fff,#fff 6px,#E9EDF3 6px,#E9EDF3 12px)';
+        previa.style.color = valor ? contrasteTexto(valor) : 'var(--ink-soft)';
+        previa.innerHTML = valor ? valor.toUpperCase() : 'Padrão do estilo<small>sem cor própria</small>';
+        if (!daDigitacao) hex.value = valor.toUpperCase();
+        if (valor) nativo.value = valor;
+        ops.forEach(([c, b]) => b.classList.toggle('on', c === valor));
+        const fundo = valido(opcoes.fundo) ? opcoes.fundo : '';
+        if (valor && fundo) { const r = razaoContraste(valor, fundo); avisoC.hidden = r >= 3; avisoC.textContent = r < 3 ? 'Esta cor tem pouco contraste com o fundo (' + r.toFixed(1) + ':1) e pode ficar difícil de ler.' : ''; } else avisoC.hidden = true;
+      };
+      const paleta = h('div', { class: 'cor-paleta', role: 'group', 'aria-label': 'Cores da paleta do site' });
+      CORES_DA_PALETA.concat([['', 'Branco', '#ffffff'], ['', 'Preto', '#111111']]).slice(0, 5).forEach(([k, nome, pad]) => {
+        const c = String(ctDados[k] || pad).toLowerCase();
+        const b = h('button', { type: 'button', class: 'cor-op', 'aria-label': nome + ' da paleta (' + c.toUpperCase() + ')' }, h('i', { style: 'background:' + c }), h('span', { text: nome }));
+        b.addEventListener('click', () => { valor = c; pintar(); }); paleta.appendChild(b); ops.push([c, b]);
+      });
+      const extras = h('div', { class: 'cor-paleta', role: 'group', 'aria-label': 'Branco e preto', style: 'margin-top:8px;grid-template-columns:repeat(5,1fr);' });
+      [['Branco', '#ffffff'], ['Preto', '#111111']].forEach(([nome, c]) => {
+        const b = h('button', { type: 'button', class: 'cor-op', 'aria-label': nome }, h('i', { style: 'background:' + c }), h('span', { text: nome }));
+        b.addEventListener('click', () => { valor = c; pintar(); }); extras.appendChild(b); ops.push([c, b]);
+      });
+      hex.addEventListener('input', () => { let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v; if (valido(v)) { valor = v.toLowerCase(); hex.removeAttribute('aria-invalid'); pintar(true); } else hex.setAttribute('aria-invalid', 'true'); });
+      nativo.addEventListener('input', () => { valor = nativo.value.toLowerCase(); pintar(); });
+      const fechar = (r) => { resultado = r; dlg.close(); };
+      const foot = h('div', { class: 'cor-foot' });
+      if (opcoes.padrao) foot.appendChild(Object.assign(btn(opcoes.padrao, () => fechar(''), 'fantasma sm'), {}));
+      if (foot.firstChild) foot.firstChild.classList.add('esq');
+      foot.append(btn('Cancelar', () => fechar(null), 'fantasma'), btn('Usar esta cor', () => { if (!valor) { fechar(''); return; } fechar(valor); }, 'prim'));
+      dlg.append(
+        h('div', { class: 'md-head' }, h('div', {}, h('h3', { id: 'cor-titulo', text: opcoes.titulo || 'Escolher cor' }))),
+        h('div', { class: 'cor-corpo' }, previa,
+          h('div', {}, h('p', { class: 'cor-grupo-t', text: 'Cores do seu site' }), paleta, extras),
+          h('div', {}, h('p', { class: 'cor-grupo-t', text: 'Outra cor' }), h('div', { class: 'cor-linha' }, hex, nativo)),
+          avisoC),
+        foot);
+      pintar();
+      dlg.onclose = () => { dlg.onclose = null; resolve(resultado); };
+      dlg.showModal();
+    });
+  }
+
   function criarEditorRico(campo, id, multilinha) {
     const HS = window.HTML_SEGURO;
     const hidden = h('input', { type: 'hidden', 'data-chave': campo.chave, id });
@@ -5175,7 +5260,21 @@
     const fonte = h('textarea', { class: 'rico-html', hidden: true, spellcheck: 'false', 'aria-label': 'HTML de ' + campo.label });
     const avisa = () => hidden.dispatchEvent(new Event('input', { bubbles: true }));
     const gravar = (v) => { if (v !== hidden.value) { hidden.value = v; avisa(); } };
-    const daArea = () => { const v = HS.limpar(area.innerHTML).replace(/(<br>)+$/, ''); gravar(v); fonte.value = v; };
+    // texto branco (ou quase) em fundo branco parece "campo vazio": o editor escurece o fundo para mostrar o texto
+    const avisoFundo = h('div', { class: 'rico-aviso-fundo', hidden: true, text: 'O fundo do editor ficou escuro só para você enxergar o texto claro. No site, o fundo é o do módulo.' });
+    const marcarFundo = () => {
+      let claro = 0, escuro = 0;
+      area.querySelectorAll('*').forEach((el) => {
+        if (!el.textContent.trim() || Array.from(el.children).some((c) => c.textContent.trim() === el.textContent.trim())) return;
+        const m = getComputedStyle(el).color.match(/\d+(\.\d+)?/g); if (!m) return;
+        const lum = luminancia('#' + m.slice(0, 3).map((n) => ('0' + Math.round(+n).toString(16)).slice(-2)).join(''));
+        if (lum > 0.8) claro++; else escuro++;
+      });
+      area.classList.toggle('fundo-escuro', claro > 0 && !escuro && !!area.textContent.trim() && !Array.from(area.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim()));
+      area.classList.toggle('fundo-medio', claro > 0 && !area.classList.contains('fundo-escuro'));
+      avisoFundo.hidden = !claro;
+    };
+    const daArea = () => { const v = HS.limpar(area.innerHTML).replace(/(<br>)+$/, ''); gravar(v); fonte.value = v; marcarFundo(); };
     area.addEventListener('input', daArea);
     // colar sempre como texto simples (sem trazer formatação de outros lugares)
     area.addEventListener('paste', (ev) => { ev.preventDefault(); const t = (ev.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, multilinha ? t : t.replace(/\s*\r?\n\s*/g, ' ')); });
@@ -5202,9 +5301,9 @@
       daArea(); guardarSel();
     };
     const botao = (rot, titulo, fn, cls) => { const b = h('button', { type: 'button', class: 'rico-btn ' + (cls || ''), title: titulo, 'aria-label': titulo, html: rot }); b.addEventListener('mousedown', (e) => e.preventDefault()); b.addEventListener('click', fn); return b; };
-    const cor = h('input', { type: 'color', class: 'rico-cor', title: 'Cor do trecho selecionado', 'aria-label': 'Cor do trecho selecionado', value: '#C9A227' });
-    cor.addEventListener('mousedown', guardarSel);
-    cor.addEventListener('input', () => comando('foreColor', cor.value));
+    const cor = h('button', { type: 'button', class: 'rico-btn', title: 'Outra cor para o trecho selecionado', 'aria-label': 'Outra cor para o trecho selecionado', html: '<span style="display:block;width:18px;height:18px;border-radius:50%;background:conic-gradient(#e44,#ec4,#4c6,#4ce,#64e,#e4a,#e44);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)"></span>' });
+    cor.addEventListener('mousedown', (e) => { e.preventDefault(); guardarSel(); });
+    cor.addEventListener('click', async () => { guardarSel(); const r = await escolherCor({ titulo: 'Cor do trecho selecionado', atual: '', fundo: '' }); if (r) comando('foreColor', r); else if (r === null) devolverSel(); });
     // acesso rápido às cores da paleta escolhida para o site (um toque aplica ao trecho selecionado)
     const CORES_PALETA = [['aparencia.cor_primaria', 'Primária', '#0B2545'], ['aparencia.cor_secundaria', 'Secundária', '#2F5D9A'], ['aparencia.cor_destaque', 'Destaque', '#C9A227'], ['aparencia.cor_fundo', 'Fundo', '#EAF1FB'], ['aparencia.cor_texto', 'Texto', '#14213D']];
     const dial = h('div', { class: 'rico-dial', role: 'group', 'aria-label': 'Cores da paleta do site' });
@@ -5231,7 +5330,8 @@
       botao('🔗', 'Colocar link no trecho selecionado', () => { guardarSel(); const url = window.prompt('Endereço do link (comece com https://):', 'https://'); if (url && /^(https?:|mailto:|tel:)/i.test(url.trim())) comando('createLink', url.trim()); }),
       botao('🔗✕', 'Tirar o link', () => comando('unlink')),
       botao('⌫', 'Limpar a formatação do trecho', () => { comando('removeFormat'); comando('unlink'); }), bHtml);
-    const wrap = h('div', { class: 'rico' }, barra, area, fonte);
+    const wrap = h('div', { class: 'rico' }, barra, area, fonte, avisoFundo);
+    setTimeout(marcarFundo, 0);
     return { wrap, hidden };
   }
 
@@ -5873,7 +5973,7 @@
   //  (só o que diz respeito ao convite e ao Save the Date; convidados ficam de fora)
   // =====================================================================
   function qsRascunho(prefixo) { return !PUB.publicado && PUB.token ? prefixo + 'rascunho=' + PUB.token : ''; }
-  function urlSiteVer() { return urlSite() + qsRascunho('?'); }
+  function urlSiteVer() { return window.ROTAS.urlPreview(eventoAtual); } // /preview: o convite como o convidado vê (só funciona logado)
 
   // ---- temas prontos: um clique define cores, fontes, forma das divisórias e estilo da contagem ----
   const TEMAS = [

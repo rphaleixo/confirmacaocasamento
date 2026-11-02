@@ -19,7 +19,7 @@
   (function () {
     var m = window.ROTAS.casar();
     var qs = m ? '?e=' + encodeURIComponent(m[1]) : '';
-    window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+    window.__conteudo = window.ROTAS.buscarConteudo();
     setTimeout(function () { document.documentElement.classList.add('pronto'); }, 15000);
   })();
 </script>
@@ -95,7 +95,9 @@
   .link-btn{background:none;border:none;padding:6px 2px;font-size:12.5px;color:var(--wine-soft);text-decoration:underline;text-underline-offset:3px;}
 
   body{margin:0;background:var(--cream);}
-  .pag{max-width:760px;margin:0 auto;padding:28px var(--gutter) 64px;min-height:100vh;}
+  .vnf-selo{display:block;text-align:center;padding:0 var(--gutter) 40px;font-size:11.5px;letter-spacing:.04em;color:var(--ink-soft);opacity:.85;text-decoration:none;}
+  .vnf-selo span{text-decoration:underline;text-underline-offset:3px;}
+  .pag{max-width:760px;margin:0 auto;padding:28px var(--gutter) 24px;min-height:calc(100vh - 70px);}
   .vazio{display:none !important;}
   [hidden]{display:none !important;}
   .eyebrow{padding-left:.3em;}
@@ -290,6 +292,7 @@
     if (!Array.isArray(itens)) itens = [];
     itens = itens.filter(function (it) { return it && String(it.nome || '').trim(); });
 
+    if (conteudo._restrito === '1') { indisponivel('Abra pelo link do seu convite', 'A lista de presentes fica disponível pelo link pessoal que você recebeu de quem organizou a festa.'); return; }
     if (t('config.modo_save_the_date', '0') === '1' || !secaoPresentesAtiva() || t('presentes.mostrar_lista', '0') === '0') {
       indisponivel('Lista de presentes indisponível', 'A lista de presentes não está disponível no momento.'); return;
     }
@@ -397,7 +400,7 @@
   }
   function reservar(item, reservado, btn, pix, qr) {
     btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
-    fetch(api('presentes/reservar'), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
+    fetch(api('presentes/reservar') + (codigo ? (EVENTO_QS ? '&' : '?') + 'c=' + encodeURIComponent(codigo) : ''), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); return; }
@@ -415,5 +418,6 @@
       .catch(function () { btn.disabled = false; btn.textContent = rotulo; avisar('Sem conexão agora. Tente de novo em instantes.'); });
   }
 </script>
+<a class="vnf-selo" href="https://vemnafesta.com" target="_blank" rel="noopener">Feito com <span>Vem na Festa</span></a>
 </body>
 </html>

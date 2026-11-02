@@ -8,7 +8,7 @@
   "build": { "command": "npx wrangler@4 pages functions build --outdir=.build/_worker.js && node ferramentas/montar-site.mjs" },
   "compatibility_date": "2026-09-05",
   // run_worker_first: nestas páginas o Worker olha o endereço antes de entregar o arquivo (é assim que nome.vemnafesta.com mostra o convite de "nome")
-  "assets": { "directory": ".public", "binding": "ASSETS", "run_worker_first": ["/", "/admin", "/admin/", "/presentes", "/presentes/", "/exemplo", "/exemplo/*"] },
+  "assets": { "directory": ".public", "binding": "ASSETS", "run_worker_first": ["/", "/admin", "/admin/", "/presentes", "/presentes/", "/preview", "/preview/", "/teste", "/teste/", "/exemplo", "/exemplo/*"] },
   "d1_databases": [
     { "binding": "DB", "database_name": "confirmacaocasamento", "database_id": "0ece6983-d130-4724-841c-18288f1ddaa1" }
   ],

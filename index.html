@@ -44,7 +44,21 @@
         window.parent.postMessage({ tipo: 'previa-pronta' }, location.origin);
       });
     } else {
-      window.__conteudo = fetch('/api/conteudo' + qs).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; });
+      window.__conteudo = window.ROTAS.buscarConteudo();
+    }
+    // /preview e /teste: o anfitrião vê o convite como o convidado e pode testar a confirmação sem gravar nada
+    if (window.ROTAS.emTeste()) {
+      window.__teste = { ver: window.ROTAS.verTeste() };
+      var fetchReal = window.fetch;
+      window.fetch = function (u, o) {
+        var url = String(u), post = o && o.method && o.method.toUpperCase() !== 'GET';
+        if (/\/api\/rsvp/.test(url)) {
+          if (post) return Promise.resolve(new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } }));
+          return Promise.resolve(new Response(JSON.stringify({ escopo: 'grupo', grupo: 'Grupo de teste', convidados: [{ id: -1, nome: 'Convidado Um', tipo: 'adulto', resposta: null, chamar: 'Um' }, { id: -2, nome: 'Convidado Dois', tipo: 'adulto', resposta: null, chamar: 'Dois' }], adultosNoGrupo: 2, outrosAdultosSim: 0, respondeu: false, prazoEncerrado: window.__teste.ver === 'encerrado', prazoIso: '' }), { headers: { 'content-type': 'application/json' } }));
+        }
+        if (post && /\/api\/recados/.test(url)) return Promise.resolve(new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } }));
+        return fetchReal.apply(window, arguments);
+      };
     }
     // rede de segurança: se algo travar por completo, mostra a página depois de um tempo
     setTimeout(function () { document.documentElement.classList.add('pronto'); var sk = document.getElementById('sk'); if (sk) sk.remove(); }, 15000);
@@ -165,7 +179,7 @@
   .hero h1{font-size:clamp(46px,14vw,60px);font-weight:400;margin:10px 0 14px;line-height:.98;animation:riseIn 1s .35s ease both;overflow-wrap:anywhere;}
   .hero .amp{display:block;font-size:30px;color:var(--gold);margin:4px 0;}
   .hero-idade{margin:-4px 0 12px;animation:riseIn 1s .45s ease both;}
-  .hero-date{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--wine-pale);margin-bottom:6px;animation:riseIn 1s .5s ease both;}
+  .hero-date{font-size:calc(12.5px * var(--data-esc,1));letter-spacing:.18em;text-transform:uppercase;color:var(--wine-pale);margin-bottom:6px;animation:riseIn 1s .5s ease both;}
   .hero-time{font-size:15px;color:var(--wine-pale);margin-bottom:26px;animation:riseIn 1s .55s ease both;}
   .hero-cta-wrap{animation:riseIn 1s .65s ease both;}
   /* ----- posições e estilos dos textos da capa (escolhidos no painel) ----- */
@@ -508,6 +522,18 @@
   .gift-pix button{font-size:12.5px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--cream);background:var(--cream);color:var(--wine);font-weight:500;}
 
   /* ---------- RODAPÉ ---------- */
+  .faixa-teste{position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:center;padding:8px 12px;background:#17202E;color:#fff;font:600 12px/1.3 system-ui,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);}
+  .faixa-teste .ft-opcoes{display:inline-flex;gap:4px;flex-wrap:wrap;}
+  .faixa-teste a{color:#fff;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.35);min-height:30px;display:inline-flex;align-items:center;}
+  .faixa-teste a.on{background:#fff;color:#17202E;border-color:#fff;}
+  .faixa-teste .ft-sair{border-color:transparent;text-decoration:underline;}
+  html.em-teste body{padding-top:84px;} @media(min-width:520px){html.em-teste body{padding-top:48px;}}
+  .vnf-selo{display:block;margin-top:14px;font-size:11.5px;letter-spacing:.04em;color:inherit;opacity:.8;text-decoration:none;}
+  .vnf-selo span{text-decoration:underline;text-underline-offset:3px;}
+  .vnf-selo:hover,.vnf-selo:focus-visible{opacity:1;}
+  footer.minimo{padding-top:24px;padding-bottom:110px;}
+  footer.minimo > :not(.vnf-selo){display:none;}
+  footer.minimo .vnf-selo{margin-top:0;}
   footer{background:var(--ink);color:color-mix(in srgb, var(--ink) 25%, white 75%);padding:40px var(--gutter) 120px;text-align:center;font-size:12.5px;line-height:1.6;}
   footer .display{font-size:24px;color:var(--cream);display:block;margin-bottom:6px;}
   footer .flinks{display:flex;justify-content:center;gap:20px;margin:18px 0;font-size:12.5px;flex-wrap:wrap;}
@@ -853,6 +879,7 @@
       <a href="#presentes">Lista de presentes</a>
     </div>
     <span id="footerTexto">Feito com amor</span>
+    <a class="vnf-selo" href="https://vemnafesta.com" target="_blank" rel="noopener">Feito com <span>Vem na Festa</span></a>
   </footer>
 
   <!-- MENU DE NAVEGAÇÃO -->
@@ -935,9 +962,13 @@
     try { const m = JSON.parse(conteudo._modulos || 'null'); return Array.isArray(m) ? m : null; } catch (e) { return null; }
   }
   function ehAniversario() { return conteudo._tipo === 'aniversario'; }
+  // Link sem código de convite: nada de contagem, local ou presentes (a data e o horário somem na capa e no rodapé)
+  function acessoRestrito() { return conteudo._restrito === '1'; }
+  function eventoAberto() { return conteudo['rsvp.modo'] === 'aberto'; }
   function secaoAtiva(nome) {
     const permitidos = modulosDoTipo();
     if (permitidos && permitidos.indexOf(nome) === -1) return false;
+    if (acessoRestrito() && ['countdown', 'presente_teaser', 'mapa', 'presentes'].indexOf(nome) !== -1) return false;
     return conteudo['secao.' + nome + '.ativa'] !== '0';
   }
   function iniciais(nome) {
@@ -1037,6 +1068,21 @@
     const topo = alvo.getBoundingClientRect().top + window.pageYOffset;
     window.scrollTo({ top: topo, left: 0, behavior: rolagemSuave ? 'smooth' : 'instant' });
   }
+  // /preview e /teste: faixa fixa que explica o modo e deixa trocar o que está sendo mostrado
+  function criarFaixaTeste() {
+    const ver = window.__teste.ver;
+    const semAcesso = conteudo._restrito === '1' && ver !== 'generico';
+    const f = document.createElement('div'); f.className = 'faixa-teste'; f.setAttribute('role', 'region'); f.setAttribute('aria-label', 'Modo de teste do convite');
+    const link = function (v, rot) { const a = document.createElement('a'); a.href = '?ver=' + v; a.textContent = rot; if (v === ver) a.className = 'on'; a.setAttribute('aria-current', v === ver ? 'true' : 'false'); return a; };
+    const t1 = document.createElement('span'); t1.className = 'ft-titulo';
+    t1.textContent = semAcesso ? 'Entre no painel para ver o convite completo.' : 'Modo teste: só você vê isto. Respostas e recados não são salvos.';
+    const opcoes = document.createElement('span'); opcoes.className = 'ft-opcoes';
+    opcoes.append(link('pessoal', 'Link pessoal'), link('encerrado', 'Prazo encerrado'), link('generico', 'Link sem código'));
+    const sair = document.createElement('a'); sair.className = 'ft-sair'; sair.href = window.ROTAS.prefixo(eventoMatch ? eventoMatch[1] : '') + '/admin'; sair.textContent = 'Painel';
+    f.append(t1, opcoes, sair);
+    document.body.insertBefore(f, document.body.firstChild);
+    document.documentElement.classList.add('em-teste');
+  }
   function revelarPagina() {
     if (window.__revelado) return; window.__revelado = true;
     const esperas = [];
@@ -1068,6 +1114,7 @@
   (window.__conteudo || fetch(api('conteudo')).then(function (r) { return r.json(); }).catch(function () { return { erro: 'Sem conexão.', rede: true }; })).then(function (dados) {
     if (!dados || dados.erro) { mostrarErroEvento(dados); return 'erro'; }
     conteudo = dados;
+    if (window.__teste) criarFaixaTeste();
 
     const root = document.documentElement.style;
     if (t('aparencia.cor_primaria', '')) root.setProperty('--wine', t('aparencia.cor_primaria', ''));
@@ -1205,10 +1252,8 @@
     aplicar('footerTexto', 'footer.texto');
     // rodapé ligado/desligado no painel (vale também no modo Save the Date)
     const rodapeLigado = t('footer.mostrar', '1') !== '0';
-    if (!rodapeLigado) {
-      document.querySelector('footer').style.display = 'none';
-      document.querySelector('.frame').style.paddingBottom = '90px'; // espaço para a barra fixa não cobrir o último módulo
-    }
+    // o selo "Feito com Vem na Festa" é obrigatório: com o rodapé desligado fica só ele
+    if (!rodapeLigado) document.querySelector('footer').classList.add('minimo');
     document.getElementById('footerNomes').textContent = ehAniversario() ? tt('hero.noiva', '') : tt('hero.noiva', 'Noiva') + ' & ' + tt('hero.noivo', 'Noivo');
     document.getElementById('footerDataLocal').textContent = dataHero() + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
 
@@ -1282,7 +1327,7 @@
     const btnCopiarEndereco = document.getElementById('mapaCopiar');
     if (t('mapa.mostrar_botao_copiar', '0') === '1') {
       btnCopiarEndereco.hidden = false;
-      btnCopiarEndereco.addEventListener('click', function () { copiar(localNome + ' — ' + localEndereco, 'Endereço copiado'); });
+      btnCopiarEndereco.addEventListener('click', function () { copiar(localEndereco, 'Endereço copiado'); });
     }
     escondeSeInativa('mapa', 'map');
 
@@ -1352,6 +1397,43 @@
 
     initGallery();
 
+    // ---- Acesso: sem o código do convite não aparecem data, horário, local nem presentes; evento aberto não pede confirmação ----
+    (function () {
+      const ocultar = function (el) { if (el) el.style.display = 'none'; };
+      const std = t('config.modo_save_the_date', '0') === '1';
+      if (acessoRestrito()) {
+        ['secCountdown', 'secPresenteTeaser', 'map', 'presentes'].forEach(function (id) { ocultar(document.getElementById(id)); });
+        if (!std) {
+          ocultar(document.querySelector('#hero .hero-date')); ocultar(document.getElementById('heroHorario')); ocultar(document.getElementById('footerDataLocal'));
+          definirRico(document.getElementById('deadlineChip'), 'Para ver data e local e confirmar presença, abra o link pessoal do seu convite.');
+          definir(document.getElementById('stickyPrazo'), '');
+        }
+      }
+      // Depois do prazo (ou do evento) a página muda: o botão leva a "ver minha resposta" e some quando a festa já passou
+      const prazoIso = tOu('hero.prazo_iso', ''), prazoMs = new Date(prazoIso).getTime();
+      const simulado = window.__teste ? window.__teste.ver : '';
+      const prazoAcabou = !eventoAberto() && !std && !acessoRestrito() && (simulado === 'encerrado' || (!!prazoIso && isFinite(prazoMs) && Date.now() > prazoMs));
+      const dataMs = new Date(tOu('hero.data_iso', '')).getTime();
+      const festaPassou = !acessoRestrito() && !std && isFinite(dataMs) && Date.now() > dataMs + 86400000;
+      if (prazoAcabou || festaPassou) {
+        const rotulo = tOu('hero.cta_label_encerrado', 'Ver minha resposta');
+        definir(document.getElementById('heroCta'), rotulo); definir(document.getElementById('stickyCta'), rotulo);
+        definirRico(document.getElementById('deadlineChip'), 'prazo para confirmar encerrado');
+        definir(document.getElementById('stickyPrazo'), 'prazo encerrado');
+      }
+      if (festaPassou) {
+        ocultar(document.getElementById('heroCta')); ocultar(document.getElementById('sticky'));
+        definirRico(document.getElementById('deadlineChip'), tOu('hero.texto_depois', ehAniversario() ? 'Obrigado por celebrar com a gente!' : 'Obrigado por celebrar este dia com a gente!'));
+        document.getElementById('deadlineChip').style.display = '';
+      }
+      if (eventoAberto()) {
+        ocultar(document.getElementById('rsvp'));
+        ocultar(document.getElementById('heroCtaWrap'));
+        ocultar(document.getElementById('deadlineChip'));
+        definir(document.getElementById('stickyPrazo'), '');
+      }
+    })();
+
     // ---- Modo Save the Date: some tudo, menos a capa (roda antes das divisórias,
     // pra nenhuma ser gerada entre módulos escondidos) ----
     if (t('config.modo_save_the_date', '0') === '1') {
@@ -1391,6 +1473,7 @@
     });
     // modo Cartão: transparência do fundo (o painel guarda a transparência; o site usa a opacidade)
     if (t('hero.cartao_transparencia', '') !== '') hero.style.setProperty('--cartao-op', String(100 - limita(t('hero.cartao_transparencia', '54'), 0, 100, 54)));
+    hero.style.setProperty('--data-esc', { pequena: '0.85', normal: '1', grande: '1.5', enorme: '2.1' }[t('hero.data_tamanho', 'normal')] || '1');
     hero.style.setProperty('--hero-dy', limita(t('hero.texto_dy', '0'), -220, 220, 0) + 'px');
     hero.style.setProperty('--hero-escala', String(limita(t('hero.texto_escala', '100'), 70, 150, 100) / 100));
 
@@ -1731,7 +1814,7 @@
     return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
   }
   function iniciarRsvp() {
-    const codigo = new URLSearchParams(window.location.search).get('c');
+    const codigo = new URLSearchParams(window.location.search).get('c') || (window.__teste && window.__teste.ver !== 'generico' ? 'TESTE' : null);
     const semCodigo = $('rsvpSemCodigo');
     const carregando = $('rsvpCarregando');
     const erroBox = $('rsvpErro');
@@ -1820,7 +1903,7 @@
           // depois do prazo nada mais muda: mostra o que foi respondido (se houver) e avisa
           $('rsvpPrazo').hidden = true; $('rsvpTexto').hidden = true;
           if (data.respondeu) { mostrarSucesso(true); }
-          else mostrarErro('O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite.');
+          else mostrarErro(tOu('rsvp.encerrado_texto', 'O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite.'));
           return;
         }
         form.hidden = false;

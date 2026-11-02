@@ -20,7 +20,8 @@ function urlAbsoluta(valor, origem) {
   return /^https:\/\//i.test(v) ? v : '';
 }
 
-export async function dadosDeCompartilhamento(db, evento, origem) {
+// completo = false: link sem código de convite. A prévia não leva data nem a imagem gerada (que pode trazer a data).
+export async function dadosDeCompartilhamento(db, evento, origem, completo = true) {
   const marcas = CHAVES.map(() => '?').join(',');
   const { results } = await db.prepare(`SELECT chave, valor FROM conteudo WHERE evento_id = ? AND chave IN (${marcas})`).bind(evento.id, ...CHAVES).all();
   const c = {};
@@ -31,11 +32,11 @@ export async function dadosDeCompartilhamento(db, evento, origem) {
   const nomes = aniversario ? noiva : (noiva && noivo ? noiva + ' & ' + noivo : noiva || noivo);
   const tituloPadrao = nomes ? (aniversario ? 'Aniversário de ' + nomes : 'Casamento de ' + nomes) : limpo(evento.nome) || 'Convite';
   const titulo = limpo(c['compartilhar.msg_titulo']) || tituloPadrao;
-  const data = limpo(c['compartilhar.data_texto']) || limpo(c['hero.data_display']);
-  const descricao = limpo(c['compartilhar.msg_descricao']) || ((data ? data + ' · ' : '') + 'Abra o convite e confirme sua presença');
+  const data = completo ? (limpo(c['compartilhar.data_texto']) || limpo(c['hero.data_display'])) : '';
+  const descricao = (completo ? limpo(c['compartilhar.msg_descricao']) : '') || ((data ? data + ' · ' : '') + 'Abra o convite e confirme sua presença');
 
-  const propria = urlAbsoluta(c['compartilhar.imagem_propria'], origem);
-  const gerada = urlAbsoluta(c['compartilhar.imagem_url'], origem);
+  const propria = completo ? urlAbsoluta(c['compartilhar.imagem_propria'], origem) : '';
+  const gerada = completo ? urlAbsoluta(c['compartilhar.imagem_url'], origem) : '';
   const imagem = propria || gerada || origem + IMAGEM_PADRAO;
   return { titulo, descricao, imagem, tamanhoConhecido: !propria, nomeSite: limpo(evento.nome) || titulo, alt: 'Convite: ' + (nomes || titulo) };
 }
