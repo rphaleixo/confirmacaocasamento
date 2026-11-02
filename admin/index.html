@@ -1253,7 +1253,7 @@
         try { console.warn('Falha de rede em ' + url + ' (tentativa ' + (tentativa + 1) + '):', e && (e.name + ': ' + e.message)); } catch (x) { /* segue */ }
         if (tentativa < esperas.length) { await new Promise((ok) => setTimeout(ok, esperas[tentativa])); continue; }
         const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
-        return { erro: (offline ? 'Seu aparelho está sem internet. ' : 'Não consegui falar com o servidor. ') + (metodo ? 'Suas alterações continuam na tela: tente salvar de novo.' : 'Confira sua internet e tente de novo.') };
+        return { rede: true, erro: (offline ? 'Seu aparelho está sem internet. ' : 'Não consegui falar com o servidor. ') + (metodo ? 'Suas alterações continuam na tela: tente salvar de novo.' : 'Confira sua internet e tente de novo.') };
       }
     }
   }
@@ -5684,6 +5684,42 @@
   }
 
   // Desenha um grupo de campos (módulo do site, aparência...) dentro de "form", com barra de salvar.
+  // ---- Rascunho local: o que está sendo editado fica guardado neste aparelho. Se a internet cair, o painel guarda as
+  // alterações e as envia sozinho quando a conexão voltar; se a página recarregar, oferece restaurar. ----
+  const PREFIXO_RASCUNHO = 'rascunho-painel:';
+  const chaveRascunho = (grupo, opcoes) => PREFIXO_RASCUNHO + (eventoAtual || 'plataforma') + ':' + ((opcoes && opcoes.onde) || 'conteudo') + ':' + grupo.titulo;
+  const lerRascunhoLocal = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  const gravarRascunhoLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sem espaço ou bloqueado: segue sem guardar */ } };
+  const apagarRascunhoLocal = (k) => { try { localStorage.removeItem(k); } catch (e) { /* segue */ } };
+  const quando = (ts) => new Date(ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  let restaurouRascunho = false;
+  let rascunhoMontado = null;
+  let sincronizando = false;
+  // envia, sem precisar da tela aberta, os rascunhos marcados como "aguardando internet"
+  async function sincronizarRascunhos() {
+    if (sincronizando || !AUTH || !eventoAtual || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+    const prefixo = PREFIXO_RASCUNHO + eventoAtual + ':';
+    const chaves = [];
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.indexOf(prefixo) === 0) chaves.push(k); } } catch (e) { return; }
+    // a tela que está aberta com o próprio rascunho cuida dele sozinha (e atualiza o aviso de "salvo")
+    const pendentes = chaves.filter((k) => !(rascunhoMontado && rascunhoMontado.chave === k && document.body.contains(rascunhoMontado.form))).map((k) => [k, lerRascunhoLocal(k)]).filter(([, r]) => r && r.pendente && r.chaves && Object.keys(r.chaves).length);
+    if (!pendentes.length) return;
+    sincronizando = true;
+    try {
+      for (const [k, r] of pendentes) {
+        const d = await api('/api/admin/conteudo', 'POST', r.chaves);
+        if (d.rede) break; // continua sem internet: tenta de novo depois
+        if (d.erro) { r.pendente = false; gravarRascunhoLocal(k, r); continue; } // o servidor recusou: não insiste, mas o rascunho continua guardado
+        apagarRascunhoLocal(k);
+        if (ctDados) Object.assign(ctDados, r.chaves);
+        toast('Alterações guardadas neste aparelho foram enviadas. Tudo salvo.');
+        agendarCompartilhar();
+      }
+    } finally { sincronizando = false; }
+  }
+  window.addEventListener('online', () => setTimeout(sincronizarRascunhos, 500));
+  setInterval(sincronizarRascunhos, 20000);
+
   function renderGrupoEm(grupo, form, opcoes) {
     opcoes = opcoes || {};
     grupoEmEdicao = { grupo, form };
@@ -5752,32 +5788,75 @@
     };
     if (opcoes.rascunho && Object.keys(opcoes.rascunho).length) ficarSujo(true); else if (sujo && sujo.onde === (opcoes.onde || 'conteudo')) marcarSujo(null);
 
-    btnSalvar.addEventListener('click', async () => {
-      btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando…';
+    const kRasc = chaveRascunho(grupo, opcoes);
+    rascunhoMontado = { chave: kRasc, form };
+    const coletar = () => {
       const payload = {};
       if (opcoes.rascunho) Object.assign(payload, opcoes.rascunho); // inclui o que foi mexido na outra etapa
       form.querySelectorAll('[data-chave]').forEach((e) => {
         payload[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value;
       });
+      return payload;
+    };
+    const salvar = async (automatico) => {
+      if (btnSalvar.disabled) return;
+      btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando…';
+      const payload = coletar();
       // campos que geram algo ao salvar (ex.: a imagem de compartilhamento) acrescentam suas chaves ao envio
       for (const gancho of (fs._antesDeSalvar || [])) { try { Object.assign(payload, await gancho(payload)); } catch (e) { /* segue sem elas */ } }
       const d = await api('/api/admin/conteudo', 'POST', payload);
       btnSalvar.disabled = false; btnSalvar.textContent = opcoes.rotuloSalvar || 'Salvar alterações';
-      if (d.erro) { msg(msgDiv.id, d.erro, false); return; }
+      if (d.erro) {
+        if (d.rede) {
+          // sem internet: guarda neste aparelho e envia sozinho quando a conexão voltar
+          gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: true, chaves: payload });
+          estado.textContent = 'Guardado neste aparelho · aguardando internet';
+          msg(msgDiv.id, 'Sem conexão agora. Suas alterações estão guardadas neste aparelho e serão enviadas sozinhas quando a internet voltar.', false);
+        } else msg(msgDiv.id, d.erro, false);
+        return;
+      }
+      apagarRascunhoLocal(kRasc);
       if (opcoes.rascunho) Object.keys(opcoes.rascunho).forEach((k) => delete opcoes.rascunho[k]);
       Object.assign(ctDados, payload);
       msgDiv.textContent = '';
       ficarSujo(false);
-      toast(opcoes.msgSalvo || 'Salvo. O site já está atualizado.');
+      toast(automatico ? 'Conexão de volta: alterações enviadas. Tudo salvo.' : (opcoes.msgSalvo || 'Salvo. O site já está atualizado.'));
       agendarCompartilhar();
-    });
+    };
+    btnSalvar.addEventListener('click', () => salvar(false));
+    // se a rede caiu no meio do salvamento, tenta de novo sozinho quando ela voltar (enquanto esta tela estiver aberta)
+    const tentarDeNovo = () => { const r = lerRascunhoLocal(kRasc); if (r && r.pendente && document.body.contains(form) && barra.classList.contains('sujo')) salvar(true); };
+    window.addEventListener('online', tentarDeNovo, { once: true });
+    const intervaloRetentar = setInterval(() => { if (!document.body.contains(form)) { clearInterval(intervaloRetentar); return; } tentarDeNovo(); }, 15000);
+    let esperaRasc = null;
     const mexeu = (ev) => {
       const e = ev.target;
       if (!e || !e.dataset || !e.dataset.chave) return;
       if (opcoes.rascunho) opcoes.rascunho[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value;
       ficarSujo(true);
+      // guarda uma cópia neste aparelho (sem travar a digitação)
+      clearTimeout(esperaRasc);
+      esperaRasc = setTimeout(() => { const anterior = lerRascunhoLocal(kRasc); gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: !!(anterior && anterior.pendente), chaves: coletar() }); }, 600);
     };
     form.addEventListener('input', mexeu); form.addEventListener('change', mexeu);
+    if (restaurouRascunho) { restaurouRascunho = false; ficarSujo(true); }
+
+    // alterações não salvas de uma visita anterior (página recarregada, aba fechada, internet caída): oferece restaurar
+    const rasc = lerRascunhoLocal(kRasc);
+    if (rasc && rasc.chaves) {
+      const iguais = (a, b) => String(a === undefined || a === null ? '' : a) === String(b === undefined || b === null ? '' : b);
+      const diferentes = {};
+      Object.keys(rasc.chaves).forEach((k) => { if (!iguais(rasc.chaves[k], ctDados[k])) diferentes[k] = rasc.chaves[k]; });
+      if (!Object.keys(diferentes).length) apagarRascunhoLocal(kRasc);
+      else {
+        const aviso = h('div', { class: 'aviso-midia', role: 'status', style: 'margin:0 0 14px;' },
+          h('div', { text: (rasc.pendente ? 'Estas alterações não chegaram ao servidor por falta de internet' : 'Você tem alterações não salvas') + ' (de ' + quando(rasc.ts) + '). Quer restaurá-las?' }),
+          h('div', { style: 'margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;' },
+            btn('Restaurar alterações', () => { Object.assign(ctDados, diferentes); if (opcoes.rascunho) Object.assign(opcoes.rascunho, diferentes); restaurouRascunho = true; renderGrupoEm(grupo, form, opcoes); }, 'sm prim'),
+            btn('Descartar', () => { apagarRascunhoLocal(kRasc); aviso.remove(); }, 'sm fantasma')));
+        form.insertBefore(aviso, form.firstChild);
+      }
+    }
   }
 
   // =====================================================================
