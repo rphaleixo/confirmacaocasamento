@@ -40,7 +40,8 @@ CREATE TABLE convidados (
   resposta TEXT,            -- 'sim' | 'nao_sei' | 'nao' | NULL (ainda não respondeu); confirmado = 1 só quando 'sim'
   como_chamar TEXT,         -- como a pessoa prefere ser chamada (opcional)
   tratamento TEXT,          -- pronome de tratamento que antecede o nome (Sr., Sra., Tio...)
-  codigo_individual TEXT    -- código do link individual (opcional, criado sob demanda)
+  codigo_individual TEXT,   -- código do link individual (opcional, criado sob demanda)
+  aberto_em TEXT            -- quando a pessoa abriu o convite pelo link individual
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_convidados_codigo_ind ON convidados(codigo_individual) WHERE codigo_individual IS NOT NULL;
 

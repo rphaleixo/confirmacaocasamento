@@ -1,7 +1,7 @@
 // Metadados de compartilhamento do site (o que o WhatsApp, o Instagram, o iMessage… mostram ao receber o link):
 // título, descrição e imagem de miniatura. Esses aplicativos não executam JavaScript, então a tag <meta> precisa
 // já vir no HTML — a rota /e/<slug> injeta estas tags antes de entregar a página.
-const CHAVES = ['hero.noiva', 'hero.noivo', 'hero.data_display', 'compartilhar.msg_titulo', 'compartilhar.msg_descricao', 'compartilhar.imagem_url', 'compartilhar.imagem_propria', 'compartilhar.data_texto'];
+const CHAVES = ['hero.noiva', 'hero.noivo', 'hero.data_display', 'hero.horario_display', 'compartilhar.msg_titulo', 'compartilhar.msg_descricao', 'compartilhar.imagem_url', 'compartilhar.imagem_propria', 'compartilhar.data_texto'];
 export const IMAGEM_PADRAO = '/og-padrao.jpg';
 
 // todo caractere fora do ASCII vira entidade numérica: as tags ficam corretas seja qual for a codificação da página
@@ -32,7 +32,8 @@ export async function dadosDeCompartilhamento(db, evento, origem, completo = tru
   const nomes = aniversario ? noiva : (noiva && noivo ? noiva + ' & ' + noivo : noiva || noivo);
   const tituloPadrao = nomes ? (aniversario ? 'Aniversário de ' + nomes : 'Casamento de ' + nomes) : limpo(evento.nome) || 'Convite';
   const titulo = limpo(c['compartilhar.msg_titulo']) || tituloPadrao;
-  const data = completo ? (limpo(c['compartilhar.data_texto']) || limpo(c['hero.data_display'])) : '';
+  // a data vem sempre do que está no convite agora (não de uma cópia guardada junto com a imagem, que pode ficar velha)
+  const data = completo ? [limpo(c['hero.data_display']), limpo(c['hero.horario_display'])].filter(Boolean).join(' · ') : '';
   const descricao = (completo ? limpo(c['compartilhar.msg_descricao']) : '') || ((data ? data + ' · ' : '') + 'Abra o convite e confirme sua presença');
 
   const propria = completo ? urlAbsoluta(c['compartilhar.imagem_propria'], origem) : '';

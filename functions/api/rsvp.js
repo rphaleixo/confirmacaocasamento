@@ -32,6 +32,11 @@ export async function onRequestGet({ request, env }) {
   if (!achou) return jsonResponse({ erro: 'Convite não encontrado. Confira o link recebido.' });
   const { grupo, individual } = achou;
 
+  // a abertura é sempre do código que foi aberto: o link individual marca só aquela pessoa (e o grupo passa a ter alguém que abriu);
+  // o link do grupo marca o grupo. Abrir o endereço do evento sem código não marca nada.
+  if (individual && !individual.aberto_em) {
+    await db.prepare('UPDATE convidados SET aberto_em = ? WHERE id = ? AND aberto_em IS NULL').bind(new Date().toISOString(), individual.id).run();
+  }
   if (grupo.status_abertura !== 'Aberto') {
     await db
       .prepare('UPDATE grupos SET status_abertura = ?, data_abertura = ? WHERE codigo = ?')

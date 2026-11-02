@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
 
   const { results: convidados } = await db
     .prepare(
-      `SELECT c.id, c.nome, c.telefone, c.confirmado, c.tipo, c.resposta, c.como_chamar AS comoChamar, c.tratamento, c.codigo_individual AS codigoIndividual, c.codigo_grupo AS codigoGrupo,
+      `SELECT c.id, c.nome, c.telefone, c.confirmado, c.tipo, c.resposta, c.como_chamar AS comoChamar, c.tratamento, c.codigo_individual AS codigoIndividual, c.aberto_em AS abertoEm, c.codigo_grupo AS codigoGrupo,
               g.nome_grupo AS grupo, g.status_abertura AS statusAbertura, g.data_abertura AS dataAbertura,
               g.status_confirmacao AS statusConfirmacao, g.data_confirmacao AS dataConfirmacao,
               g.responsavel AS responsavel, g.contato_responsavel AS contatoResponsavel
@@ -59,6 +59,7 @@ export async function onRequestGet({ request, env }) {
       comoChamar: c.comoChamar || '',
       tratamento: c.tratamento || '',
       codigoIndividual: c.codigoIndividual || '',
+      abertoEm: c.abertoEm || '',
       grupo: c.grupo,
       codigoGrupo: c.codigoGrupo,
       statusAbertura: c.statusAbertura,

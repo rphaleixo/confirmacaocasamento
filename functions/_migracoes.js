@@ -249,6 +249,13 @@ const MIGRACOES = [
 )`];
     },
   },
+  {
+    // quem abriu o convite pelo link individual: a abertura é registrada por pessoa, não só pelo grupo
+    id: '014-aberto-por-pessoa',
+    async comandos() {
+      return ['ALTER TABLE convidados ADD COLUMN aberto_em TEXT'];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

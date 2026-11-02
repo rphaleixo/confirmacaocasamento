@@ -20,7 +20,7 @@ export const TIPOS = {
     nome: 'Casamento',
     descricao: 'Noiva e noivo, linha do tempo do casal, padrinhos, madrinhas, pais e daminhas.',
     modulos: ['countdown', 'presente_teaser', 'timeline', 'padrinhos', 'madrinhas_pais', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'],
-    mensagemPadrao: 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛',
+    mensagemPadrao: 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} Pedimos a resposta até {prazo} 💛',
     padroes: {
       'hero.eyebrow': 'Nosso casamento',
       'hero.noiva': 'Noiva',
@@ -31,7 +31,7 @@ export const TIPOS = {
       'mapa.titulo': 'Local da realização de nossos sonhos',
       'presentes.titulo': 'Seja protagonista da nossa história',
       'rsvp.texto': 'Com muito carinho, para celebrar esse dia especial com você',
-      'config.mensagem_template': 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} 💛',
+      'config.mensagem_template': 'Oi {nome}! Poderia confirmar sua presença no nosso casamento através deste link? {link} Pedimos a resposta até {prazo} 💛',
       'secao.padrinhos.ativa': '0',
       'secao.madrinhas_pais.ativa': '0',
     },
@@ -40,7 +40,7 @@ export const TIPOS = {
     nome: 'Aniversário',
     descricao: 'Aniversariante e idade, contagem regressiva, local, galeria, confirmação, presentes e recados.',
     modulos: ['countdown', 'presente_teaser', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'],
-    mensagemPadrao: 'Oi {nome}! Vai ser uma festa muito especial e queremos você lá. Confirme sua presença por este link: {link} 🎉',
+    mensagemPadrao: 'Oi {nome}! Vai ser uma festa muito especial e queremos você lá. Confirme sua presença por este link: {link} até {prazo} 🎉',
     padroes: {
       'hero.eyebrow': 'Você é nosso convidado',
       'hero.noiva': 'Nome do aniversariante',
@@ -55,7 +55,7 @@ export const TIPOS = {
       'mapa.titulo': 'Onde vai ser a festa',
       'presentes.titulo': 'Quer me presentear?',
       'rsvp.texto': 'Vai ser uma festa muito especial e queremos você lá',
-      'config.mensagem_template': 'Oi {nome}! Vai ser uma festa muito especial e queremos você lá. Confirme sua presença por este link: {link} 🎉',
+      'config.mensagem_template': 'Oi {nome}! Vai ser uma festa muito especial e queremos você lá. Confirme sua presença por este link: {link} até {prazo} 🎉',
     },
   },
 };

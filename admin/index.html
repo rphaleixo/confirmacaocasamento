@@ -973,7 +973,8 @@
         <div>
           <label for="cfg-mensagem">Mensagem enviada com o link de cada grupo</label>
           <textarea id="cfg-mensagem" rows="4" placeholder="Oi {nome}! Confirme sua presença em {link}"></textarea>
-          <div class="inserir"><span class="hint" style="margin:0 4px 0 0;">Inserir:</span><button type="button" class="btn xs" data-inserir="{nome}">Nome da pessoa</button><button type="button" class="btn xs" data-inserir="{link}">Link do convite</button></div>
+          <div class="inserir"><span class="hint" style="margin:0 4px 0 0;">Inserir:</span><button type="button" class="btn xs" data-inserir="{nome}">Nome da pessoa</button><button type="button" class="btn xs" data-inserir="{link}">Link do convite</button><button type="button" class="btn xs" data-inserir="{prazo}" title="Vira a data limite de confirmação do convite e muda sozinha se você alterar o prazo">Data limite</button></div>
+          <p class="hint" id="cfg-prazo-info" style="margin:6px 0 0;"></p>
           <div class="erro-campo" id="cfg-aviso-link" hidden>A mensagem precisa ter {link}, senão o convidado não recebe o endereço para confirmar.</div>
           <label for="cfg-meta">Meta de convidados (capacidade contratada com o local)</label>
           <input type="number" id="cfg-meta" min="1" inputmode="numeric" placeholder="Ex.: 150" style="max-width:200px;">
@@ -2306,7 +2307,13 @@
     return digitos;
   }
   function linkConvite(codigo) { return urlSite() + '?c=' + codigo; }
-  function preencherMensagem(modelo, nome, link) { return String(modelo || '').split('{nome}').join(nome).split('{link}').join(link).split('{prazo}').join(prazoTextoAdmin() || 'em breve'); }
+  // {prazo} vira a data limite de confirmação do convite (muda sozinha quando o prazo muda). Sem prazo definido, o trecho some ("até {prazo}").
+  function preencherMensagem(modelo, nome, link) {
+    const prazo = prazoTextoAdmin();
+    let m = String(modelo || '').split('{nome}').join(nome).split('{link}').join(link);
+    m = prazo ? m.split('{prazo}').join(prazo) : m.replace(/\s*\(?(?:até|ate|prazo:?)?\s*\{prazo\}\)?/gi, '');
+    return m;
+  }
   let conteudoPainel = null;
   function prazoTextoAdmin() {
     const c = conteudoPainel || {};
@@ -2386,7 +2393,7 @@
 
   async function carregarPainel() {
     carregarPreparacao();
-    api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); } });
+    api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); agendarCompartilhar(c); } });
     const d = await api('/api/admin/painel');
     if (d.erro) { document.getElementById('p-tbody').textContent = d.erro; return; }
     ultimoPainelDados = d;
@@ -2698,12 +2705,13 @@
     const chamar = nomeChamar(c);
     const nm = h('div', { class: 'nm' }, c.nome, c.tipo === 'crianca' ? h('span', { class: 'tag', style: 'margin-left:6px;', text: 'criança' }) : null,
       chamar !== primeiroNome(c.nome) ? h('small', { text: 'Chamado(a) de ' + chamar }) : null, c.telefone ? h('small', { text: c.telefone }) : null);
-    const aberto = g.statusAbertura === 'Aberto';
+    // quem tem link individual: vale a abertura da própria pessoa; os demais seguem o link do grupo
+    const aberto = c.codigoIndividual && c.abertoEm ? true : (c.codigoIndividual && g.statusAbertura === 'Aberto' && !c.abertoEm ? false : g.statusAbertura === 'Aberto');
     const convite = h('div', {}, h('span', { class: 'chip ' + (aberto ? 'info' : ''), text: aberto ? 'Abriu o convite' : 'Não abriu' }));
     const tel = normalizarTelefoneWhatsapp(c.telefone);
     const wa = tel ? h('a', { class: 'btn', href: linkWhatsapp(tel, mensagemPara(g, chamar)), target: '_blank', rel: 'noopener', title: 'Enviar o convite pelo WhatsApp', html: ICONES.wa + 'WhatsApp' })
       : h('button', { type: 'button', class: 'btn', disabled: true, title: 'Sem telefone cadastrado', html: ICONES.wa + 'WhatsApp' });
-    const acoes = h('div', { class: 'rs-acoes' }, wa, btn('Editar', () => abrirEditarConvidado(c), ''), btn('Link', () => abrirLinkIndividual(c), ''), btn('Mover', () => abrirMoverConvidado(c), ''), btn('Remover', () => removerPessoas([c.id], c.nome), 'fantasma'));
+    const acoes = h('div', { class: 'rs-acoes' }, wa, btn('Mensagem', () => copiar(mensagemPara(g, nomeChamar(c)), 'Mensagem'), ''), btn('Editar', () => abrirEditarConvidado(c), ''), btn('Link', () => abrirLinkIndividual(c), ''), btn('Mover', () => abrirMoverConvidado(c), ''), btn('Remover', () => removerPessoas([c.id], c.nome), 'fantasma'));
     const linha = h('div', { class: 'rs-linha' + (mostrarGrupo ? '' : ' sem-grupo') }, chk, nm);
     if (mostrarGrupo) {
       const gr = h('button', { type: 'button', class: 'gr', title: 'Mostrar só este grupo', text: g.nome });
@@ -2808,7 +2816,7 @@
         h('span', { class: 'nome', text: g.nome }), h('span', { class: 'chip ' + g.sit.cls, text: g.sit.rot }), h('span', { class: 'codigo', title: 'Código do link', text: g.codigo }),
         h('span', { class: 'cont', text: partes }), h('span', { class: 'esp' }),
         btn('Todos vão', () => mudarResposta(idsGrupo, 'sim'), 'sm'), btn('Todos não vão', () => mudarResposta(idsGrupo, 'nao'), 'sm'),
-        wa, btn('Link', () => copiar(linkConvite(g.codigo), 'Link do convite'), 'sm', 'link'), btn('Renomear', () => abrirRenomearGrupo(g), 'sm'), alterna);
+        wa, btn('Mensagem', () => { const d0 = destinatariosDoGrupo(g)[0]; copiar(mensagemPara(g, d0 ? d0.chamar : g.nome), 'Mensagem'); }, 'sm', 'copiar'), btn('Link', () => copiar(linkConvite(g.codigo), 'Link do convite'), 'sm', 'link'), btn('Renomear', () => abrirRenomearGrupo(g), 'sm'), alterna);
       const card = h('div', { class: 'rs-grupo' }, topo);
       if (aberto) { const tab = h('div', { class: 'rs-tabela' }); itens.forEach((x) => tab.appendChild(linhaPessoaRS(x, false))); card.appendChild(tab); }
       caixa.appendChild(card);
@@ -3003,6 +3011,8 @@
     const exemploLink = urlSite() + '?c=' + (g ? g.codigo : 'ABC123');
     const nome = g ? ((destinatariosDoGrupo(g)[0] || {}).chamar || nomeChamar(g.membros[0] || { nome: g.nome })) : 'Maria';
     const texto = preencherMensagem(modelo || '', nome, '\u0000');
+    const info = document.getElementById('cfg-prazo-info');
+    if (info) info.textContent = prazoTextoAdmin() ? 'Data limite atual: ' + prazoTextoAdmin() + '. Ela entra na mensagem pelo botão "Data limite" e muda sozinha se você alterar o prazo.' : 'O convite ainda não tem data limite de confirmação: o trecho com {prazo} some da mensagem.';
     const prev = document.getElementById('cfg-previa');
     prev.innerHTML = '';
     texto.split('\u0000').forEach((parte, i) => { if (i) prev.appendChild(h('span', { class: 'lk', text: exemploLink })); prev.append(parte); });
@@ -3615,14 +3625,15 @@
   function agendarCompartilhar(dados) {
     clearTimeout(cpAgenda);
     cpAgenda = setTimeout(async () => {
-      const d = dados || ctDados;
-      if (cpRodando || !d || !d._tipo || !eventoAtual) return;
+      if (cpRodando || !eventoAtual) return;
       cpRodando = true;
       try {
+        const d = dados || await api('/api/conteudo'); // sem dados informados, confere com o que está gravado agora
+        if (!d || d.erro || !d._tipo) return;
         const extras = await sincronizarCompartilhar(d);
         if (Object.keys(extras).length) {
           const r = await api('/api/admin/conteudo', 'POST', extras);
-          if (!r.erro) Object.assign(ctDados, extras);
+          if (!r.erro && ctDados) Object.assign(ctDados, extras);
         }
       } catch (e) { /* tenta de novo no próximo salvamento */ } finally { cpRodando = false; }
     }, 1500);
@@ -3778,6 +3789,7 @@
       { chave: 'rsvp.sucesso_texto', label: 'Mensagem depois de confirmar' },
       { chave: 'rsvp.sem_codigo_texto', label: 'Texto para quem abre o site sem link pessoal', tipo: 'textarea' },
       { chave: 'rsvp.encerrado_texto', label: 'Mensagem depois do prazo, para quem não respondeu', tipo: 'textarea', dica: 'Quem já respondeu continua vendo as próprias respostas, sem poder mudar. Em branco: "O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite."' },
+      { chave: 'rsvp.contato_whatsapp', label: 'WhatsApp para pedir alterações depois do prazo', dica: 'DDD + número (ex.: 21 99999-9999). Depois do prazo, quem já confirmou vê um botão que abre uma conversa com você, já dizendo de qual grupo é. Em branco: o botão não aparece.' },
       { chave: 'hero.cta_label_encerrado', label: 'Botão da capa depois do prazo', dica: 'Em branco: "Ver minha resposta".' },
       { chave: 'hero.texto_depois', label: 'Frase na capa depois do evento', dica: 'Depois do dia da festa o botão some e esta frase aparece. Em branco: "Obrigado por celebrar este dia com a gente!".' },
     ]},
@@ -6543,7 +6555,7 @@
     p.push({ id: 'capa', ancora: 'hero' }, { id: 'tema', ancora: 'hero' }, { id: 'fim', ancora: 'hero' });
     return p.map((x) => Object.assign({ aniv }, x));
   }
-  function fecharAssistente() { const a = document.getElementById('assistente'); if (a) a.hidden = true; ASSIST.ativo = false; document.body.classList.remove('assistente-aberto'); }
+  function fecharAssistente() { agendarCompartilhar(); const a = document.getElementById('assistente'); if (a) a.hidden = true; ASSIST.ativo = false; document.body.classList.remove('assistente-aberto'); }
   async function abrirAssistente(passoId) {
     const d = (await api('/api/conteudo')) || {};
     if (d.erro) { toast(d.erro, 'err'); return; }

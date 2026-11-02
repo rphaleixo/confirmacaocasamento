@@ -444,6 +444,8 @@
   /* ---------- CONFIRMAÇÃO (RSVP) ---------- */
   .rsvp-card{background:var(--cream);border:1px solid var(--blush-deep);border-radius:20px;padding:30px 22px;box-shadow:var(--shadow-soft);}
   .rsvp-card > p{font-size:14px;color:var(--ink-soft);margin:0 0 16px;text-align:center;}
+  .rsvp-contato{display:flex;justify-content:center;margin:12px 0 4px;}
+  .rsvp-contato .pill{width:auto;}
   .rsvp-prazo{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--wine-soft);margin:0 auto 22px;padding:7px 14px;border-radius:999px;background:color-mix(in srgb, var(--blush) 70%, var(--cream));width:max-content;max-width:100%;text-align:center;}
   .rsvp-prazo b{color:var(--wine);font-variant-numeric:tabular-nums;}
   .rsvp-aviso{display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:13px;line-height:1.55;color:var(--ink);background:color-mix(in srgb, var(--blush) 65%, var(--cream));border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin:0 0 16px;}
@@ -782,6 +784,8 @@
 
       <div id="rsvpCarregando" hidden style="text-align:center;font-size:13.5px;color:var(--ink-soft);padding:12px 0;">Abrindo seu convite…</div>
       <div id="rsvpErro" class="rsvp-aviso erro" hidden><span class="ic" aria-hidden="true">!</span><span id="rsvpErroTexto"></span></div>
+
+      <div class="rsvp-contato" id="rsvpContatoWrap" hidden><a class="pill outline small" id="rsvpContato" target="_blank" rel="noopener">Pedir uma alteração pelo WhatsApp</a></div>
 
       <form id="rsvpForm" hidden novalidate>
         <div class="rsvp-aviso" id="rsvpJaRespondeu" hidden><span class="ic" aria-hidden="true">✓</span><span>Já recebemos uma resposta deste convite. Se algo mudou, é só ajustar abaixo e enviar de novo.</span></div>
@@ -1859,6 +1863,14 @@
     const lista = $('rsvpListaConvidados');
     const sucesso = $('rsvpSucesso');
 
+    // depois do prazo, quem já confirmou (ou precisa mudar algo) pede a alteração ao anfitrião pelo WhatsApp, com o grupo já na mensagem
+    function mostrarContato(grupo) {
+      const n = String(t('rsvp.contato_whatsapp', '')).replace(/\D/g, '');
+      if (n.length < 10) return;
+      const tel = n.length <= 11 ? '55' + n : n;
+      $('rsvpContato').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent('Oi! Sou do grupo ' + (grupo || '') + ' e preciso alterar a minha confirmação de presença.');
+      $('rsvpContatoWrap').hidden = false;
+    }
     function mostrarErro(texto) { $('rsvpErroTexto').textContent = texto; erroBox.hidden = false; }
     if (!codigo) {
       // na prévia do painel não há convite de verdade: mostra uma saudação de exemplo para o anfitrião ver onde ela fica
@@ -1939,6 +1951,7 @@
         if (contexto.prazoEncerrado) {
           // depois do prazo nada mais muda: mostra o que foi respondido (se houver) e avisa
           $('rsvpPrazo').hidden = true; $('rsvpTexto').hidden = true;
+          mostrarContato(data.grupo);
           if (data.respondeu) { mostrarSucesso(true); }
           else mostrarErro(tOu('rsvp.encerrado_texto', 'O prazo para confirmar terminou. Se precisar de alguma coisa, fale com quem enviou o convite.'));
           return;
