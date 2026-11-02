@@ -372,6 +372,17 @@
   .login-google{margin-top:16px;text-align:center;} .login-google .ou{display:flex;align-items:center;gap:10px;color:var(--ink-faint);font-size:12px;margin:0 0 12px;} .login-google .ou::before,.login-google .ou::after{content:'';flex:1;height:1px;background:var(--line);} #loginGoogleBtn{display:flex;justify-content:center;min-height:44px;}
   .faixa-rascunho{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#FFF3D6;color:#5C3A00;border-bottom:1px solid #F0D9A0;padding:9px max(16px,calc((100vw - 1100px)/2));font-size:13px;}
   .faixa-rascunho .ic{font-size:16px;} .faixa-rascunho .t{flex:1 1 220px;line-height:1.4;}
+  .rapido{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:0 0 16px;}
+  .rapido .rp{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0;}
+  .rapido .rp h4{margin:0;font-size:13px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .rapido .rp .valor{font-size:16px;font-weight:700;overflow-wrap:anywhere;}
+  .rapido .rp .linha{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .rapido .rp input[type=date],.rapido .rp input[type=time]{min-height:40px;}
+  .rapido .rp img.mini{width:100%;max-width:240px;border-radius:8px;border:1px solid var(--line);aspect-ratio:1200/630;object-fit:cover;background:var(--muted-bg);}
+  .prep-compacto{background:var(--ok-bg);border:1px solid #CBE7D6;border-radius:var(--r-lg);padding:10px 14px;margin:0 0 14px;}
+  .prep-compacto > summary{cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;font-size:13.5px;list-style:none;}
+  .prep-compacto > summary::-webkit-details-marker{display:none;}
+  .prep-compacto > summary .ver{margin-left:auto;font-weight:500;color:var(--ink-soft);text-decoration:underline;}
   .prep-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin:0 0 16px;box-shadow:var(--sombra-suave,0 6px 18px -12px rgba(11,37,69,.25));}
   .prep-card.pronto{background:var(--ok-bg);border-color:transparent;}
   .prep-cab{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;} .prep-cab h3{margin:0;font-size:17px;} .prep-cab p{margin:4px 0 0;color:var(--ink-soft);font-size:13px;}
@@ -966,6 +977,7 @@
       <div class="kpi"><div class="lbl">Sem resposta ainda</div><div class="v" id="p-pendentes">--</div><div class="det">grupos que não confirmaram ninguém</div></div>
     </div>
     <div id="p-alerta"></div>
+    <div class="rapido" id="p-rapido" aria-label="Configurações rápidas"></div>
 
     <details class="dobra" id="p-config">
       <summary><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Mensagem do convite e meta de convidados <small id="p-config-resumo"></small><svg class="seta" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></summary>
@@ -2391,9 +2403,75 @@
     contagemTimer = setInterval(() => { if (!document.getElementById('p-contagens') || abaAtual !== 'painel') { clearInterval(contagemTimer); return; } pintar(); }, 30000);
   }
 
+  // ---- Configurações rápidas no Painel: o que o anfitrião mais ajusta, sem precisar procurar no menu (continuam também nos lugares de origem) ----
+  function desenharRapido(c) {
+    const box = document.getElementById('p-rapido'); if (!box || !c) return;
+    box.innerHTML = '';
+    const irPara = (alvo) => { ALVO_PENDENTE = alvo; navegar('conteudo'); };
+
+    // 1) prazo para confirmar
+    const dh = isoParaDataHora(c['hero.prazo_iso'] || '');
+    const inpData = h('input', { type: 'date', 'aria-label': 'Dia limite para confirmar' }); inpData.value = dh.data || '';
+    const inpHora = h('input', { type: 'time', 'aria-label': 'Hora limite' }); inpHora.value = dh.hora || '23:59';
+    const gravarPrazo = async (limpar) => {
+      const dia = limpar ? '' : inpData.value;
+      if (!limpar && !dia) { toast('Escolha o dia limite.', 'err'); return; }
+      const payload = dia
+        ? { 'hero.prazo_iso': dia + 'T' + (inpHora.value || '23:59') + ':00-03:00', 'hero.prazo_display': textoSugerido('curto', dia), 'hero.prazo_horario_display': '' }
+        : { 'hero.prazo_iso': '', 'hero.prazo_display': '', 'hero.prazo_horario_display': '' };
+      const r = await api('/api/admin/conteudo', 'POST', payload);
+      if (r.erro) { toast(r.erro, 'err'); return; }
+      Object.assign(conteudoPainel, payload); if (ctDados) Object.assign(ctDados, payload);
+      toast(dia ? 'Prazo atualizado. A mensagem, o convite e as contagens já usam a nova data.' : 'Prazo removido: o convite aceita respostas sem data limite.');
+      desenharContagens(conteudoPainel); atualizarPreviaMensagem(); desenharRapido(conteudoPainel);
+    };
+    const cartaoPrazo = h('div', { class: 'rp' }, h('h4', { text: 'Prazo para confirmar' }),
+      h('div', { class: 'valor', text: prazoTextoAdmin() || 'Sem prazo definido' }),
+      h('div', { class: 'linha' }, inpData, inpHora, btn('Salvar prazo', () => gravarPrazo(false), 'sm prim'), c['hero.prazo_iso'] ? btn('Remover', () => gravarPrazo(true), 'sm fantasma') : null));
+
+    // 2) data e local
+    const dataTxt = window.HTML_SEGURO.texto(c['hero.data_display'] || '') + (c['hero.horario_display'] ? ' · ' + window.HTML_SEGURO.texto(c['hero.horario_display']) : '');
+    const localTxt = window.HTML_SEGURO.texto(c['mapa.local_nome'] || '');
+    const cartaoEvento = h('div', { class: 'rp' }, h('h4', { text: 'Data e local da festa' }),
+      h('div', { class: 'valor', text: dataTxt.trim() || 'Data não definida' }),
+      h('div', { class: 'hint', style: 'margin:0;', text: localTxt || 'Local não definido' }),
+      h('div', { class: 'linha' }, btn('Editar data e hora', () => irPara({ grupo: 'Capa', etapa: 'data' }), 'sm'), btn('Editar local', () => irPara({ grupo: 'Localização' }), 'sm')));
+
+    // 3) miniatura do link no WhatsApp
+    let desatualizada = false;
+    try { const op = opCompartilhar(c); desatualizada = !String(c['compartilhar.imagem_propria'] || '').trim() && window.COMPARTILHAR.assinatura(op) !== c['compartilhar.assinatura']; } catch (e) { /* sem como conferir */ }
+    const tituloMsg = window.HTML_SEGURO.texto(c['compartilhar.msg_titulo'] || '') || 'Título automático';
+    const descMsg = window.HTML_SEGURO.texto(c['compartilhar.msg_descricao'] || '') || ((dataTxt.trim() ? dataTxt.trim() + ' · ' : '') + 'Abra o convite e confirme sua presença');
+    const imgUrl = String(c['compartilhar.imagem_propria'] || '').trim() || String(c['compartilhar.imagem_url'] || '').trim();
+    const cartaoMini = h('div', { class: 'rp' },
+      h('h4', {}, 'Miniatura do link no WhatsApp', desatualizada ? h('span', { class: 'chip warn', text: 'Desatualizada' }) : h('span', { class: 'chip ok', text: 'Em dia' })),
+      imgUrl ? h('img', { class: 'mini', src: imgUrl, alt: 'Miniatura do convite no WhatsApp' }) : h('div', { class: 'hint', text: 'Ainda não há imagem.' }),
+      h('div', { class: 'valor', style: 'font-size:13.5px;', text: tituloMsg }),
+      h('div', { class: 'hint', style: 'margin:0;', text: descMsg }),
+      h('div', { class: 'linha' },
+        btn('Atualizar imagem agora', async (ev) => {
+          const b = ev.currentTarget; b.disabled = true; b.textContent = 'Atualizando…';
+          try {
+            const extras = await sincronizarCompartilhar(Object.assign({}, c, { 'compartilhar.assinatura': '' }));
+            if (Object.keys(extras).length) { const r = await api('/api/admin/conteudo', 'POST', extras); if (r.erro) throw new Error(r.erro); Object.assign(conteudoPainel, extras); if (ctDados) Object.assign(ctDados, extras); toast('Miniatura atualizada.'); }
+            else toast('Não consegui gerar a imagem agora. Tente de novo em instantes.', 'err');
+          } catch (e) { toast('Não consegui atualizar a miniatura: ' + (e.message || 'erro'), 'err'); }
+          desenharRapido(conteudoPainel);
+        }, 'sm'),
+        btn('Editar mensagem e imagem', () => irPara({ grupo: 'Compartilhamento (WhatsApp)' }), 'sm')),
+      h('div', { class: 'hint', style: 'margin:0;font-size:11.5px;', text: 'O WhatsApp guarda a miniatura de cada link já enviado: mudanças só aparecem em links enviados depois.' }));
+
+    // 4) publicação
+    const cartaoPub = h('div', { class: 'rp' }, h('h4', {}, 'Convite', PUB.publicado ? h('span', { class: 'chip ok', text: 'Publicado' }) : h('span', { class: 'chip warn', text: 'Em breve (não publicado)' })),
+      h('div', { class: 'hint', style: 'margin:0;', text: PUB.publicado ? 'Os convidados com o link veem o convite.' : 'Os convidados ainda veem a página "Em breve".' }),
+      h('div', { class: 'linha' }, h('a', { class: 'btn sm', href: urlSiteVer(), target: '_blank', rel: 'noopener', text: 'Testar como convidado' }), !PUB.publicado ? btn('Publicar', () => abrirPublicar(), 'sm prim') : null));
+
+    box.append(cartaoPrazo, cartaoEvento, cartaoMini, cartaoPub);
+  }
+
   async function carregarPainel() {
     carregarPreparacao();
-    api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); agendarCompartilhar(c); } });
+    api('/api/conteudo').then((c) => { if (c && !c.erro) { conteudoPainel = c; desenharContagens(c); desenharRapido(c); atualizarPreviaMensagem(); agendarCompartilhar(c); } });
     const d = await api('/api/admin/painel');
     if (d.erro) { document.getElementById('p-tbody').textContent = d.erro; return; }
     ultimoPainelDados = d;
@@ -6451,6 +6529,7 @@
     if (!d || d.erro) { box.hidden = true; return; }
     CONT_PREP = d;
     desenharPreparacao(d);
+    if (conteudoPainel) desenharRapido(conteudoPainel);
     // primeiro acesso a um convite novo: abre o assistente uma vez
     try {
       const chave = 'rsvp-assist-visto:' + eventoAtual;
@@ -6465,6 +6544,7 @@
     const pronto = !pend.length;
     box.innerHTML = ''; box.hidden = false;
     box.className = 'prep-card' + (pronto && PUB.publicado ? ' pronto' : '');
+    const compacto = pronto && PUB.publicado; // preparo concluído: sem destaque, só uma linha que abre o checklist
     const pct = ess.length ? Math.round(feitos / ess.length * 100) : 100;
     const item = (t) => {
       const b = h('button', { type: 'button', class: 'prep-item' + (t.feito ? ' ok' : '') },
@@ -6473,27 +6553,32 @@
       b.addEventListener('click', () => (t.passo && !t.feito ? abrirAssistente(t.passo) : irParaTarefa(t)));
       return b;
     };
-    const cab = h('div', { class: 'prep-cab' },
+    const cab = compacto ? h('div', { hidden: true }) : h('div', { class: 'prep-cab' },
       h('div', {}, h('h3', { text: pronto ? (PUB.publicado ? 'Seu convite está pronto' : 'Tudo certo para publicar') : 'Prepare seu convite' }),
         h('p', { text: pronto ? (PUB.publicado ? 'Os convidados já veem o site. Que tal caprichar nos extras?' : 'Falta só publicar para os convidados verem.') : feitos + ' de ' + ess.length + ' passos essenciais feitos. Cada passo leva poucos minutos.' })),
       h('div', { class: 'prep-acoes' },
         !PUB.publicado ? btn(pronto ? 'Publicar convite' : 'Revisar e publicar', () => abrirPublicar(), pronto ? 'prim' : '') : null,
         !pronto ? btn(feitos ? 'Continuar' : 'Começar', () => abrirAssistente(pend[0] && pend[0].passo), 'prim') : null));
     const barra = h('div', { class: 'prep-barra', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }, h('i', { style: 'width:' + pct + '%' }));
-    box.append(cab, barra);
+    const tudo = h('div', {});
+    tudo.append(cab, barra);
     const lista = h('div', { class: 'prep-lista' });
     ess.forEach((t) => lista.appendChild(item(t)));
-    box.appendChild(lista);
+    tudo.appendChild(lista);
     if (opc.length) {
       const pend2 = opc.filter((t) => !t.feito).length;
       const det = h('details', { class: 'prep-opc', open: !pronto ? null : '' }, h('summary', { text: 'Deixe ainda mais seu' + (pend2 ? ' (' + pend2 + ' sugestões)' : '') }), h('div', { class: 'prep-lista' }, ...opc.map(item)));
-      box.appendChild(det);
+      tudo.appendChild(det);
     }
-    if (PUB.publicado) box.appendChild(h('div', { class: 'prep-rodape' }, btn('Voltar para "Em breve"', async () => {
+    if (PUB.publicado) tudo.appendChild(h('div', { class: 'prep-rodape' }, btn('Voltar para "Em breve"', async () => {
       if (!(await confirmar({ titulo: 'Voltar para "Em breve"?', texto: 'Os convidados passam a ver uma página de "Em breve" no lugar do convite, até você publicar de novo. Nada do que você preencheu se perde.', rotulo: 'Voltar para Em breve' }))) return;
       const r = await api('/api/admin/publicacao', 'POST', { publicado: false }); if (r.erro) { toast(r.erro, 'err'); return; }
       PUB.publicado = false; desenharFaixaRascunho(); desenharPreparacao(d); toast('O convite voltou para "Em breve".');
     }, 'sm fantasma')));
+    if (compacto) {
+      box.className = '';
+      box.appendChild(h('details', { class: 'prep-compacto' }, h('summary', {}, h('span', { 'aria-hidden': 'true', text: '✓' }), h('span', { text: 'Convite publicado e pronto' }), h('span', { class: 'ver', text: 'Ver checklist' })), tudo));
+    } else box.appendChild(tudo);
   }
 
   // ---- publicar: confere o que falta e escolhe entre convite completo e Save the Date ----
