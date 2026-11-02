@@ -503,10 +503,12 @@
   .gift-section > p{font-size:14px;color:var(--wine-pale);margin:0 0 24px;}
   .ancora-mod{display:block;height:0;width:0;overflow:hidden;scroll-margin-top:0;}
   #hero > .ancora-mod{position:absolute;top:0;left:0;} /* a capa é uma coluna flex alinhada embaixo: a âncora fixa no topo */
-  .gift-infos{display:flex;flex-direction:column;gap:10px;margin:0;text-align:left;}
-  .gift-info{background:var(--cream);color:var(--ink);border-radius:14px;padding:14px 16px;}
-  .gift-info b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:16px;color:var(--wine);margin-bottom:3px;}
-  .gift-info span{display:block;font-size:13.5px;line-height:1.5;color:var(--ink-soft);white-space:pre-line;}
+  /* dicas em grade de 2 colunas (1 só quando há uma dica ou o celular é muito estreito): evita uma pilha longa de cartões */
+  .gift-infos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;margin:0;text-align:left;}
+  .gift-info{background:var(--cream);color:var(--ink);border-radius:14px;padding:11px 12px;min-width:0;}
+  .gift-info:last-child:nth-child(odd){grid-column:1/-1;}
+  .gift-info b{display:block;font-family:var(--font-display);font-style:var(--display-style);font-weight:500;font-size:15px;line-height:1.25;color:var(--wine);margin-bottom:2px;overflow-wrap:anywhere;}
+  .gift-info span{display:block;font-size:12.5px;line-height:1.45;color:var(--ink-soft);white-space:pre-line;overflow-wrap:anywhere;}
   .gift-como{display:flex;flex-direction:column;gap:14px;margin:0;text-align:left;}
   .gift-como-tit{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--wine-pale);text-align:center;margin:8px 0 -2px;}
   .gift-opcao{background:var(--cream);color:var(--ink);border-radius:16px;padding:22px 20px;text-align:center;}
@@ -1510,9 +1512,13 @@
       d.svg.setAttribute('viewBox', '0 0 ' + W + ' ' + d.altura);
       d.svg.innerHTML = FS.enfeite(d.forma, W, d.altura, paletaDivisoria(), d.espelhar);
     }
-    function aplicarDivisoria(el, corAntes, chave, indice) {
+    function aplicarDivisoria(el, corAntes, chave, indice, chaveAcima) {
       if (!FS || !corAntes) return false;
       const pega = function (k) { const v = String(t(k, '')).trim(); return v && v !== 'padrao' ? v : ''; };
+      // a divisória é a fronteira entre duas seções. Por padrão pertence ao topo da de baixo; se a de cima escolheu
+      // "divisória embaixo" (e definiu uma forma), é a configuração dela que vale nessa fronteira
+      const dono = (chaveAcima && t(chaveAcima + '.divisoria_posicao', 'topo') === 'base' && pega(chaveAcima + '.divisoria_forma')) ? chaveAcima : chave;
+      chave = dono;
       let forma = pega(chave + '.divisoria_forma') || pega('layout.divisoria_forma') || 'onda';
       if (!FS.existe(forma)) forma = 'onda';
       const comEnfeite = FS.temEnfeite(forma);
@@ -1552,7 +1558,7 @@
     let indiceForma = 0;
     modulosVisiveis.forEach(function (el, i) {
       const corAntes = i === 0 ? null : modulosVisiveis[i - 1].dataset.bgBottom;
-      if (aplicarDivisoria(el, corAntes, MOD_DE_ID[el.id] || '', indiceForma)) indiceForma++;
+      if (aplicarDivisoria(el, corAntes, MOD_DE_ID[el.id] || '', indiceForma, i === 0 ? '' : (MOD_DE_ID[modulosVisiveis[i - 1].id] || ''))) indiceForma++;
     });
     let esperaRedimensionar = null;
     window.addEventListener('resize', function () { clearTimeout(esperaRedimensionar); esperaRedimensionar = setTimeout(function () { divisoriasAtivas.forEach(desenharEnfeite); }, 150); });
@@ -1561,7 +1567,7 @@
     document.querySelector('.hero-veil').style.setProperty('--hero-fade', primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)');
 
     if (modulosVisiveis.length && rodapeLigado) {
-      aplicarDivisoria(footerEl, modulosVisiveis[modulosVisiveis.length - 1].dataset.bgBottom, 'footer', indiceForma);
+      aplicarDivisoria(footerEl, modulosVisiveis[modulosVisiveis.length - 1].dataset.bgBottom, 'footer', indiceForma, MOD_DE_ID[modulosVisiveis[modulosVisiveis.length - 1].id] || '');
     }
 
     // Sem o módulo de confirmação no site, os atalhos para ele somem

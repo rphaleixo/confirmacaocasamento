@@ -639,7 +639,7 @@
   #modal-cor .cor-previa{height:84px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);display:grid;place-items:center;font:700 15px var(--mono);background-clip:padding-box;}
   #modal-cor .cor-previa small{display:block;font:600 11px var(--font);opacity:.85;text-align:center;}
   #modal-cor .cor-grupo-t{font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 6px;}
-  #modal-cor .cor-paleta{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  #modal-cor .cor-paleta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
   #modal-cor .cor-op{display:flex;flex-direction:column;align-items:center;gap:4px;border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:8px 2px 6px;font-size:10.5px;color:var(--ink-soft);cursor:pointer;min-height:56px;}
   #modal-cor .cor-op i{display:block;width:30px;height:30px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);}
   #modal-cor .cor-op.on{border-color:var(--navy);box-shadow:0 0 0 2px rgba(31,58,95,.18);color:var(--ink);}
@@ -1215,6 +1215,13 @@
     if (typeof url === 'string' && url.indexOf('/api/') === 0) {
       if (eventoAtual && url.indexOf('/api/admin/eventos') !== 0 && url.indexOf('/api/admin/plataforma') !== 0) {
         url += (url.indexOf('?') === -1 ? '?' : '&') + 'e=' + encodeURIComponent(eventoAtual);
+      }
+      // o conteúdo só sai inteiro (data, local, presentes) para quem está logado: o painel envia o acesso também aqui
+      if (url.indexOf('/api/conteudo') === 0 && AUTH) {
+        opts = Object.assign({}, opts || {});
+        opts.headers = Object.assign({}, opts.headers || {}, { Authorization: AUTH });
+        opts.credentials = 'omit';
+        return fetchOriginal(url, opts);
       }
       if (url.indexOf('/api/admin/') === 0) {
         opts = Object.assign({}, opts || {});
@@ -3790,10 +3797,13 @@
       c.push({ etapa: e, chave: mod + '.imagem_fundo', tipo: 'foto', label: 'Imagem de fundo', aspecto: 1, dica: 'Ela aparece por trás do conteúdo, coberta por um véu da cor do módulo para o texto continuar legível.' });
       c.push({ etapa: e, chave: mod + '.fundo_veu', tipo: 'select', label: 'Força do véu sobre a imagem', padrao: 'medio', opcoes: OPC_VEU });
     }
-    c.push({ etapa: e, chave: '__sep_ap_forma_' + mod + '__', tipo: 'separador', label: 'Forma do topo da seção' });
-    c.push({ etapa: e, chave: mod + '.divisoria_forma', tipo: 'escolha_visual', label: 'Como esta seção começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
-    c.push({ etapa: e, chave: mod + '.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
-    c.push({ etapa: e, chave: mod + '.divisoria_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
+    // a divisória tem etapa própria (visível também no modo simples): é a quebra entre duas seções
+    const d = 'divisoria';
+    c.push({ etapa: d, chave: '__nota_div_' + mod + '__', tipo: 'nota', label: 'A divisória é a forma que separa esta seção da que está ao lado. Escolha se ela fica em cima (entre esta seção e a anterior) ou embaixo (entre esta seção e a próxima). Em "Igual ao site", segue Site › Formas e estilo.' });
+    c.push({ etapa: d, chave: mod + '.divisoria_posicao', tipo: 'select', label: 'Onde fica a divisória', padrao: 'topo', opcoes: [{ valor: 'topo', label: 'Em cima: separa esta seção da anterior' }, { valor: 'base', label: 'Embaixo: separa esta seção da próxima' }] });
+    c.push({ etapa: d, chave: mod + '.divisoria_forma', tipo: 'escolha_visual', label: 'Forma da divisória', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
+    c.push({ etapa: d, chave: mod + '.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+    c.push({ etapa: d, chave: mod + '.divisoria_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
     return c;
   }
 
@@ -3811,6 +3821,7 @@
   GRUPOS_CONTEUDO.forEach((g) => {
     const mod = g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null);
     if (!mod || !g.etapas) return;
+    g.etapas.push({ id: 'divisoria', titulo: 'Divisória' });
     g.etapas.push({ id: 'aparencia', titulo: 'Aparência', avancada: true });
     const opc = mod === 'presente_teaser' ? { semEspaco: true } : mod === 'countdown' ? { semSombra: true, semImagem: true } : {};
     camposAparencia(mod, opc).forEach((c) => g.campos.push(c));
@@ -5226,7 +5237,7 @@
         const b = h('button', { type: 'button', class: 'cor-op', 'aria-label': nome + ' da paleta (' + c.toUpperCase() + ')' }, h('i', { style: 'background:' + c }), h('span', { text: nome }));
         b.addEventListener('click', () => { valor = c; pintar(); }); paleta.appendChild(b); ops.push([c, b]);
       });
-      const extras = h('div', { class: 'cor-paleta', role: 'group', 'aria-label': 'Branco e preto', style: 'margin-top:8px;grid-template-columns:repeat(5,1fr);' });
+      const extras = paleta;
       [['Branco', '#ffffff'], ['Preto', '#111111']].forEach(([nome, c]) => {
         const b = h('button', { type: 'button', class: 'cor-op', 'aria-label': nome }, h('i', { style: 'background:' + c }), h('span', { text: nome }));
         b.addEventListener('click', () => { valor = c; pintar(); }); extras.appendChild(b); ops.push([c, b]);
@@ -5241,7 +5252,7 @@
       dlg.append(
         h('div', { class: 'md-head' }, h('div', {}, h('h3', { id: 'cor-titulo', text: opcoes.titulo || 'Escolher cor' }))),
         h('div', { class: 'cor-corpo' }, previa,
-          h('div', {}, h('p', { class: 'cor-grupo-t', text: 'Cores do seu site' }), paleta, extras),
+          h('div', {}, h('p', { class: 'cor-grupo-t', text: 'Cores do seu site' }), paleta),
           h('div', {}, h('p', { class: 'cor-grupo-t', text: 'Outra cor' }), h('div', { class: 'cor-linha' }, hex, nativo)),
           avisoC),
         foot);
