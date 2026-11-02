@@ -5966,10 +5966,10 @@
         if (secaoOff || listaOff) {
           caixa.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 14px;' },
             h('div', { text: secaoOff ? 'A seção Presentes está desligada no site, então a página da lista também fica indisponível para os convidados.' : 'A lista de presentes ainda não está ligada no convite: os convidados não veem o botão que leva até ela e a página fica indisponível.' }),
-            h('div', { style: 'margin-top:8px;' }, btn(secaoOff ? 'Ligar em Site › Conteúdo › Presentes' : 'Ligar em Site › Conteúdo › Presentes › Como presentear', async () => {
-              ctGrupoAtivo = Math.max(0, GRUPOS_CONTEUDO.findIndex((g) => g.toggle === 'presentes'));
-              await navegar('conteudo');
-              if (abaAtual === 'conteudo') { const i = GRUPOS_ATIVOS.findIndex((g) => g.toggle === 'presentes'); if (i >= 0) { ctGrupoAtivo = i; renderConteudoGrupo(); } }
+            h('div', { style: 'margin-top:8px;' }, btn(secaoOff ? 'Ligar em Site › Conteúdo › Presentes' : 'Ligar em Site › Conteúdo › Presentes › Como presentear', () => {
+              // leva ao módulo Presentes, na etapa "Como presentear", e destaca o botão que liga a lista
+              ALVO_PENDENTE = secaoOff ? { grupo: 'Presentes' } : { grupo: 'Presentes', etapa: 'como', chave: 'presentes.mostrar_lista' };
+              navegar('conteudo');
             }, 'sm'))));
         }
         caixa.appendChild(h('div', { class: 'atalho-lista', style: 'margin-bottom:16px;' },
