@@ -1236,15 +1236,25 @@
   };
   // Chamada à API que sempre devolve um objeto (ou lista): em falha, { erro: 'mensagem legível' }
   async function api(url, metodo, corpo) {
-    try {
-      const opts = metodo ? { method: metodo } : {};
-      if (corpo !== undefined) opts.body = typeof corpo === 'string' ? corpo : JSON.stringify(corpo);
-      const r = await fetch(url, opts);
-      if (r.status === 401) return { erro: 'Sua sessão terminou. Entre de novo.' };
-      const texto = await r.text();
-      try { return JSON.parse(texto); } catch (e) { return { erro: texto.slice(0, 200) || ('Erro ' + r.status) }; }
-    } catch (e) {
-      return { erro: 'Sem conexão com o servidor. Confira sua internet e tente de novo.' };
+    const opts = metodo ? { method: metodo } : {};
+    if (corpo !== undefined) opts.body = typeof corpo === 'string' ? corpo : JSON.stringify(corpo);
+    // Consultas e o salvamento do conteúdo (que só grava os mesmos valores de novo) podem ser repetidos sem risco quando a
+    // rede falha no meio do caminho. Outras gravações (criar algo) não são repetidas, para não duplicar.
+    const repetivel = !metodo || (metodo === 'POST' && url.indexOf('/api/admin/conteudo') === 0);
+    const esperas = repetivel ? [700, 1800, 3500] : [];
+    for (let tentativa = 0; ; tentativa++) {
+      try {
+        const r = await fetch(url, opts);
+        if (r.status === 401) return { erro: 'Sua sessão terminou. Entre de novo.' };
+        const texto = await r.text();
+        try { return JSON.parse(texto); } catch (e) { return { erro: texto.slice(0, 200) || ('Erro ' + r.status) }; }
+      } catch (e) {
+        // a falha aqui é de rede: o navegador não recebeu resposta nenhuma (internet, DNS, conexão cortada)
+        try { console.warn('Falha de rede em ' + url + ' (tentativa ' + (tentativa + 1) + '):', e && (e.name + ': ' + e.message)); } catch (x) { /* segue */ }
+        if (tentativa < esperas.length) { await new Promise((ok) => setTimeout(ok, esperas[tentativa])); continue; }
+        const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+        return { erro: (offline ? 'Seu aparelho está sem internet. ' : 'Não consegui falar com o servidor. ') + (metodo ? 'Suas alterações continuam na tela: tente salvar de novo.' : 'Confira sua internet e tente de novo.') };
+      }
     }
   }
   async function apiEventos(metodo, corpo) { return api('/api/admin/eventos', metodo, corpo); }
@@ -3608,7 +3618,12 @@
         { chave: 'hero.cta_label', label: 'Texto do botão' },
       ]},
       { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
-        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes.' },
+        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes. A cor e o tamanho dos nomes ficam nos campos abaixo.' },
+        { chave: 'hero.convite_nomes_cor', tipo: 'cor_livre', label: 'Cor dos nomes dos convidados', dica: 'Em branco, os nomes seguem a cor do texto da saudação.' },
+        { chave: 'hero.convite_nomes_tamanho', label: 'Tamanho dos nomes dos convidados', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }, { valor: 'gigante', label: 'Gigante' }] },
+        { chave: 'hero.convite_fundo_tipo', label: 'Fundo da saudação', tipo: 'select', padrao: 'com', opcoes: [{ valor: 'com', label: 'Com fundo (pílula)' }, { valor: 'sem', label: 'Sem fundo, só o texto' }] },
+        { chave: 'hero.convite_fundo_cor', tipo: 'cor_livre', label: 'Cor do fundo', dica: 'Em branco, o fundo é translúcido, na cor do estilo da capa.', se: { chave: 'hero.convite_fundo_tipo', valor: 'com' } },
+        { chave: 'hero.convite_fundo_tamanho', label: 'Tamanho do fundo (e do texto da saudação)', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }] },
       ]},
       { etapa: 'data', chave: '__sep_data_evento__', tipo: 'separador', label: 'Data do evento' },
       { etapa: 'data', chave: 'hero.data_iso', label: 'Dia e hora do evento', tipo: 'data_hora', dica: 'Usada na contagem regressiva e no botão "Salvar na agenda" do convidado.', sugere: { 'hero.data_display': 'extenso', 'hero.horario_display': 'hora' } },
