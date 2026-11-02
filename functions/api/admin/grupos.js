@@ -47,3 +47,23 @@ export async function onRequestDelete({ request, env }) {
   if (!codigo || !(await removerGrupo(env.DB, evento.id, codigo))) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
   return jsonResponse({ ok: true });
 }
+
+// body: { codigo, nome } — troca só o nome do grupo; o código e o link de confirmação continuam os mesmos
+export async function onRequestPatch({ request, env }) {
+  const evento = await resolverEvento(env.DB, request);
+  if (!evento) return eventoNaoEncontrado();
+  const payload = await request.json().catch(() => ({}));
+  const codigo = String(payload.codigo || '').trim().toUpperCase();
+  const nome = String(payload.nome || '').replace(/\s+/g, ' ').trim();
+  if (!codigo) return jsonResponse({ erro: 'Grupo não informado.' }, 400);
+  if (!nome) return jsonResponse({ erro: 'Dê um nome ao grupo.' }, 400);
+  if (nome.length > 100) return jsonResponse({ erro: 'O nome do grupo é muito longo (máximo 100 letras).' }, 400);
+  const db = env.DB;
+  const grupo = await db.prepare('SELECT codigo FROM grupos WHERE codigo = ? AND evento_id = ?').bind(codigo, evento.id).first();
+  if (!grupo) return jsonResponse({ erro: 'Grupo não encontrado.' }, 404);
+  // a importação de planilhas reconhece o grupo pelo nome: dois grupos com o mesmo nome a confundiriam
+  const igual = await db.prepare('SELECT 1 FROM grupos WHERE evento_id = ? AND codigo <> ? AND lower(nome_grupo) = lower(?)').bind(evento.id, codigo, nome).first();
+  if (igual) return jsonResponse({ erro: 'Já existe outro grupo com esse nome.' }, 400);
+  await db.prepare('UPDATE grupos SET nome_grupo = ? WHERE codigo = ?').bind(nome, codigo).run();
+  return jsonResponse({ ok: true, nome });
+}

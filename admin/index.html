@@ -2759,7 +2759,7 @@
         h('span', { class: 'nome', text: g.nome }), h('span', { class: 'chip ' + g.sit.cls, text: g.sit.rot }), h('span', { class: 'codigo', title: 'Código do link', text: g.codigo }),
         h('span', { class: 'cont', text: partes }), h('span', { class: 'esp' }),
         btn('Todos vão', () => mudarResposta(idsGrupo, 'sim'), 'sm'), btn('Todos não vão', () => mudarResposta(idsGrupo, 'nao'), 'sm'),
-        wa, btn('Link', () => copiar(linkConvite(g.codigo), 'Link do convite'), 'sm', 'link'), alterna);
+        wa, btn('Link', () => copiar(linkConvite(g.codigo), 'Link do convite'), 'sm', 'link'), btn('Renomear', () => abrirRenomearGrupo(g), 'sm'), alterna);
       const card = h('div', { class: 'rs-grupo' }, topo);
       if (aberto) { const tab = h('div', { class: 'rs-tabela' }); itens.forEach((x) => tab.appendChild(linhaPessoaRS(x, false))); card.appendChild(tab); }
       caixa.appendChild(card);
@@ -2839,6 +2839,28 @@
     lista.forEach((g) => box.appendChild(cartaoGrupo(g)));
   }
 
+  // Renomear grupo: só o nome muda; o código e o link de confirmação continuam os mesmos
+  function abrirRenomearGrupo(g) {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const nome = inputTexto(g.nome, 'Ex.: Família Prado'); nome.id = 'rg-nome'; nome.maxLength = 100;
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(campoTexto('Nome do grupo', nome), h('p', { class: 'hint', style: 'margin-top:10px;', text: 'O link de confirmação continua o mesmo: quem já recebeu o convite não precisa de um link novo.' }), erro);
+    const salvar = async () => {
+      const novo = nome.value.replace(/\s+/g, ' ').trim();
+      if (!novo) { erro.textContent = 'Dê um nome ao grupo.'; erro.hidden = false; return; }
+      if (novo === g.nome) { fecharDialogo(); return; }
+      const r = await api('/api/admin/grupos', 'PATCH', { codigo: g.codigo, nome: novo });
+      if (r.erro) { erro.textContent = r.erro; erro.hidden = false; return; }
+      fecharDialogo(); toast('Grupo renomeado para "' + novo + '"'); carregarPainel();
+    };
+    nome.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); salvar(); } });
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Salvar nome', prim: true, fn: salvar }]);
+    abrirDialogo({ titulo: 'Renomear grupo', largura: '460px' });
+    setTimeout(() => { nome.focus(); nome.select(); }, 30);
+  }
+
   function cartaoGrupo(g) {
     const link = linkConvite(g.codigo);
     const dest = destinatariosDoGrupo(g);
@@ -2855,6 +2877,7 @@
     acoes.appendChild(btn('Mensagem', () => copiar(mensagemPara(g, nomeMsg), 'Mensagem'), 'sm', 'copiar'));
     acoes.appendChild(btn('Link', () => copiar(link, 'Link do convite'), 'sm', 'link'));
     acoes.appendChild(btn('Pessoa', () => abrirAdicionar(g.codigo), 'sm', 'mais'));
+    acoes.appendChild(btn('Renomear', () => abrirRenomearGrupo(g), 'sm'));
     acoes.appendChild(btn('Excluir grupo', async () => {
       const ok = await confirmar({ titulo: 'Excluir o grupo "' + g.nome + '"?', texto: 'As ' + g.membros.length + ' pessoas do grupo saem da lista e vão para "Removidos recentemente", onde ficam 30 dias e podem ser restauradas. O link do grupo deixa de funcionar até a restauração.', rotulo: 'Excluir grupo', perigo: true });
       if (!ok) return;
