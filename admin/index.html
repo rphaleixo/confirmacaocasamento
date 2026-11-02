@@ -4953,7 +4953,13 @@
       campoLista(fs, campo, () => ({ id: novoId(), nome: '', descricao: '', categoria: '', valor: '', preco: '', link: '', foto: '', reservado: false }), (item, campos, mudou) => {
         if (!item.id) { item.id = novoId(); }
         const chk = h('input', { type: 'checkbox' }); chk.checked = !!item.reservado;
-        chk.addEventListener('change', () => { item.reservado = chk.checked; mudou(); });
+        const quem = h('div', { class: 'hint', style: 'margin:0;font-weight:600;color:var(--ink);' });
+        const pintarQuem = () => {
+          quem.hidden = !item.reservado;
+          const data = item.escolhidoEm ? new Date(item.escolhidoEm).toLocaleDateString('pt-BR') : '';
+          quem.textContent = item.escolhidoPor ? 'Escolhido por ' + item.escolhidoPor + (item.escolhidoGrupo && item.escolhidoGrupo !== item.escolhidoPor ? ' (grupo ' + item.escolhidoGrupo + ')' : '') + (data ? ' em ' + data : '') : (item.reservado ? 'Escolhido (sem registro de quem escolheu)' : '');
+        };
+        chk.addEventListener('change', () => { item.reservado = chk.checked; if (!chk.checked) ['escolhidoPor', 'escolhidoGrupo', 'escolhidoCodigo', 'escolhidoToken', 'escolhidoEm'].forEach((k) => { delete item[k]; }); pintarQuem(); mudou(); });
         const preco = h('input', { type: 'text', inputmode: 'decimal', placeholder: 'Preço em reais (ex.: 250 ou 1.250,50)', 'aria-label': 'Preço em reais' });
         // presentes antigos tinham só o "valor sugerido" em texto (ex.: R$ 150): se for só um valor, vira o preço
         if ((item.preco === '' || item.preco == null) && /^\s*(R\$)?\s*[\d.,]+\s*$/.test(String(item.valor || ''))) {
@@ -4977,7 +4983,8 @@
           inputLigado(item.descricao, 'Descrição (opcional)', (v) => { item.descricao = v; mudou(); }),
           cat, preco, link,
           h('div', { class: 'hint', style: 'margin:0;', text: 'Sem link de pagamento, o convidado vê o PIX do evento (se estiver ligado). Com link, o botão "Pagar" abre o seu link.' }),
-          h('label', { class: 'check', style: 'margin-top:4px;font-size:12.5px;' }, chk, 'Já foi escolhido por um convidado'));
+          h('label', { class: 'check', style: 'margin-top:4px;font-size:12.5px;' }, chk, 'Já foi escolhido por um convidado'), quem);
+        pintarQuem();
       }, 'Adicionar presente');
       atualizarCats();
       fs.appendChild(listaCats);
@@ -6011,6 +6018,97 @@
   ]};
   // ?teste=1: a página usa o acesso do painel e mostra a lista inteira (sem precisar do código de um convite); nada é gravado
   function urlListaPresentesAdmin() { return urlSite() + 'presentes?teste=1'; }
+  // ---- importar presentes por planilha (CSV, ou colar do Excel/Planilhas) ----
+  function abrirImportarPresentes() {
+    montarPassos(0, []);
+    delete dlgEvento.dataset.fixo;
+    const corpo = corpoDialogo();
+    const semAcento = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const ALIAS = { nome: ['nome', 'presente', 'produto', 'item'], categoria: ['categoria'], preco: ['preco', 'valor', 'preco (r$)', 'valor (r$)', 'preco r$'], link: ['link', 'link de pagamento', 'pagamento', 'link pagamento', 'url'], foto: ['foto', 'imagem', 'foto (url)', 'url da foto', 'link da foto'], descricao: ['descricao', 'detalhes', 'observacao'] };
+    const ORDEM = ['nome', 'categoria', 'preco', 'link', 'foto', 'descricao'];
+    const numero = (v) => { const b = String(v || '').replace(/[R$\s]/g, ''); if (!b) return ''; const n = parseFloat(b.indexOf(',') !== -1 ? b.replace(/\./g, '').replace(',', '.') : b); return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN; };
+    const lerLinhas = (texto) => {
+      if (!texto.trim()) return [];
+      return texto.indexOf('\t') !== -1 ? texto.split(/\r?\n/).filter((l) => l.trim()).map((l) => l.split('\t')) : lerCsv(texto);
+    };
+    const interpretar = (texto) => {
+      let linhas = lerLinhas(texto.replace(/^﻿/, ''));
+      if (!linhas.length) return [];
+      let colunas = ORDEM.slice();
+      const cab = linhas[0].map(semAcento);
+      const temCab = cab.some((c) => ALIAS.nome.indexOf(c) !== -1);
+      if (temCab) {
+        colunas = cab.map((c) => Object.keys(ALIAS).find((k) => ALIAS[k].indexOf(c) !== -1) || '');
+        linhas = linhas.slice(1);
+      }
+      return linhas.map((l) => {
+        const r = { avisos: [], nome: '', categoria: '', preco: '', link: '', foto: '', descricao: '' };
+        colunas.forEach((c, i) => { if (c && l[i] !== undefined) r[c] = String(l[i]).trim(); });
+        const n = numero(r.preco);
+        if (Number.isNaN(n)) { r.avisos.push('preço inválido (ignorado)'); r.preco = ''; } else r.preco = n;
+        if (r.link && !/^https:\/\//i.test(r.link)) { r.avisos.push('link sem https:// (ignorado)'); r.link = ''; }
+        if (r.foto && !/^(https:\/\/|\/media\/)/i.test(r.foto)) { r.avisos.push('foto sem https:// (ignorada)'); r.foto = ''; }
+        r.ruim = !r.nome;
+        return r;
+      });
+    };
+    const area = h('textarea', { id: 'ip-texto', rows: '7', 'aria-label': 'Lista de presentes', placeholder: 'Nome;Categoria;Preço;Link de pagamento;Foto;Descrição\nAparelho de jantar 30 peças;Cozinha;250,00;https://...;;', style: 'width:100%;font-family:var(--mono);font-size:12.5px;' });
+    const arq = h('input', { type: 'file', accept: '.csv,text/csv,.txt', hidden: true });
+    const resumo = h('p', { class: 'sub', style: 'margin:10px 0 6px;' , text: 'A prévia aparece aqui assim que você colar a lista.' });
+    const previa = h('div', { class: 'tabela-wrap', hidden: true, style: 'max-height:240px;overflow:auto;' });
+    const erro = h('div', { class: 'erro-campo', hidden: true });
+    corpo.append(
+      h('ol', { class: 'passos-lista' }, h('li', { html: 'Uma linha por presente, com as colunas: <b>Nome</b> (obrigatório), Categoria, Preço, Link de pagamento, Foto e Descrição. Se a primeira linha tiver esses títulos, a ordem das colunas pode ser qualquer.' }), h('li', { text: 'No Excel ou Planilhas Google: salve como CSV, ou copie as células e cole aqui.' }), h('li', { text: 'Presentes com o mesmo nome de um já cadastrado são atualizados, sem duplicar. Quem já escolheu continua registrado.' })),
+      h('div', { class: 'row', style: 'margin:10px 0;align-items:center;gap:8px;' }, btn('Escolher arquivo CSV', () => arq.click(), 'sm'), btn('Baixar planilha modelo', () => baixarArquivo('﻿Nome;Categoria;Preço;Link de pagamento;Foto;Descrição\nAparelho de jantar 30 peças;Cozinha;250,00;https://exemplo.com/pagamento;;Para os jantares em casa\nJantares de lua de mel;Lua de mel;1000;;;\n', 'modelo-presentes.csv', 'text/csv;charset=utf-8'), 'sm fantasma'), arq),
+      area, resumo, previa, erro);
+    let lista = [];
+    const novoId = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const rod = montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Importar', prim: true, desativado: true, fn: async () => {
+      const boas = lista.filter((r) => !r.ruim);
+      rod.querySelector('.prim').disabled = true; rod.querySelector('.prim').textContent = 'Importando…';
+      const atual = await api('/api/conteudo');
+      if (atual.erro) { erro.textContent = atual.erro; erro.hidden = false; atualizar(); return; }
+      let itens = []; try { itens = JSON.parse(atual['presentes.itens'] || '[]'); } catch (e) { itens = []; }
+      if (!Array.isArray(itens)) itens = [];
+      let novos = 0, atualizados = 0;
+      boas.forEach((r) => {
+        const alvo = itens.find((it) => semAcento(it.nome) === semAcento(r.nome));
+        if (alvo) {
+          if (r.categoria) alvo.categoria = r.categoria; if (r.preco !== '') { alvo.preco = r.preco; alvo.valor = ''; } if (r.link) alvo.link = r.link; if (r.foto) alvo.foto = r.foto; if (r.descricao) alvo.descricao = r.descricao;
+          atualizados++;
+        } else { itens.push({ id: novoId(), nome: r.nome, descricao: r.descricao, categoria: r.categoria, valor: '', preco: r.preco, link: r.link, foto: r.foto, reservado: false }); novos++; }
+      });
+      if (itens.length > 500) { erro.textContent = 'A lista ficaria com ' + itens.length + ' presentes. O limite é de 500.'; erro.hidden = false; atualizar(); return; }
+      const r = await api('/api/admin/conteudo', 'POST', { 'presentes.itens': JSON.stringify(itens) });
+      if (r.erro) { erro.textContent = r.erro; erro.hidden = false; atualizar(); return; }
+      fecharDialogo();
+      toast(plural(novos, 'presente importado', 'presentes importados') + (atualizados ? ' e ' + plural(atualizados, 'atualizado', 'atualizados') : ''));
+      carregarPresentes();
+    } }]);
+    const atualizar = () => {
+      lista = interpretar(area.value);
+      previa.innerHTML = ''; previa.hidden = !lista.length;
+      const boas = lista.filter((r) => !r.ruim), ruins = lista.length - boas.length;
+      const comAviso = boas.filter((r) => r.avisos.length).length;
+      const btnI = rod.querySelector('.prim');
+      if (!lista.length) { resumo.textContent = 'A prévia aparece aqui assim que você colar a lista.'; btnI.disabled = true; btnI.textContent = 'Importar'; return; }
+      const tab = h('table', {}, h('thead', {}, h('tr', {}, h('th', { text: 'Nome' }), h('th', { text: 'Categoria' }), h('th', { text: 'Preço' }), h('th', { text: 'Link' }), h('th', { text: 'Obs.' }))));
+      const tb = h('tbody'); 
+      lista.slice(0, 100).forEach((r) => tb.appendChild(h('tr', { class: r.ruim ? 'ruim' : '' }, h('td', { text: r.nome || '(sem nome)' }), h('td', { text: r.categoria }), h('td', { text: r.preco === '' ? '' : Number(r.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }), h('td', { text: r.link ? 'sim' : '' }), h('td', { text: r.ruim ? 'sem nome: não entra' : r.avisos.join('; ') }))));
+      tab.appendChild(tb); previa.appendChild(tab);
+      resumo.textContent = plural(boas.length, 'presente', 'presentes') + (ruins ? ' · ' + plural(ruins, 'linha sem nome será ignorada', 'linhas sem nome serão ignoradas') : '') + (comAviso ? ' · ' + plural(comAviso, 'com aviso', 'com avisos') : '') + (lista.length > 100 ? ' (mostrando os 100 primeiros)' : '') + '.';
+      btnI.disabled = !boas.length; btnI.textContent = boas.length ? 'Importar ' + plural(boas.length, 'presente', 'presentes') : 'Importar';
+    };
+    area.addEventListener('input', atualizar);
+    arq.addEventListener('change', () => {
+      const f = arq.files[0]; if (!f) return;
+      const leitor = new FileReader();
+      leitor.onload = () => { area.value = String(leitor.result); arq.value = ''; atualizar(); };
+      leitor.readAsText(f);
+    });
+    abrirDialogo({ titulo: 'Importar presentes por planilha', largura: '720px' });
+  }
+
   async function carregarPresentes() {
     const form = document.getElementById('pr-form');
     const d = await api('/api/conteudo');
@@ -6032,6 +6130,7 @@
               navegar('conteudo');
             }, 'sm'))));
         }
+        caixa.appendChild(h('div', { style: 'margin-bottom:12px;' }, btn('Importar planilha', abrirImportarPresentes, 'sm')));
         caixa.appendChild(h('div', { class: 'atalho-lista', style: 'margin-bottom:16px;' },
           h('div', { style: 'min-width:0;' }, h('b', { text: 'Página da lista' }), h('span', { style: 'overflow-wrap:anywhere;', text: urlSite() + 'presentes' })),
           h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;' },

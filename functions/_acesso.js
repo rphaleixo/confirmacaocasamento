@@ -18,6 +18,24 @@ export async function codigoValido(db, eventoId, codigo) {
   return !!p;
 }
 
+// anfitrião (ou administrador da plataforma) logado, com o acesso do painel no cabeçalho
+export async function ehAnfitriao(request, env, evento) {
+  if (!request.headers.get('Authorization')) return false;
+  try { const adm = await identificarAdmin(request, env); return !!adm && (adm.tipo === 'master' || adm.eventoId === evento.id); } catch (e) { return false; }
+}
+
+// quem escolheu cada presente é só do anfitrião: o convidado recebe a lista sem esses campos
+const CAMPOS_PRIVADOS_PRESENTE = ['escolhidoPor', 'escolhidoGrupo', 'escolhidoCodigo', 'escolhidoToken', 'escolhidoEm'];
+export function esconderQuemEscolheu(conteudo) {
+  const bruto = conteudo['presentes.itens'];
+  if (!bruto) return conteudo;
+  try {
+    const itens = JSON.parse(bruto);
+    if (Array.isArray(itens)) conteudo['presentes.itens'] = JSON.stringify(itens.map((it) => { const c = Object.assign({}, it); CAMPOS_PRIVADOS_PRESENTE.forEach((k) => delete c[k]); return c; }));
+  } catch (e) { /* lista inválida: segue como está */ }
+  return conteudo;
+}
+
 // conteudo: objeto chave/valor do evento. Devolve true se a pessoa pode ver tudo.
 export async function acessoCompleto(request, env, evento, conteudo) {
   if (conteudo && conteudo['rsvp.modo'] === 'aberto') return true;
@@ -28,10 +46,7 @@ export async function acessoCompleto(request, env, evento, conteudo) {
     const ev = await env.DB.prepare('SELECT token_rascunho FROM eventos WHERE id = ?').bind(evento.id).first();
     if (ev && ev.token_rascunho && ev.token_rascunho === tk) return true;
   }
-  if (request.headers.get('Authorization')) {
-    try { const adm = await identificarAdmin(request, env); if (adm && (adm.tipo === 'master' || adm.eventoId === evento.id)) return true; } catch (e) { /* sem acesso */ }
-  }
-  return false;
+  return ehAnfitriao(request, env, evento);
 }
 
 // No Save the Date o anfitrião quer divulgar a data: ela e o horário continuam públicos; local e presentes não.

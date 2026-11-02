@@ -111,6 +111,8 @@
   .gift-filtro{display:flex;justify-content:center;gap:6px;margin:0 0 18px;}
   .gift-filtro button{border:1px solid var(--border);background:transparent;color:var(--wine);border-radius:999px;padding:8px 16px;font-size:13px;min-height:40px;}
   .gift-filtro button[aria-pressed=true]{background:var(--wine);color:var(--on-wine);border-color:var(--wine);}
+  .campo-nome{display:flex;flex-direction:column;gap:4px;margin:0 0 14px;font-size:12.5px;color:var(--ink-soft);text-align:left;}
+  .campo-nome input{min-height:44px;border:1px solid var(--border);border-radius:10px;padding:0 12px;font:inherit;font-size:15px;color:var(--ink);background:#fff;}
   .gift-filtros{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 18px;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--cream);text-align:left;}
   .gift-filtros label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ink-soft);min-width:0;}
   .gift-filtros input[type=search],.gift-filtros input[type=text],.gift-filtros select{min-height:44px;border:1px solid var(--border);border-radius:10px;padding:0 12px;font:inherit;font-size:14px;color:var(--ink);background:#fff;width:100%;}
@@ -416,6 +418,9 @@
   $('sheetFundo').addEventListener('click', fecharSheet);
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('sheet').hidden) fecharSheet(); });
 
+  // a chave de quem escolheu fica só neste aparelho: com ela a pessoa pode desfazer a própria escolha
+  function chaveLocal(item) { try { return localStorage.getItem('presente:' + (eventoMatch ? eventoMatch[1] : '') + ':' + item.id) || ''; } catch (e) { return ''; } }
+  function guardarChave(item, chave) { try { if (chave) localStorage.setItem('presente:' + (eventoMatch ? eventoMatch[1] : '') + ':' + item.id, chave); else localStorage.removeItem('presente:' + (eventoMatch ? eventoMatch[1] : '') + ':' + item.id); } catch (e) { /* segue */ } }
   function chavePix() { return t('presentes.mostrar_pix', '0') !== '0' ? t('presentes.chave_pix', '') : ''; }
   function qrPix() { return t('presentes.mostrar_pix', '0') !== '0' ? t('presentes.pix_qrcode_url', '') : ''; }
   function abrirSheetPresente(item) {
@@ -423,30 +428,38 @@
     const resumo = '<div class="item-resumo">' + (item.foto ? '<img src="' + esc(item.foto) + '" alt="">' : '') +
       '<div><b>' + esc(item.nome) + '</b><span>' + esc([item.descricao, precoTexto(item)].filter(Boolean).join(' · ')) + '</span></div></div>';
     if (item.reservado) {
-      abrirSheet('<h3 id="sheetTitulo">Este presente já foi escolhido</h3><p>Se foi você e mudou de ideia, dá para desfazer a escolha e liberar o presente para outra pessoa.</p>' + resumo +
-        '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">Manter escolhido</button><button type="button" class="pill solid small" data-acao="desfazer">Desfazer minha escolha</button></div>',
+      const minha = !!chaveLocal(item); // quem escolheu neste aparelho pode desfazer (o servidor também aceita o mesmo convite)
+      abrirSheet('<h3 id="sheetTitulo">Este presente já foi escolhido</h3><p>' + (minha ? 'Se foi você e mudou de ideia, dá para desfazer a escolha e liberar o presente para outra pessoa.' : 'Outra pessoa já escolheu este presente. Que tal escolher outro da lista?') + '</p>' + resumo +
+        '<div class="acoes"><button type="button" class="pill outline small" data-acao="fechar">' + (minha ? 'Manter escolhido' : 'Voltar') + '</button>' + (minha ? '<button type="button" class="pill solid small" data-acao="desfazer">Desfazer minha escolha</button>' : '') + '</div>',
         function (corpo) {
           corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-          corpo.querySelector('[data-acao=desfazer]').addEventListener('click', function (ev) { reservar(item, false, ev.currentTarget); });
+          const d = corpo.querySelector('[data-acao=desfazer]'); if (d) d.addEventListener('click', function (ev) { reservar(item, false, ev.currentTarget); });
         });
       return;
     }
-    abrirSheet('<h3 id="sheetTitulo">Vai dar este presente?</h3><p>Ao confirmar, ele aparece como "escolhido" para os outros convidados não repetirem.</p>' + resumo +
+    const precisaNome = !codigo; // sem link pessoal, o casal só saberá quem escolheu pelo nome digitado
+    abrirSheet('<h3 id="sheetTitulo">Vai dar este presente?</h3><p>Ao confirmar, ele aparece como "escolhido" para os outros convidados não repetirem. O casal vê quem escolheu.</p>' + resumo +
+      '<label class="campo-nome"><span>' + (precisaNome ? 'Seu nome' : 'Seu nome (opcional)') + '</span><input type="text" id="escNome" maxlength="80" autocomplete="name" placeholder="Ex.: Tia Marta"' + (precisaNome ? ' required' : '') + '></label>' +
       '<div class="acoes"><button type="button" class="pill solid small" data-acao="sim">Sim, vou dar este presente</button><button type="button" class="pill outline small" data-acao="fechar">Voltar</button></div>',
       function (corpo) {
         corpo.querySelector('[data-acao=fechar]').addEventListener('click', fecharSheet);
-        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) { reservar(item, true, ev.currentTarget, pix, qr); });
+        corpo.querySelector('[data-acao=sim]').addEventListener('click', function (ev) {
+          const nome = corpo.querySelector('#escNome').value.trim();
+          if (precisaNome && !nome) { avisar('Informe o seu nome para o casal saber quem escolheu.'); corpo.querySelector('#escNome').focus(); return; }
+          reservar(item, true, ev.currentTarget, pix, qr, nome);
+        });
       });
   }
-  function reservar(item, reservado, btn, pix, qr) {
+  function reservar(item, reservado, btn, pix, qr, nomeEscolha) {
     btn.disabled = true; const rotulo = btn.textContent; btn.textContent = 'Salvando…';
     // modo teste (aberto pelo painel): simula a escolha, sem gravar nada
     const enviar = window.ROTAS.emTeste() ? function () { return Promise.resolve(new Response('{"ok":true}')); } : fetch;
-    enviar(api('presentes/reservar') + (codigo ? (EVENTO_QS ? '&' : '?') + 'c=' + encodeURIComponent(codigo) : ''), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado }) })
+    enviar(api('presentes/reservar') + (codigo ? (EVENTO_QS ? '&' : '?') + 'c=' + encodeURIComponent(codigo) : ''), { method: 'POST', body: JSON.stringify({ id: item.id, reservado: reservado, nome: nomeEscolha || '', chave: chaveLocal(item) }) })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); return; }
+        if (d.erro) { btn.disabled = false; btn.textContent = rotulo; avisar(d.erro); if (/acabou de ser escolhido/.test(d.erro)) { item.reservado = true; desenhar(); fecharSheet(); } return; }
         item.reservado = reservado;
+        guardarChave(item, reservado ? d.chave : '');
         desenhar();
         if (!reservado) { fecharSheet(); avisar('Escolha desfeita. O presente voltou para a lista.'); return; }
         const pagar = linkPagamento(item);

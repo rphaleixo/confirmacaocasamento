@@ -2,7 +2,7 @@
 // Além das chaves gravadas, devolve _tipo, _nome e _modulos (módulos que o tipo do evento oferece).
 import { jsonResponse, resolverEvento, eventoNaoEncontrado } from '../_lib.js';
 import { TIPOS, tipoDe } from '../_tipos.js';
-import { acessoCompleto, removerRestritas } from '../_acesso.js';
+import { acessoCompleto, removerRestritas, ehAnfitriao, esconderQuemEscolheu } from '../_acesso.js';
 
 export async function onRequestGet({ request, env }) {
   const evento = await resolverEvento(env.DB, request);
@@ -12,6 +12,7 @@ export async function onRequestGet({ request, env }) {
   results.forEach((r) => { conteudo[r.chave] = r.valor; });
   const completo = await acessoCompleto(request, env, evento, conteudo);
   if (!completo) { removerRestritas(conteudo); conteudo._restrito = '1'; }
+  if (!(await ehAnfitriao(request, env, evento))) esconderQuemEscolheu(conteudo);
   const tipo = tipoDe(evento.tipo);
   conteudo._tipo = tipo;
   conteudo._nome = evento.nome;
