@@ -1896,6 +1896,7 @@
           definirRico(convite, (prefixo ? prefixo + ' ' : '') + escHtml(listaNomes(pessoas.map(function (p) { return p.chamar; }))));
           convite.hidden = t('hero.mostrar_convite', '1') === '0' || !pessoas.length;
           $('rsvpGrupoNome').textContent = data.escopo === 'individual' ? pessoas[0].nome : data.grupo;
+          $('rsvpGrupoNome').hidden = t('rsvp.mostrar_grupo', '1') === '0'; // o anfitrião pode esconder o nome do grupo
         }
         $('rsvpInstrucao').textContent = pessoas.length > 1 ? 'Para cada pessoa, escolha: Sim, Não sei ou Não.' : 'Escolha: Sim, Não sei ou Não.';
         $('rsvpTodos').textContent = 'Todos vão';
