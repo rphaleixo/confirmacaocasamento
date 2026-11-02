@@ -3727,7 +3727,7 @@
   const CORES_DA_PALETA = [['aparencia.cor_primaria', 'Primária', '#0B2545'], ['aparencia.cor_secundaria', 'Secundária', '#2F5D9A'], ['aparencia.cor_destaque', 'Destaque', '#C9A227'], ['aparencia.cor_fundo', 'Fundo', '#EAF1FB'], ['aparencia.cor_texto', 'Texto', '#14213D']];
 
   const GRUPOS_CONTEUDO = [
-    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem e posição do texto' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }], campos: [
+    { titulo: 'Capa', ancora: 'hero', etapas: [{ id: 'midia', titulo: 'Imagem e posição do texto' }, { id: 'textos', titulo: 'Textos' }, { id: 'data', titulo: 'Data e prazo' }, { id: 'divisoria', titulo: 'Divisória' }], campos: [
       { etapa: 'midia', chave: '__sep_imagem__', tipo: 'separador', label: '1. Imagem ou vídeo de fundo' },
       { etapa: 'midia', chave: '__midia__', tipo: 'midia_capa' },
       { etapa: 'midia', chave: '__sep_layout__', tipo: 'separador', label: '2. Posição dos textos' },
@@ -3966,13 +3966,13 @@
       c.push({ etapa: e, chave: mod + '.imagem_fundo', tipo: 'foto', label: 'Imagem de fundo', aspecto: 1, dica: 'Ela aparece por trás do conteúdo, coberta por um véu da cor do módulo para o texto continuar legível.' });
       c.push({ etapa: e, chave: mod + '.fundo_veu', tipo: 'select', label: 'Força do véu sobre a imagem', padrao: 'medio', opcoes: OPC_VEU });
     }
-    // a divisória tem etapa própria (visível também no modo simples): é a quebra entre duas seções
+    // a divisória tem etapa própria (visível também no modo simples) e é SEMPRE a da base do módulo: separa este módulo do próximo
+    // (o último módulo separa do rodapé)
     const d = 'divisoria';
-    c.push({ etapa: d, chave: '__nota_div_' + mod + '__', tipo: 'nota', label: 'A divisória é a forma que separa esta seção da que está ao lado. Escolha se ela fica em cima (entre esta seção e a anterior) ou embaixo (entre esta seção e a próxima). Em "Igual ao site", segue Site › Formas e estilo.' });
-    c.push({ etapa: d, chave: mod + '.divisoria_posicao', tipo: 'select', label: 'Onde fica a divisória', padrao: 'topo', opcoes: [{ valor: 'topo', label: 'Em cima: separa esta seção da anterior' }, { valor: 'base', label: 'Embaixo: separa esta seção da próxima' }] });
-    c.push({ etapa: d, chave: mod + '.divisoria_forma', tipo: 'escolha_visual', label: 'Forma da divisória', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
-    c.push({ etapa: d, chave: mod + '.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
-    c.push({ etapa: d, chave: mod + '.divisoria_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
+    c.push({ etapa: d, chave: '__nota_div_' + mod + '__', tipo: 'nota', label: 'A divisória fica sempre na parte de baixo do módulo: é a forma que separa este módulo do próximo (o último módulo se separa do rodapé). Em "Igual ao site", segue Site › Formas e estilo.' });
+    c.push({ etapa: d, chave: mod + '.divisoria_base_forma', tipo: 'escolha_visual', label: 'Forma da divisória na base deste módulo', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true) });
+    c.push({ etapa: d, chave: mod + '.divisoria_base_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+    c.push({ etapa: d, chave: mod + '.divisoria_base_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
     return c;
   }
 
@@ -3995,12 +3995,19 @@
     const opc = mod === 'presente_teaser' ? { semEspaco: true } : mod === 'countdown' ? { semSombra: true, semImagem: true } : {};
     camposAparencia(mod, opc).forEach((c) => g.campos.push(c));
   });
-  // rodapé: só a forma do topo
+  // capa: divisória da base (a capa não tem módulo de cima, então a forma que a separa do primeiro módulo é definida aqui)
+  GRUPOS_CONTEUDO.forEach((g) => {
+    if (g.titulo !== 'Capa') return;
+    g.campos.push({ etapa: 'divisoria', chave: '__nota_div_hero__', tipo: 'nota', label: 'A divisória fica sempre na parte de baixo: aqui é a forma que separa a capa do primeiro módulo. Sem divisória, a capa termina como sempre terminou.' });
+    g.campos.push({ etapa: 'divisoria', chave: 'hero.divisoria_base_forma', tipo: 'escolha_visual', label: 'Forma da divisória na base da capa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: [{ valor: 'padrao', label: 'Sem divisória', desc: 'Como é hoje', desenho: () => '<svg viewBox="0 0 100 46"><rect width="100" height="46" rx="6" fill="#F0F2F5" stroke="#B9C3D3" stroke-dasharray="4 3"/><text x="50" y="27" text-anchor="middle" font-size="9" fill="#586377">sem forma</text></svg>' }].concat(opcoesForma(false)) });
+    g.campos.push({ etapa: 'divisoria', chave: 'hero.divisoria_base_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA });
+    g.campos.push({ etapa: 'divisoria', chave: 'hero.divisoria_base_espelhar', tipo: 'checkbox', label: 'Espelhar a forma (inverte o lado)' });
+  });
+
+  // rodapé: a forma entre o último módulo e o rodapé é a divisória da base do último módulo
   GRUPOS_CONTEUDO.forEach((g) => {
     if (g.ancora !== 'rodape') return;
-    g.campos.push({ chave: '__sep_ap_forma_footer__', tipo: 'separador', label: 'Forma do topo do rodapé', avancada: true });
-    g.campos.push({ chave: 'footer.divisoria_forma', tipo: 'escolha_visual', label: 'Como o rodapé começa', padrao: 'padrao', altura: 46, colunas: 4, opcoes: opcoesForma(true), avancada: true });
-    g.campos.push({ chave: 'footer.divisoria_altura', tipo: 'select', label: 'Altura da forma', opcoes: OPC_ALTURA, avancada: true });
+    g.campos.push({ chave: '__nota_rodape_div__', tipo: 'nota', label: 'A forma que separa o último módulo do rodapé é a divisória da base desse módulo (etapa "Divisória" dele).', avancada: true });
   });
 
 
@@ -4045,11 +4052,31 @@
       });
   }
 
+  // A divisória agora é sempre a da BASE do módulo. Quem já tinha formas escolhidas no topo de cada módulo (modelo antigo) ganha a
+  // mesma aparência: a forma do topo de B passa para a base do módulo que vem antes dele. Roda uma vez por evento.
+  async function migrarDivisorias(d) {
+    if (!d || d.erro || d['layout.divisoria_v2'] === '1' || !eventoAtual) return;
+    const PADRAO = ['countdown', 'presente_teaser', 'timeline', 'padrinhos', 'madrinhas_pais', 'mapa', 'galeria', 'rsvp', 'presentes', 'recados'];
+    let ordem = []; try { ordem = JSON.parse(d['layout.ordem'] || '[]'); } catch (e) { ordem = []; }
+    ordem = ordem.filter((k) => PADRAO.indexOf(k) !== -1); PADRAO.forEach((k) => { if (ordem.indexOf(k) === -1) ordem.push(k); });
+    const tem = (k) => { const v = String(d[k] === undefined ? '' : d[k]).trim(); return v && v !== 'padrao' ? v : ''; };
+    const payload = { 'layout.divisoria_v2': '1' };
+    const mover = (de, para) => {
+      ['forma', 'altura'].forEach((c) => { if (tem(de + '.divisoria_' + c) && !tem(para + '.divisoria_base_' + c)) payload[para + '.divisoria_base_' + c] = d[de + '.divisoria_' + c]; });
+      if (String(d[de + '.divisoria_espelhar'] || '') !== '' && String(d[para + '.divisoria_base_espelhar'] || '') === '') payload[para + '.divisoria_base_espelhar'] = d[de + '.divisoria_espelhar'];
+    };
+    ordem.forEach((k, i) => { if (i > 0) mover(k, ordem[i - 1]); });
+    mover('footer', ordem[ordem.length - 1]);
+    const r = await api('/api/admin/conteudo', 'POST', payload);
+    if (!r.erro) Object.assign(d, payload);
+  }
+
   async function carregarConteudo() {
     const subnav = document.getElementById('ct-subnav');
     const form = document.getElementById('ct-form');
     const d = await api('/api/conteudo');
     if (d.erro) { subnav.innerHTML = ''; form.textContent = 'Não consegui carregar o conteúdo agora. Recarregue a página para tentar de novo.'; return; }
+    await migrarDivisorias(d);
     ctDados = d;
     adaptarAoTipo(ctDados);
     agendarCompartilhar();

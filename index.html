@@ -1547,21 +1547,21 @@
       d.svg.setAttribute('viewBox', '0 0 ' + W + ' ' + d.altura);
       d.svg.innerHTML = FS.enfeite(d.forma, W, d.altura, paletaDivisoria(), d.espelhar);
     }
-    function aplicarDivisoria(el, corAntes, chave, indice, chaveAcima) {
+    function aplicarDivisoria(el, corAntes, chaveAcima, chaveEl, indice) {
       if (!FS || !corAntes) return false;
       const pega = function (k) { const v = String(t(k, '')).trim(); return v && v !== 'padrao' ? v : ''; };
-      // a divisória é a fronteira entre duas seções. Por padrão pertence ao topo da de baixo; se a de cima escolheu
-      // "divisória embaixo" (e definiu uma forma), é a configuração dela que vale nessa fronteira
-      const dono = (chaveAcima && t(chaveAcima + '.divisoria_posicao', 'topo') === 'base' && pega(chaveAcima + '.divisoria_forma')) ? chaveAcima : chave;
-      chave = dono;
-      let forma = pega(chave + '.divisoria_forma') || pega('layout.divisoria_forma') || 'onda';
+      // A divisória é sempre a da BASE do módulo de cima ("<módulo>.divisoria_base_*"; a capa também tem a dela). Eventos antigos
+      // guardavam a forma no topo do módulo de baixo ("<módulo>.divisoria_*"): ela continua valendo enquanto o módulo de cima
+      // não tiver a própria. Sem forma na capa, a capa não tem divisória (como sempre foi).
+      if (chaveAcima === 'hero' && !pega('hero.divisoria_base_forma')) return false;
+      let forma = pega(chaveAcima + '.divisoria_base_forma') || pega(chaveEl + '.divisoria_forma') || pega('layout.divisoria_forma') || 'onda';
       if (!FS.existe(forma)) forma = 'onda';
       const comEnfeite = FS.temEnfeite(forma);
       if (forma === 'reta') return false;
       // com a mesma cor dos dois lados, a curva não aparece: só vale a pena para as formas com enfeite
       if (!comEnfeite && corAntes === (el.dataset.bgTop || '')) return false;
-      const altura = FS.ALTURAS[pega(chave + '.divisoria_altura') || pega('layout.divisoria_altura') || 'media'] || 46;
-      let espelhar = t(chave + '.divisoria_espelhar', '0') === '1';
+      const altura = FS.ALTURAS[pega(chaveAcima + '.divisoria_base_altura') || pega(chaveEl + '.divisoria_altura') || pega('layout.divisoria_altura') || 'media'] || 46;
+      let espelhar = t(chaveAcima + '.divisoria_base_espelhar', '') !== '' ? t(chaveAcima + '.divisoria_base_espelhar', '0') === '1' : t(chaveEl + '.divisoria_espelhar', '0') === '1';
       if (t('layout.divisoria_alternar', '1') !== '0' && indice % 2 === 1) espelhar = !espelhar;
       const z = ({ pequeno: 0.9, grande: 1.12, enorme: 1.25 })[el.dataset.escala] || 1;
       const hz = altura / z;
@@ -1591,18 +1591,23 @@
       return true;
     }
     let indiceForma = 0;
+    // cor da base da capa (quando a capa tem divisória): a capa escurece até essa cor e a forma recorta o módulo seguinte
+    const heroEl = document.getElementById('hero');
+    const heroTemForma = !!String(t('hero.divisoria_base_forma', '')).trim() && String(t('hero.divisoria_base_forma', '')).trim() !== 'padrao';
+    const corBaseHero = heroEl.classList.contains('txt-escuro') ? 'var(--blush)' : 'var(--wine-deep)';
     modulosVisiveis.forEach(function (el, i) {
-      const corAntes = i === 0 ? null : modulosVisiveis[i - 1].dataset.bgBottom;
-      if (aplicarDivisoria(el, corAntes, MOD_DE_ID[el.id] || '', indiceForma, i === 0 ? '' : (MOD_DE_ID[modulosVisiveis[i - 1].id] || ''))) indiceForma++;
+      const corAntes = i === 0 ? (heroTemForma ? corBaseHero : null) : modulosVisiveis[i - 1].dataset.bgBottom;
+      const acima = i === 0 ? 'hero' : (MOD_DE_ID[modulosVisiveis[i - 1].id] || '');
+      if (aplicarDivisoria(el, corAntes, acima, MOD_DE_ID[el.id] || '', indiceForma)) indiceForma++;
     });
     let esperaRedimensionar = null;
     window.addEventListener('resize', function () { clearTimeout(esperaRedimensionar); esperaRedimensionar = setTimeout(function () { divisoriasAtivas.forEach(desenharEnfeite); }, 150); });
 
     const primeiroVisivel = modulosVisiveis[0];
-    document.querySelector('.hero-veil').style.setProperty('--hero-fade', primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)');
+    document.querySelector('.hero-veil').style.setProperty('--hero-fade', heroTemForma ? corBaseHero : (primeiroVisivel ? primeiroVisivel.dataset.bgTop : 'var(--blush)'));
 
     if (modulosVisiveis.length && rodapeLigado) {
-      aplicarDivisoria(footerEl, modulosVisiveis[modulosVisiveis.length - 1].dataset.bgBottom, 'footer', indiceForma, MOD_DE_ID[modulosVisiveis[modulosVisiveis.length - 1].id] || '');
+      aplicarDivisoria(footerEl, modulosVisiveis[modulosVisiveis.length - 1].dataset.bgBottom, MOD_DE_ID[modulosVisiveis[modulosVisiveis.length - 1].id] || '', 'footer', indiceForma);
     }
 
     // Sem o módulo de confirmação no site, os atalhos para ele somem
