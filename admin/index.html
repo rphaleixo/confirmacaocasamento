@@ -622,6 +622,7 @@
   .rico-barra{display:flex;gap:2px;flex-wrap:wrap;align-items:center;padding:4px;background:var(--surface-2);border-bottom:1px solid var(--line-soft);}
   .rico-btn{min-width:34px;height:34px;padding:0 8px;border:none;background:none;border-radius:7px;font-size:14px;color:var(--ink);cursor:pointer;display:inline-grid;place-items:center;font-family:inherit;}
   .rico-btn:hover{background:var(--muted-bg);} .rico-btn.on{background:var(--info-bg);color:var(--navy);}
+  .rico-tamanho{height:34px;border:1px solid var(--line);border-radius:7px;background:#fff;font:600 12.5px var(--font);color:var(--ink);padding:0 6px;margin:0 4px;cursor:pointer;max-width:128px;}
   .rico-btn.html{margin-left:auto;font-family:var(--mono);font-size:12px;font-weight:700;}
   .rico-dial{display:inline-flex;gap:5px;align-items:center;padding:0 8px 0 2px;}
   .rico-amostra{width:22px;height:22px;padding:0;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;} .rico-amostra:hover{transform:scale(1.15);} .rico-amostra:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
@@ -3656,9 +3657,9 @@
         { chave: 'hero.cta_label', label: 'Texto do botão' },
       ]},
       { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
-        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes.' },
+        { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes. O tamanho e a cor que você aplicar a este texto (lista de tamanho do editor) valem também para os nomes dos convidados, para ficarem iguais.' },
         { chave: 'hero.convite_estilo', label: 'Estilo da saudação', tipo: 'select', padrao: 'padrao', opcoes: [{ valor: 'padrao', label: 'Padrão (fundo translúcido)' }, { valor: 'botao', label: 'Igual ao botão de confirmar' }, { valor: 'sem', label: 'Só o texto, sem fundo' }, { valor: 'personalizado', label: 'Personalizado (escolher as cores)' }], dica: '"Igual ao botão de confirmar" copia o fundo claro e a letra do botão que fica logo abaixo, na capa.' },
-        { chave: 'hero.convite_tamanho', label: 'Tamanho', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }], dica: 'Vale para o texto inteiro (o que vem antes e os nomes) e para o fundo.' },
+        { chave: 'hero.convite_tamanho', label: 'Tamanho geral da saudação', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }], dica: 'Aumenta ou diminui a saudação inteira, com o fundo. Para mudar só o tamanho das letras, use a lista de tamanho do editor acima.' },
         { chave: 'hero.convite_cor_texto', tipo: 'cor_livre', label: 'Cor do texto e dos nomes', se: { chave: 'hero.convite_estilo', valor: 'personalizado' } },
         { chave: 'hero.convite_cor_fundo', tipo: 'cor_livre', label: 'Cor do fundo', se: { chave: 'hero.convite_estilo', valor: 'personalizado' } },
       ]},
@@ -5414,21 +5415,36 @@
     const devolverSel = () => { area.focus(); if (sel) { const s_ = window.getSelection(); s_.removeAllRanges(); s_.addRange(sel); } };
     ['keyup', 'mouseup', 'blur'].forEach((ev) => area.addEventListener(ev, guardarSel));
     const comando = (c, v) => { devolverSel(); try { document.execCommand('styleWithCSS', false, c === 'foreColor'); } catch (e) { /* segue */ } document.execCommand(c, false, v); daArea(); guardarSel(); };
-    // aumentar/diminuir o trecho selecionado: tamanho relativo ao texto em volta (em), de 0,5x a 4x
-    const mudarTamanho = (fator) => {
+    // tamanho do trecho selecionado, em lista (como no Word): percentual do tamanho normal do texto (0,75x a 3x)
+    const TAMANHOS = [['0.75', '75%'], ['1', '100% (normal)'], ['1.25', '125%'], ['1.5', '150%'], ['2', '200%'], ['3', '300%']];
+    const definirTamanho = (novo) => {
       devolverSel();
       const s_ = window.getSelection();
-      if (!s_ || !s_.rangeCount || s_.isCollapsed) { toast('Selecione o trecho que quer aumentar ou diminuir.'); return; }
+      if (!s_ || !s_.rangeCount || s_.isCollapsed) { toast('Selecione o trecho de texto e escolha o tamanho.'); return; }
       const r = s_.getRangeAt(0);
       let no = r.commonAncestorContainer; if (no.nodeType === 3) no = no.parentNode;
       const alvo = no.closest ? no.closest('span[style*="font-size"]') : null;
       const dentro = alvo && area.contains(alvo) && alvo !== area;
-      const atual = dentro ? (parseFloat(alvo.style.fontSize) || 1) : 1;
-      const novo = Math.min(4, Math.max(0.5, Math.round(atual * fator * 100) / 100));
-      if (dentro && alvo.textContent === r.toString()) alvo.style.fontSize = novo + 'em';
-      else { const sp = document.createElement('span'); sp.style.fontSize = novo + 'em'; sp.appendChild(r.extractContents()); r.insertNode(sp); s_.removeAllRanges(); const nr = document.createRange(); nr.selectNodeContents(sp); s_.addRange(nr); }
+      if (dentro && alvo.textContent === r.toString()) {
+        if (novo === 1) { while (alvo.firstChild) alvo.parentNode.insertBefore(alvo.firstChild, alvo); alvo.remove(); } // tamanho normal: tira a marcação
+        else alvo.style.fontSize = novo + 'em';
+      } else if (novo !== 1 || dentro) { const sp = document.createElement('span'); sp.style.fontSize = novo + 'em'; sp.appendChild(r.extractContents()); r.insertNode(sp); s_.removeAllRanges(); const nr = document.createRange(); nr.selectNodeContents(sp); s_.addRange(nr); }
       daArea(); guardarSel();
     };
+    const listaTamanho = h('select', { class: 'rico-tamanho', title: 'Tamanho da letra do trecho selecionado', 'aria-label': 'Tamanho da letra do trecho selecionado' });
+    TAMANHOS.forEach(([v, rot]) => listaTamanho.appendChild(new Option(rot, v)));
+    listaTamanho.value = '1';
+    listaTamanho.addEventListener('mousedown', guardarSel);
+    listaTamanho.addEventListener('change', () => { definirTamanho(parseFloat(listaTamanho.value)); });
+    // a lista mostra o tamanho do trecho onde está o cursor
+    const sincronizarTamanho = () => {
+      const s_ = window.getSelection(); if (!s_ || !s_.rangeCount || !area.contains(s_.anchorNode)) return;
+      let no = s_.anchorNode; if (no.nodeType === 3) no = no.parentNode;
+      const alvo = no.closest ? no.closest('span[style*="font-size"]') : null;
+      const v = alvo && area.contains(alvo) && alvo !== area ? String(parseFloat(alvo.style.fontSize) || 1) : '1';
+      listaTamanho.value = TAMANHOS.some((t) => t[0] === v) ? v : '1';
+    };
+    ['keyup', 'mouseup'].forEach((ev) => area.addEventListener(ev, sincronizarTamanho));
     const botao = (rot, titulo, fn, cls) => { const b = h('button', { type: 'button', class: 'rico-btn ' + (cls || ''), title: titulo, 'aria-label': titulo, html: rot }); b.addEventListener('mousedown', (e) => e.preventDefault()); b.addEventListener('click', fn); return b; };
     const cor = h('button', { type: 'button', class: 'rico-btn', title: 'Outra cor para o trecho selecionado', 'aria-label': 'Outra cor para o trecho selecionado', html: '<span style="display:block;width:18px;height:18px;border-radius:50%;background:conic-gradient(#e44,#ec4,#4c6,#4ce,#64e,#e4a,#e44);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)"></span>' });
     cor.addEventListener('mousedown', (e) => { e.preventDefault(); guardarSel(); });
@@ -5455,7 +5471,7 @@
     const barra = h('div', { class: 'rico-barra', role: 'toolbar', 'aria-label': 'Formatação de ' + campo.label },
       botao('<b>N</b>', 'Negrito (Ctrl+B)', () => comando('bold')), botao('<i>I</i>', 'Itálico (Ctrl+I)', () => comando('italic')),
       botao('<u>S</u>', 'Sublinhado (Ctrl+U)', () => comando('underline')), botao('<s>T</s>', 'Tachado', () => comando('strikeThrough')),
-      botao('<small>A</small>−', 'Diminuir a letra do trecho selecionado', () => mudarTamanho(1 / 1.15)), botao('A+', 'Aumentar a letra do trecho selecionado', () => mudarTamanho(1.15)), cor, dial,
+      listaTamanho, cor, dial,
       botao('🔗', 'Colocar link no trecho selecionado', () => { guardarSel(); const url = window.prompt('Endereço do link (comece com https://):', 'https://'); if (url && /^(https?:|mailto:|tel:)/i.test(url.trim())) comando('createLink', url.trim()); }),
       botao('🔗✕', 'Tirar o link', () => comando('unlink')),
       botao('⌫', 'Limpar a formatação do trecho', () => { comando('removeFormat'); comando('unlink'); }), bHtml);
