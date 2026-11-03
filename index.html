@@ -1825,6 +1825,20 @@
     const pega = function (k) { const v = String(t(k, '')).trim(); return v && v !== 'padrao' && validos.indexOf(v) !== -1 ? v : ''; };
     return pega(mod + '.' + prop) || pega('layout.' + prop) || '';
   }
+  // Espaço entre os elementos de um módulo (título, textos, cartões...): uma folga transparente entre um elemento e o seguinte,
+  // somada à que o módulo já tinha. Sem a opção escolhida, nada muda.
+  function espacarElementos(sec, px) {
+    [sec].concat(Array.prototype.slice.call(sec.querySelectorAll(':scope > .section-head'))).forEach(function (cont) {
+      var filhos = Array.prototype.filter.call(cont.children, function (c) {
+        return !c.hasAttribute('hidden') && c.tagName !== 'SCRIPT' && !c.classList.contains('esp-el') && !c.classList.contains('divider') && getComputedStyle(c).display !== 'none';
+      });
+      filhos.forEach(function (c, i) {
+        if (i === 0) return;
+        var e = document.createElement('div'); e.className = 'esp-el'; e.setAttribute('aria-hidden', 'true'); e.style.height = px + 'px';
+        cont.insertBefore(e, c);
+      });
+    });
+  }
   function aplicarAparenciaModulos() {
     const MODS = { countdown: 'secCountdown', presente_teaser: 'secPresenteTeaser', timeline: 'secTimeline', padrinhos: 'secPadrinhos', madrinhas_pais: 'secMadrinhasPais', mapa: 'map', galeria: 'secGaleria', rsvp: 'rsvp', presentes: 'presentes', recados: 'secRecados' };
     const MULT = { compacto: 0.6, amplo: 1.5 };
@@ -1837,6 +1851,7 @@
         if (mod !== 'timeline') sec.style.paddingBottom = Math.round(parseFloat(cs.paddingBottom) * m) + 'px';
       }
       const esc = cfgModulo(mod, 'escala', ['pequeno', 'grande', 'enorme']); if (esc) sec.dataset.escala = esc;
+      const entre = cfgModulo(mod, 'espaco_elementos', ['medio', 'amplo', 'enorme']); if (entre) espacarElementos(sec, { medio: 12, amplo: 26, enorme: 48 }[entre]);
       const can = cfgModulo(mod, 'cantos', ['retos', 'suaves', 'redondos']); if (can) sec.dataset.cantos = can;
       const som = cfgModulo(mod, 'sombra', ['nenhuma', 'suave', 'forte']); if (som) sec.dataset.sombra = som;
       // imagem de fundo com véu da cor do módulo (a forma do topo é recortada na própria seção, então convive com a imagem)

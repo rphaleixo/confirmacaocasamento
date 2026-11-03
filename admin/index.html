@@ -543,7 +543,7 @@
   .ed2-layout{display:grid;grid-template-columns:270px 340px minmax(0,1fr);gap:18px;align-items:start;}
   .ed2-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:8px;position:sticky;top:122px;max-height:calc(100vh - 140px);overflow-y:auto;}
   .ed2-menu summary{display:none;}
-  .ed2-prev{position:sticky;top:122px;}
+  .ed2-prev{position:sticky;top:122px;align-self:start;max-height:calc(100vh - 130px);}
   .ed2-prev .etapas-previa{position:static !important;inset:auto !important;transform:none !important;visibility:visible !important;padding:0 !important;background:none !important;overflow:visible !important;}
   .ed2-prev .dica-campo{margin:8px 0 0;text-align:center;}
   .ed2-painel{min-width:0;}
@@ -575,13 +575,20 @@
   .ed2-params button:hover:not(:disabled):not([aria-pressed=true]){border-color:var(--navy);background:var(--info-bg);}
   .ed2-params button[aria-pressed=true]{background:var(--navy);border-color:var(--navy);color:#fff;}
   .ed2-params button:disabled{opacity:.4;cursor:help;}
-  .ed2-caixa-box{position:sticky;top:122px;z-index:25;background:var(--surface);border:2px solid var(--navy);border-radius:var(--r-lg);padding:14px;margin:0 0 14px;box-shadow:var(--shadow-lg);}
+  .ed2-vista{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin:0 0 14px;box-shadow:var(--shadow);}
+  .ed2-vista:empty{display:none;}
+  .ed2-voltar{display:block;background:none;border:none;padding:0 0 4px;font-size:12.5px;color:var(--info);cursor:pointer;font-weight:600;text-align:left;min-height:28px;}
+  .ed2-link{display:block;margin:12px auto 0;background:none;border:none;color:var(--info);cursor:pointer;font-weight:600;font-size:13px;padding:8px;text-decoration:underline;}
+  .ed2-atalhos{display:grid;gap:8px;}
+  .ed2-atalho{display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;color:var(--ink);}
+  .ed2-atalho:hover{border-color:var(--navy);background:var(--info-bg);}
+  .ed2-atalho .ic{font-size:22px;} .ed2-atalho b{display:block;font-size:14px;} .ed2-atalho small{color:var(--ink-soft);font-size:12.5px;}
+  .ed2-caixa-box{background:var(--surface);margin:10px 0 0;}
   .ed2-caixa-tit{display:flex;flex-direction:column;gap:2px;margin:0 0 10px;} .ed2-caixa-tit b{font-size:15px;} .ed2-caixa-tit span{font-size:12.5px;color:var(--ink-soft);}
   .ed2-caixa-box fieldset{border:none;padding:0;margin:0;background:transparent;}
-  .ed2-caixa-acoes{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:12px;position:sticky;bottom:8px;}
+  .ed2-caixa-acoes{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:12px;position:sticky;bottom:8px;background:var(--surface);padding:8px 0;}
   .ed2-caixa-acoes .estado{margin-right:auto;font-size:12.5px;color:var(--ink-soft);} .ed2-caixa-acoes .estado.sujo{color:var(--warn);font-weight:600;}
   .ed2-caixa-acoes .action{margin:0;}
-  @media (max-width:999px){.ed2-caixa-box{top:60px;}}
   .ed2-flash{animation:ed2flash 1.8s ease;border-radius:8px;}
   @keyframes ed2flash{0%,60%{box-shadow:0 0 0 4px rgba(63,123,208,.55);background:var(--info-bg);}100%{box-shadow:0 0 0 0 rgba(63,123,208,0);background:transparent;}}
   body.ed2-ativo .fab-previa{display:none !important;}
@@ -590,7 +597,10 @@
     .ed2-menu{position:static;max-height:none;margin:0 0 12px;}
     .ed2-menu summary{display:flex;cursor:pointer;font-weight:700;min-height:46px;align-items:center;justify-content:space-between;gap:8px;padding:0 6px;}
     .ed2-menu summary small{font-weight:500;color:var(--ink-soft);}
-    .ed2-prev{position:static;margin:0 0 14px;}
+    .ed2-prev{position:sticky;top:56px;z-index:30;background:var(--bg);padding:6px 0;margin:0 0 10px;max-height:none;}
+    .ed2-prev .mock-cel{height:36vh !important;}
+    .ed2-prev .previa-mod .rot,.ed2-prev .dica-campo,.ed2-prev .aviso-midia{display:none;}
+    #ed2-vista,#ed2-form{scroll-margin-top:calc(36vh + 130px);}
     .ed2-prev .etapas-previa .previa-mod{display:flex;flex-direction:column;align-items:center;}
   }
   .ct-item .nm{flex:1;min-width:0;}
@@ -1142,7 +1152,7 @@
     <div class="ed2-layout">
       <details class="ed2-menu" id="ed2-menu" aria-label="Módulos do convite"></details>
       <div class="ed2-prev" id="ed2-prev"></div>
-      <div class="ed2-painel" id="ed2-painel"><div id="ed2-caixa"></div><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
+      <div class="ed2-painel" id="ed2-painel"><div id="ed2-vista" class="ed2-vista"></div><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
     </div>
   </section>
 
@@ -4035,6 +4045,7 @@
   const OPC_CANTOS = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'retos', label: 'Retos' }, { valor: 'suaves', label: 'Suaves' }, { valor: 'redondos', label: 'Bem redondos' }];
   const OPC_SOMBRA = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'nenhuma', label: 'Sem sombra' }, { valor: 'suave', label: 'Sombra suave' }, { valor: 'forte', label: 'Sombra forte' }];
   const OPC_ALTURA = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'baixa', label: 'Baixa' }, { valor: 'media', label: 'Média' }, { valor: 'alta', label: 'Alta' }];
+  const OPC_ESPACO_EL = [{ valor: 'padrao', label: 'Igual ao site' }, { valor: 'medio', label: 'Um pouco mais de espaço' }, { valor: 'amplo', label: 'Bem mais espaço' }, { valor: 'enorme', label: 'Muito mais espaço' }];
   const OPC_VEU = [{ valor: 'leve', label: 'Leve: a foto aparece bastante' }, { valor: 'medio', label: 'Médio' }, { valor: 'forte', label: 'Forte' }, { valor: 'total', label: 'Quase total: só uma textura' }];
   function opcoesForma(comPadrao) {
     const F = window.FORMAS_SECAO;
@@ -4049,6 +4060,7 @@
     c.push({ etapa: e, chave: '__sep_ap_tam_' + mod + '__', tipo: 'separador', label: 'Tamanho' });
     if (!o.semEspaco) c.push({ etapa: e, chave: mod + '.espaco', tipo: 'select', label: 'Espaço em volta do módulo', opcoes: OPC_ESPACO });
     c.push({ etapa: e, chave: mod + '.escala', tipo: 'select', label: 'Tamanho dos textos e elementos', opcoes: OPC_ESCALA });
+    c.push({ etapa: e, chave: mod + '.espaco_elementos', tipo: 'select', label: 'Espaço entre os elementos do módulo', opcoes: OPC_ESPACO_EL });
     c.push({ etapa: e, chave: '__sep_ap_est_' + mod + '__', tipo: 'separador', label: 'Estilo' });
     c.push({ etapa: e, chave: mod + '.cantos', tipo: 'select', label: 'Cantos dos cartões e botões', opcoes: OPC_CANTOS });
     if (!o.semSombra) c.push({ etapa: e, chave: mod + '.sombra', tipo: 'select', label: 'Sombra dos cartões', opcoes: OPC_SOMBRA });
@@ -6134,6 +6146,7 @@
     { chave: '__sep_fm_estilo__', tipo: 'separador', label: 'Estilo geral dos módulos' },
     { chave: 'layout.espaco', tipo: 'select', label: 'Espaço em volta dos módulos', opcoes: paraPadraoGeral(OPC_ESPACO) },
     { chave: 'layout.escala', tipo: 'select', label: 'Tamanho dos textos e elementos', opcoes: paraPadraoGeral(OPC_ESCALA) },
+    { chave: 'layout.espaco_elementos', tipo: 'select', label: 'Espaço entre os elementos de cada módulo', opcoes: paraPadraoGeral(OPC_ESPACO_EL) },
     { chave: 'layout.cantos', tipo: 'select', label: 'Cantos dos cartões e botões', opcoes: paraPadraoGeral(OPC_CANTOS) },
     { chave: 'layout.sombra', tipo: 'select', label: 'Sombra dos cartões', opcoes: paraPadraoGeral(OPC_SOMBRA) },
   ]};
@@ -6472,12 +6485,12 @@
     const form = document.getElementById('ed2-form'), prev = document.getElementById('ed2-prev');
     ed2FecharCaixa(); ed2Desc = null;
     prev.innerHTML = '';
-    prev.appendChild(h('div', { class: 'ed2-barra-el', id: 'ed2-barra-el' }));
-    ed2MostrarBarra(null);
+    document.getElementById('ed2-vista').innerHTML = '';
     if (!ed2Intervalo) ed2Intervalo = setInterval(() => { if (abaAtual !== 'editor') return; ed2SincronizarSalvar(); }, 500);
     if (ed2Sel.tipo === 'visual') {
       const c = ED2_CHIPS.find((x) => x.id === ed2Chip);
       renderGrupoEm(c.grupo(), form, { msgId: 'ed2-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia', rotuloSalvar: c.salvar, msgSalvo: c.salvo });
+      ed2MostrarFormulario(true);
       prev.appendChild(criarPreviaModulo({ titulo: 'Visual do convite', ancora: 'hero' }, form).el);
     } else {
       const g = ED2_GRUPOS[ed2Sel.i];
@@ -6490,12 +6503,13 @@
       const previa = form.querySelector('.etapas-previa');
       if (previa) prev.appendChild(previa);
       else prev.appendChild(h('div', { class: 'dica-campo', text: 'Esta parte não tem prévia do convite.' }));
+      ed2VistaInicio(g);
     }
     prev.appendChild(h('p', { class: 'dica-campo', text: 'Toque em um texto, foto ou botão do convite para editá-lo. Toque no fundo para mudar as cores.' }));
   }
   const ed2Plano = (s) => { const t = document.createElement('div'); t.innerHTML = String(s || ''); return (t.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
   const ed2Mod = (g) => (g.titulo === 'Capa' ? 'hero' : g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null));
-  // ---- barra de parâmetros (ícones do que dá para mudar no pedaço tocado) e caixa de edição de cada parâmetro ----
+  // ---- painel do lado: mostra só o que o usuário quer ver (dicas, ícones do pedaço tocado, a caixa de um ajuste ou todos os campos) ----
   const ED2_PARAMS = (mod) => {
     const k = (x) => mod + '.' + x;
     return {
@@ -6504,19 +6518,109 @@
       cor_destaque: { ic: '✨', rot: 'Cor de destaque', ch: [k('cor_destaque')] },
       cor_cartao: { ic: '🃏', rot: 'Cor do cartão', ch: [k('cor_cartao')] },
       cor_fundo: { ic: '🟦', rot: 'Cor do fundo', ch: [k('cor_fundo'), k('cor_fundo_fim')] },
-      escala: { ic: '🔠', rot: 'Tamanho', ch: [k('escala')] },
-      espaco: { ic: '↕️', rot: 'Espaço em volta', ch: [k('espaco')] },
+      escala: { ic: '🔠', rot: 'Tamanho dos textos', ch: [k('escala')] },
+      espaco_el: { ic: '↔️', rot: 'Espaço entre os elementos', ch: [k('espaco_elementos')] },
+      espaco: { ic: '↕️', rot: 'Espaço em volta do módulo', ch: [k('espaco')] },
       cantos: { ic: '⬜', rot: 'Cantos', ch: [k('cantos')] },
       sombra: { ic: '🌫️', rot: 'Sombra', ch: [k('sombra')] },
       imagem: { ic: '🖼️', rot: 'Imagem de fundo', ch: [k('imagem_fundo'), k('fundo_veu')] },
+      modelo: { ic: '🧩', rot: 'Disposição dos elementos (modelo)', ch: [k('layout')] },
       div_forma: { ic: '〰️', rot: 'Forma', ch: [k('divisoria_base_forma')] },
       div_altura: { ic: '📏', rot: 'Altura', ch: [k('divisoria_base_altura')] },
       div_esp: { ic: '🔁', rot: 'Lado da curva', ch: [k('divisoria_base_espelhar')] },
     };
   };
+  // Opções com desenho e explicação para os ajustes que eram listas (cada uma diz o que muda no convite)
+  const ED2_SVG = (corpo) => '<svg viewBox="0 0 100 58" aria-hidden="true">' + corpo + '</svg>';
+  const ED2_FUNDO = '<rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" stroke="#B9C3D3"/>';
+  const ED2_IGUAL = () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#F0F2F5" stroke="#B9C3D3" stroke-dasharray="4 3"/><text x="50" y="35" text-anchor="middle" font-size="16" font-weight="700" fill="#6B7488">=</text>');
+  const ED2_BARRAS = (ys, w) => ys.map((y, i) => '<rect x="' + (50 - (w[i] || 30) / 2) + '" y="' + y + '" width="' + (w[i] || 30) + '" height="5" rx="2.5" fill="' + (i === 0 ? '#2F5D9A' : '#8A94A6') + '"/>').join('');
+  const ED2_FORMA_ALTURA = (d) => ED2_SVG(ED2_FUNDO + '<path d="M1 1H99V' + (18) + 'Q50 ' + (18 + d * 2) + ' 1 18Z" fill="#2F5D9A"/>');
+  const ED2_VIS = {
+    espaco: { padrao: 'padrao', dica: 'Quanto de espaço vazio fica acima e abaixo do conteúdo do módulo.', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa o espaço padrão do convite.', desenho: ED2_IGUAL },
+      { valor: 'compacto', label: 'Compacto', desc: 'Menos espaço em cima e embaixo: o módulo fica mais baixo.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="14" y="8" width="72" height="42" rx="4" fill="#fff" stroke="#2F5D9A"/>' + ED2_BARRAS([16, 26, 36], [40, 56, 48])) },
+      { valor: 'amplo', label: 'Amplo', desc: 'Mais espaço em cima e embaixo: o módulo fica mais alto e arejado.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="30" y="20" width="40" height="18" rx="4" fill="#fff" stroke="#2F5D9A"/>' + ED2_BARRAS([25, 31], [22, 28])) },
+    ] },
+    espaco_elementos: { padrao: 'padrao', dica: 'A distância entre um elemento e o seguinte dentro do módulo (título, texto, cartões, botões).', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa a distância padrão entre os elementos.', desenho: ED2_IGUAL },
+      { valor: 'medio', label: 'Um pouco mais', desc: 'Afasta um pouco cada elemento do seguinte.', desenho: () => ED2_SVG(ED2_FUNDO + ED2_BARRAS([10, 22, 34, 46], [44, 60, 52, 36])) },
+      { valor: 'amplo', label: 'Bem mais', desc: 'Os elementos ficam bem separados: o módulo cresce para baixo.', desenho: () => ED2_SVG(ED2_FUNDO + ED2_BARRAS([8, 22, 36, 50], [44, 60, 52, 36])) },
+      { valor: 'enorme', label: 'Muito mais', desc: 'Grande folga entre os elementos, bom para poucos textos.', desenho: () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" stroke="#B9C3D3"/>' + ED2_BARRAS([5, 20, 35, 50], [44, 60, 52, 36])) },
+    ] },
+    escala: { padrao: 'padrao', dica: 'Aumenta ou diminui todos os textos e elementos deste módulo de uma vez.', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa o tamanho padrão do convite.', desenho: ED2_IGUAL },
+      { valor: 'pequeno', label: 'Pequeno', desc: 'Textos e elementos menores: cabe mais coisa na tela.', desenho: () => ED2_SVG(ED2_FUNDO + '<text x="50" y="38" text-anchor="middle" font-family="Georgia,serif" font-size="16" fill="#14213D">Aa</text>') },
+      { valor: 'grande', label: 'Grande', desc: 'Textos e elementos maiores, mais fáceis de ler.', desenho: () => ED2_SVG(ED2_FUNDO + '<text x="50" y="42" text-anchor="middle" font-family="Georgia,serif" font-size="28" fill="#14213D">Aa</text>') },
+      { valor: 'enorme', label: 'Enorme', desc: 'Textos e elementos bem grandes, para dar destaque.', desenho: () => ED2_SVG(ED2_FUNDO + '<text x="50" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="40" fill="#14213D">Aa</text>') },
+    ] },
+    cantos: { padrao: 'padrao', dica: 'O arredondamento dos cartões e botões deste módulo.', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa os cantos padrão do convite.', desenho: ED2_IGUAL },
+      { valor: 'retos', label: 'Retos', desc: 'Cantos em ângulo reto: visual mais sério e geométrico.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="22" y="12" width="56" height="34" rx="1" fill="#fff" stroke="#2F5D9A" stroke-width="2"/>') },
+      { valor: 'suaves', label: 'Suaves', desc: 'Cantos levemente arredondados.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="22" y="12" width="56" height="34" rx="8" fill="#fff" stroke="#2F5D9A" stroke-width="2"/>') },
+      { valor: 'redondos', label: 'Bem redondos', desc: 'Cantos bem arredondados: visual leve e amigável.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="22" y="12" width="56" height="34" rx="17" fill="#fff" stroke="#2F5D9A" stroke-width="2"/>') },
+    ] },
+    sombra: { padrao: 'padrao', dica: 'A sombra que dá sensação de profundidade aos cartões deste módulo.', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa a sombra padrão do convite.', desenho: ED2_IGUAL },
+      { valor: 'nenhuma', label: 'Sem sombra', desc: 'Cartões planos, sem profundidade.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="24" y="12" width="52" height="30" rx="6" fill="#fff" stroke="#C3CCD9"/>') },
+      { valor: 'suave', label: 'Sombra suave', desc: 'Um leve destaque do cartão sobre o fundo.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="24" y="16" width="52" height="30" rx="6" fill="#14213D" opacity=".14"/><rect x="24" y="12" width="52" height="30" rx="6" fill="#fff"/>') },
+      { valor: 'forte', label: 'Sombra forte', desc: 'O cartão parece saltar da tela.', desenho: () => ED2_SVG(ED2_FUNDO + '<rect x="22" y="20" width="56" height="32" rx="8" fill="#14213D" opacity=".18"/><rect x="25" y="17" width="52" height="30" rx="6" fill="#14213D" opacity=".22"/><rect x="24" y="12" width="52" height="30" rx="6" fill="#fff"/>') },
+    ] },
+    divisoria_base_altura: { padrao: 'padrao', dica: 'O quanto a curva entra no módulo de baixo.', opcoes: [
+      { valor: 'padrao', label: 'Igual ao site', desc: 'Usa a altura padrão das divisórias.', desenho: ED2_IGUAL },
+      { valor: 'baixa', label: 'Baixa', desc: 'Curva discreta, quase reta.', desenho: () => ED2_FORMA_ALTURA(3) },
+      { valor: 'media', label: 'Média', desc: 'Curva visível, na medida certa.', desenho: () => ED2_FORMA_ALTURA(8) },
+      { valor: 'alta', label: 'Alta', desc: 'Curva bem marcada, com mais presença.', desenho: () => ED2_FORMA_ALTURA(14) },
+    ] },
+    divisoria_base_espelhar: { padrao: '0', colunas: 2, dica: 'Inverte para que lado a curva desce.', opcoes: [
+      { valor: '0', label: 'Normal', desc: 'A curva segue o sentido padrão da forma.', desenho: () => ED2_SVG(ED2_FUNDO + '<path d="M1 1H99V16Q50 44 1 16Z" fill="#2F5D9A"/><path d="M1 1H99V16Q50 44 1 16Z" fill="none"/>') },
+      { valor: '1', label: 'Invertido', desc: 'A curva é espelhada: inverte o lado.', desenho: () => ED2_SVG(ED2_FUNDO + '<path d="M1 1H99V30Q50 2 1 30Z" fill="#2F5D9A"/>') },
+    ] },
+    fundo_veu: { padrao: 'medio', dica: 'O quanto a cor do módulo cobre a imagem de fundo (para o texto continuar legível).', opcoes: [
+      { valor: 'leve', label: 'Leve', desc: 'A foto aparece bastante.', desenho: () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#B58A6B"/><rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" opacity=".4"/>') },
+      { valor: 'medio', label: 'Médio', desc: 'Foto e cor equilibradas.', desenho: () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#B58A6B"/><rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" opacity=".62"/>') },
+      { valor: 'forte', label: 'Forte', desc: 'A cor domina; a foto fica suave.', desenho: () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#B58A6B"/><rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" opacity=".82"/>') },
+      { valor: 'total', label: 'Quase total', desc: 'Só uma textura da foto, bom para muito texto.', desenho: () => ED2_SVG('<rect x="1" y="1" width="98" height="56" rx="6" fill="#B58A6B"/><rect x="1" y="1" width="98" height="56" rx="6" fill="#EAF1FB" opacity=".95"/>') },
+    ] },
+  };
+  function ed2CampoPorChave(lista, chave) {
+    for (const c of (lista || [])) {
+      if (c.chave === chave) return c;
+      const dentro = ed2CampoPorChave(c.campos, chave); if (dentro) return dentro;
+    }
+    return null;
+  }
   let ed2Caixa = null, ed2Desc = null, ed2Intervalo = null;
   function ed2Achar(desc) { return desc && desc.chaveAchado ? document.querySelector('#ed2-form [data-chave="' + desc.chaveAchado + '"]') : null; }
-  function ed2IrParaCampo(achado) {
+  function ed2Corpo() { return document.getElementById('ed2-vista'); }
+  function ed2Rolar() { if (mqCelular.matches) { const v = ed2Corpo(); if (v) v.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
+  function ed2Cabecalho(titulo, sub, voltar) {
+    const sal = h('button', { type: 'button', class: 'action', id: 'ed2-salvar', text: 'Tudo salvo', disabled: true, onclick: ed2SalvarAtivo });
+    const topo = h('div', { class: 'ed2-barra-topo' }, h('div', { class: 'tt' }, voltar ? h('button', { type: 'button', class: 'ed2-voltar', text: '← ' + voltar.rotulo, onclick: voltar.fn }) : null, h('b', { text: titulo }), sub ? h('span', { text: sub }) : null), sal);
+    return topo;
+  }
+  function ed2VistaVazia() { const v = ed2Corpo(); if (v) v.innerHTML = ''; return v; }
+  function ed2MostrarFormulario(v) { const f = document.getElementById('ed2-form'); if (f) f.hidden = !v; }
+  // início do módulo: só uma dica e dois atalhos
+  function ed2VistaInicio(g) {
+    ed2Desc = null; ed2Caixa = null; ed2FecharCaixa();
+    const v = ed2VistaVazia(); if (!v) return;
+    ed2MostrarFormulario(false);
+    v.append(ed2Cabecalho(g.titulo, 'Toque em um pedaço do convite para ver o que dá para mudar nele.'),
+      h('div', { class: 'ed2-atalhos' },
+        h('button', { type: 'button', class: 'ed2-atalho', onclick: () => ed2MostrarBarra({ g, tipo: 'fundo', rotulo: 'Fundo e formato de ' + g.titulo }) }, h('span', { class: 'ic', text: '🟦', 'aria-hidden': 'true' }), h('span', {}, h('b', { text: 'Fundo e formato do módulo' }), h('small', { text: 'Cores, imagem, espaços, cantos e sombra' }))),
+        h('button', { type: 'button', class: 'ed2-atalho', onclick: () => ed2MostrarTodos(g) }, h('span', { class: 'ic', text: '📋', 'aria-hidden': 'true' }), h('span', {}, h('b', { text: 'Todos os campos do módulo' }), h('small', { text: 'Textos, fotos e etapas, como na aba Conteúdo' })))));
+    ed2SincronizarSalvar();
+  }
+  function ed2MostrarTodos(g) {
+    const v = ed2VistaVazia(); if (!v) return;
+    ed2FecharCaixa();
+    v.appendChild(ed2Cabecalho(g.titulo, 'Todos os campos do módulo', { rotulo: 'Voltar', fn: () => (ed2Desc ? ed2MostrarBarra(ed2Desc) : ed2VistaInicio(g)) }));
+    ed2MostrarFormulario(true);
+    ed2SincronizarSalvar();
+  }
+  function ed2IrParaCampo(achado, g) {
+    ed2MostrarTodos(g);
     const form = document.getElementById('ed2-form');
     const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba')), paineis = Array.from(form.querySelectorAll('.etapa-painel'));
     const k = paineis.indexOf(achado.closest('.etapa-painel'));
@@ -6529,30 +6633,35 @@
       if (foco && foco.focus) { try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); } }
     }, 60);
   }
-  function ed2FecharCaixa() {
-    const c = document.getElementById('ed2-caixa'); if (c) c.innerHTML = '';
-    ed2Caixa = null; Object.keys(previaExtra).forEach((x) => delete previaExtra[x]);
-  }
+  function ed2FecharCaixa() { ed2Caixa = null; Object.keys(previaExtra).forEach((x) => delete previaExtra[x]); }
   function ed2LerCaixa(fs) {
     const o = {};
     fs.querySelectorAll('[data-chave]').forEach((e) => { o[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
     return o;
   }
+  // caixa de edição de um parâmetro: só os campos daquele ajuste, com opções em imagem quando o ajuste é visual
   function ed2AbrirCaixa(desc, p) {
     ed2FecharCaixa();
     const g = desc.g;
-    const campos = p.ch.map((k) => g.campos.find((c) => c.chave === k)).filter(Boolean).map((c) => ({ ...c, se: null, etapa: undefined, avancada: false }));
-    if (!campos.length) { toast('Este ajuste não existe neste módulo.'); return; }
+    const campos = p.ch.map((k) => ed2CampoPorChave(g.campos, k)).filter(Boolean).map((c) => {
+      const base = { ...c, se: null, etapa: undefined, avancada: false, personalizavel: false };
+      const vis = ED2_VIS[String(c.chave).split('.').slice(1).join('.')];
+      if (vis) return { ...base, tipo: 'escolha_visual', padrao: vis.padrao, altura: 58, colunas: vis.colunas || 2, opcoes: vis.opcoes, dica: vis.dica || c.dica, legado: null };
+      return base;
+    });
+    if (!campos.length) { if (p.chaveAchado) { const a = ed2Achar(desc); if (a) { ed2IrParaCampo(a, g); return; } } toast('Este ajuste não está disponível neste módulo.'); return; }
     const fs = h('fieldset');
     campos.forEach((c) => renderCampoConteudo(fs, c));
     const estado = h('span', { class: 'estado', text: 'Sem alterações' });
     const msgDiv = h('div', { class: 'msg' });
     const sal = h('button', { type: 'button', class: 'action', text: 'Salvar' });
-    const can = btn('Cancelar', () => { ed2FecharCaixa(); ed2Atualizar(); ed2MostrarBarra(desc); }, 'fantasma');
-    const caixa = h('div', { class: 'ed2-caixa-box', role: 'group', 'aria-label': p.rot }, h('div', { class: 'ed2-caixa-tit' }, h('b', { text: p.ic + ' ' + p.rot }), h('span', { text: desc.rotulo })), fs, msgDiv, h('div', { class: 'ed2-caixa-acoes' }, estado, can, sal));
-    document.getElementById('ed2-caixa').appendChild(caixa);
+    const voltar = () => { ed2FecharCaixa(); ed2Atualizar(); ed2MostrarBarra(desc); };
+    const v = ed2VistaVazia();
+    v.append(ed2Cabecalho(p.ic + ' ' + p.rot, desc.rotulo, { rotulo: 'Outras opções deste pedaço', fn: voltar }),
+      h('div', { class: 'ed2-caixa-box', role: 'group', 'aria-label': p.rot }, fs, msgDiv, h('div', { class: 'ed2-caixa-acoes' }, estado, btn('Cancelar', voltar, 'fantasma'), sal)));
+    ed2MostrarFormulario(false);
     ed2Caixa = { desc, p, fs, sal, mexeu: false };
-    const vivo = () => { ed2Caixa.mexeu = true; estado.textContent = 'Alterações não salvas'; estado.classList.add('sujo'); Object.assign(previaExtra, ed2LerCaixa(fs)); ed2Atualizar(); };
+    const vivo = () => { ed2Caixa.mexeu = true; estado.textContent = 'Alterações não salvas'; estado.classList.add('sujo'); Object.assign(previaExtra, ed2LerCaixa(fs)); ed2Atualizar(); ed2SincronizarSalvar(); };
     fs.addEventListener('input', vivo); fs.addEventListener('change', vivo);
     sal.addEventListener('click', async () => {
       const payload = ed2LerCaixa(fs);
@@ -6568,16 +6677,18 @@
       if (!sujo) await ed2Abrir(ed2Sel, true); else ed2Atualizar();
       ed2MostrarBarra(desc);
     });
-    caixa.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    ed2SincronizarSalvar();
+    ed2Rolar();
   }
   function ed2ParamsDoElemento(desc) {
     const g = desc.g, mod = ed2Mod(g), P = mod ? ED2_PARAMS(mod) : {};
-    const tem = (id) => P[id] && P[id].ch.some((k) => g.campos.some((c) => c.chave === k));
+    const tem = (id) => P[id] && P[id].ch.some((k) => ed2CampoPorChave(g.campos, k));
     const L = [];
     const add = (id) => { if (tem(id)) L.push({ ...P[id], id }); };
     if (desc.tipo === 'texto' || desc.tipo === 'foto') {
-      L.push({ id: 'texto', ic: desc.tipo === 'foto' ? '📷' : '✏️', rot: desc.tipo === 'foto' ? 'Trocar foto' : 'Texto', abre: () => { const a = ed2Achar(desc); if (a) ed2IrParaCampo(a); else toast('Não achei o campo deste pedaço. Use as etapas abaixo.'); }, desligado: !desc.chaveAchado });
+      L.push({ id: 'texto', ic: desc.tipo === 'foto' ? '📷' : '✏️', rot: desc.tipo === 'foto' ? 'Trocar foto' : 'Texto', ch: desc.chaveAchado ? [desc.chaveAchado] : [], chaveAchado: true, desligado: !desc.chaveAchado });
       if (desc.capaEl) L.push({ id: 'capa_el', ic: '🎚️', rot: 'Posição, tamanho, cor e alinhamento', abre: () => {
+        ed2MostrarTodos(g);
         const form = document.getElementById('ed2-form'), chips = form.querySelector('.af-chips');
         if (!chips) { toast('O ajuste fino da capa fica na etapa Textos.'); return; }
         const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba')), paineis = Array.from(form.querySelectorAll('.etapa-painel'));
@@ -6585,37 +6696,37 @@
         const b = chips.querySelector('[data-el="' + desc.capaEl + '"]'); if (b) b.click();
         setTimeout(() => { chips.scrollIntoView({ block: 'center', behavior: 'smooth' }); chips.classList.remove('ed2-flash'); void chips.offsetWidth; chips.classList.add('ed2-flash'); }, 80);
       } });
-      if (desc.tipo === 'texto' && !desc.capaEl) { ['cor_titulo', 'cor_texto', 'cor_destaque', 'escala', 'espaco'].forEach(add); }
-      if (desc.tipo === 'foto') { ['cantos', 'sombra'].forEach(add); }
+      if (desc.tipo === 'texto' && !desc.capaEl) { ['cor_titulo', 'cor_texto', 'cor_destaque', 'escala', 'espaco_el', 'espaco'].forEach(add); }
+      if (desc.capaEl) add('modelo');
+      if (desc.tipo === 'foto') { ['cantos', 'sombra', 'espaco_el'].forEach(add); }
       if (desc.tipo === 'texto' && !desc.capaEl) {
-        [['posicao', '🧭', 'Posição'], ['distancia', '↔️', 'Distância até o próximo'], ['altura_el', '📐', 'Altura']].forEach(([id, ic, rot]) => L.push({ id, ic, rot, desligado: true, dica: 'Ainda não disponível: o convite não guarda este ajuste para cada elemento.' }));
+        [['posicao', '🧭', 'Posição'], ['altura_el', '📐', 'Altura']].forEach(([id, ic, rot]) => L.push({ id, ic, rot, desligado: true, dica: 'Ainda não disponível: o convite não guarda este ajuste para cada elemento.' }));
       }
     } else if (desc.tipo === 'fundo') {
-      ['cor_fundo', 'imagem', 'cor_cartao', 'cor_destaque', 'espaco', 'cantos', 'sombra', 'escala'].forEach(add);
-      if (g.titulo === 'Capa') L.push({ id: 'capa_midia', ic: '🖼️', rot: 'Imagem ou vídeo da capa', abre: () => { const form = document.getElementById('ed2-form'); const a = form.querySelector('.etapas-abas .etapa-aba'); if (a) a.click(); } });
+      ['cor_fundo', 'imagem', 'cor_cartao', 'cor_destaque', 'espaco_el', 'espaco', 'cantos', 'sombra', 'escala', 'modelo'].forEach(add);
+      if (g.titulo === 'Capa') L.push({ id: 'capa_midia', ic: '🖼️', rot: 'Imagem ou vídeo da capa', abre: () => { ed2MostrarTodos(g); const a = document.querySelector('#ed2-form .etapas-abas .etapa-aba'); if (a) a.click(); } });
     } else if (desc.tipo === 'divisoria') {
       ['div_forma', 'div_altura', 'div_esp'].forEach(add);
     }
     return L;
   }
+  // ícones do que dá para mudar no pedaço tocado
   function ed2MostrarBarra(desc) {
-    ed2Desc = desc;
-    const box = document.getElementById('ed2-barra-el'); if (!box) return;
-    box.innerHTML = '';
-    const sal = h('button', { type: 'button', class: 'action', id: 'ed2-salvar', text: 'Tudo salvo', disabled: true, onclick: ed2SalvarAtivo });
-    box.appendChild(h('div', { class: 'ed2-barra-topo' }, h('div', { class: 'tt' }, h('b', { text: desc ? desc.rotulo : 'Toque em um pedaço do convite' }), h('span', { text: desc ? 'O que dá para mudar nele:' : 'Os ícones do que dá para mudar aparecem aqui.' })), sal));
-    if (desc) {
-      const grade = h('div', { class: 'ed2-params' });
-      ed2ParamsDoElemento(desc).forEach((p) => {
-        const b = h('button', { type: 'button', disabled: !!p.desligado, title: p.dica || p.rot, 'aria-pressed': String(!!(ed2Caixa && ed2Caixa.p.id === p.id)) }, h('span', { class: 'ic', text: p.ic, 'aria-hidden': 'true' }), h('span', { text: p.rot }));
-        b.addEventListener('click', () => { if (p.abre) { ed2FecharCaixa(); p.abre(); } else ed2AbrirCaixa(desc, p); ed2MostrarBarraSeguro(desc); });
-        grade.appendChild(b);
-      });
-      box.appendChild(grade);
-    }
+    ed2Desc = desc; ed2FecharCaixa();
+    const v = ed2VistaVazia(); if (!v) return;
+    ed2MostrarFormulario(false);
+    const g = desc.g;
+    v.appendChild(ed2Cabecalho(desc.rotulo, 'O que dá para mudar nele (toque em um ícone):', { rotulo: 'Início de ' + g.titulo, fn: () => ed2VistaInicio(g) }));
+    const grade = h('div', { class: 'ed2-params' });
+    ed2ParamsDoElemento(desc).forEach((p) => {
+      const b = h('button', { type: 'button', disabled: !!p.desligado, title: p.dica || p.rot }, h('span', { class: 'ic', text: p.ic, 'aria-hidden': 'true' }), h('span', { text: p.rot }));
+      b.addEventListener('click', () => { if (p.abre) p.abre(); else ed2AbrirCaixa(desc, p); });
+      grade.appendChild(b);
+    });
+    v.appendChild(grade);
+    v.appendChild(h('button', { type: 'button', class: 'ed2-link', text: 'Ver todos os campos do módulo', onclick: () => ed2MostrarTodos(g) }));
     ed2SincronizarSalvar();
   }
-  const ed2MostrarBarraSeguro = (desc) => setTimeout(() => { if (ed2Desc === desc) { const b = document.getElementById('ed2-barra-el'); if (b) { const marcados = ed2Caixa ? ed2Caixa.p.id : ''; b.querySelectorAll('.ed2-params button').forEach((x) => x.setAttribute('aria-pressed', String(!!marcados && x.querySelector('span:last-child').textContent === ed2Caixa.p.rot))); } } }, 0);
   function ed2SalvarAtivo() {
     if (ed2Caixa) { ed2Caixa.sal.click(); return; }
     const b = document.querySelector('#ed2-form .savebar button.action'); if (b) b.click();
@@ -6636,8 +6747,8 @@
     if (i < 0) return;
     if (i !== ed2Sel.i) { await ed2Abrir({ tipo: 'grupo', i }); if (ed2Sel.i !== i) return; }
     const g = ED2_GRUPOS[i];
-    if (m.alvo === 'fundo') { ed2MostrarBarra({ g, tipo: 'fundo', rotulo: 'Fundo de ' + g.titulo }); return; }
-    if (m.alvo === 'divisoria') { ed2MostrarBarra({ g, tipo: 'divisoria', rotulo: 'Divisória na base de ' + g.titulo }); return; }
+    if (m.alvo === 'fundo') { ed2MostrarBarra({ g, tipo: 'fundo', rotulo: 'Fundo de ' + g.titulo }); ed2Rolar(); return; }
+    if (m.alvo === 'divisoria') { ed2MostrarBarra({ g, tipo: 'divisoria', rotulo: 'Divisória na base de ' + g.titulo }); ed2Rolar(); return; }
     const form = document.getElementById('ed2-form');
     const campos = Array.from(form.querySelectorAll('input[data-chave], textarea[data-chave]')).filter((e) => e.type !== 'checkbox' && e.type !== 'radio' && !/^#?[0-9a-f]{3,8}$/i.test(e.value));
     let achado = null;
@@ -6656,6 +6767,7 @@
     }
     const trecho = ((m.textos || [])[0] || '').slice(0, 42);
     ed2MostrarBarra({ g, tipo: m.img ? 'foto' : 'texto', tag: m.tag, capaEl: m.capaEl || '', chaveAchado: achado ? achado.dataset.chave : '', rotulo: m.img ? 'Foto em ' + g.titulo : '“' + trecho + (((m.textos || [])[0] || '').length > 42 ? '…' : '') + '”' });
+    ed2Rolar();
   }
   window.addEventListener('message', (ev) => {
     if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== 'previa-clique' || abaAtual !== 'editor') return;
