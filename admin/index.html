@@ -538,6 +538,42 @@
   .ct-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:9px 10px;font-size:13.5px;color:var(--ink);cursor:pointer;font-weight:500;}
   .ct-item:hover{background:var(--surface-2);}
   .ct-item.active{background:var(--navy);color:#fff;font-weight:600;}
+
+  /* ---------- Site › Editar no convite (novo modo): menu de módulos, prévia que aceita toque e painel de edição ---------- */
+  .ed2-layout{display:grid;grid-template-columns:270px 340px minmax(0,1fr);gap:18px;align-items:start;}
+  .ed2-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:8px;position:sticky;top:122px;max-height:calc(100vh - 140px);overflow-y:auto;}
+  .ed2-menu summary{display:none;}
+  .ed2-prev{position:sticky;top:122px;}
+  .ed2-prev .etapas-previa{position:static !important;inset:auto !important;transform:none !important;visibility:visible !important;padding:0 !important;background:none !important;overflow:visible !important;}
+  .ed2-prev .dica-campo{margin:8px 0 0;text-align:center;}
+  .ed2-painel{min-width:0;}
+  .ed2-painel .etapas-layout{display:block;}
+  .ed2-painel .etapas-layout .etapas-abas{display:flex !important;}
+  .ed2-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+  .ed2-chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;min-height:40px;color:var(--ink);}
+  .ed2-chips button[aria-pressed=true]{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .ed2-tit{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);font-weight:700;padding:12px 10px 5px;}
+  .ed2-linha{display:flex;align-items:center;gap:2px;border-radius:8px;}
+  .ed2-linha .nm{flex:1;min-width:0;display:flex;align-items:center;gap:9px;background:none;border:none;border-radius:8px;padding:9px 8px;font-size:13.5px;color:var(--ink);cursor:pointer;font-weight:500;text-align:left;min-height:40px;}
+  .ed2-linha .nm:hover{background:var(--surface-2);}
+  .ed2-linha .nm[aria-current=true]{background:var(--navy);color:#fff;font-weight:600;}
+  .ed2-linha.off .nm{opacity:.55;}
+  .ed2-linha .mv{flex:none;width:30px;height:36px;border:none;background:none;border-radius:8px;cursor:pointer;color:var(--ink-soft);font-size:12px;}
+  .ed2-linha .mv:hover:not(:disabled){background:var(--surface-2);}
+  .ed2-linha .mv:disabled{opacity:.25;cursor:default;}
+  .ed2-linha .fixo{font-size:10.5px;color:var(--ink-faint);padding:0 8px;}
+  .ed2-linha .mini-switch{margin:0 6px 0 2px;}
+  .ed2-flash{animation:ed2flash 1.8s ease;border-radius:8px;}
+  @keyframes ed2flash{0%,60%{box-shadow:0 0 0 4px rgba(63,123,208,.55);background:var(--info-bg);}100%{box-shadow:0 0 0 0 rgba(63,123,208,0);background:transparent;}}
+  body.ed2-ativo .fab-previa{display:none !important;}
+  @media (max-width:999px){
+    .ed2-layout{display:block;}
+    .ed2-menu{position:static;max-height:none;margin:0 0 12px;}
+    .ed2-menu summary{display:flex;cursor:pointer;font-weight:700;min-height:46px;align-items:center;justify-content:space-between;gap:8px;padding:0 6px;}
+    .ed2-menu summary small{font-weight:500;color:var(--ink-soft);}
+    .ed2-prev{position:static;margin:0 0 14px;}
+    .ed2-prev .etapas-previa .previa-mod{display:flex;flex-direction:column;align-items:center;}
+  }
   .ct-item .nm{flex:1;min-width:0;}
   .ct-item .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;}
   .ct-sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 6px 14px;padding-left:10px;border-left:2px solid var(--line);}
@@ -1078,6 +1114,16 @@
     <div class="ct-layout">
       <aside class="ct-side" id="ct-subnav" aria-label="Partes do site"></aside>
       <div id="ct-form" style="min-width:0;"><div class="carregando">Carregando...</div></div>
+    </div>
+  </section>
+
+  <!-- ===== EVENTO: SITE › EDITAR NO CONVITE (novo modo, convive com Conteúdo, Cores, Tipografia e Ordem) ===== -->
+  <section id="tab-editor" class="tab">
+    <div class="pag-head"><div><h2>Editar no convite <span class="hd-badge" style="background:var(--gold);color:#241700;">novo</span></h2><p>Escolha o módulo ao lado e toque no que quer mudar, direto na prévia. É o mesmo conteúdo das outras abas do Site: o que você salva aqui aparece lá, e vice-versa.</p></div></div>
+    <div class="ed2-layout">
+      <details class="ed2-menu" id="ed2-menu" aria-label="Módulos do convite"></details>
+      <div class="ed2-prev" id="ed2-prev"></div>
+      <div class="ed2-painel" id="ed2-painel"><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
     </div>
   </section>
 
@@ -1733,6 +1779,7 @@
     cores: () => carregarAparencia('cores'),
     tipografia: () => carregarAparencia('tipografia'),
     conteudo: () => carregarConteudo(),
+    editor: () => carregarEditor(),
     formas: () => carregarFormas(),
     removidos: () => carregarRemovidos(),
     ordem: () => carregarOrdem(),
@@ -1744,7 +1791,7 @@
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }, { tab: 'removidos', rotulo: 'Removidos recentemente' }] },
-    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'editor', rotulo: 'Editar no convite (novo)' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
@@ -1770,6 +1817,7 @@
   function abrirAba(tab) {
     abaAtual = tab;
     document.body.classList.remove('previa-aberta', 'modulos-abertos');
+    document.body.classList.toggle('ed2-ativo', tab === 'editor');
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
     const secao = (tab === 'cores' || tab === 'tipografia') ? 'aparencia' : tab; // Cores e Tipografia dividem a mesma tela
     document.getElementById('tab-' + secao).classList.add('active');
@@ -5670,7 +5718,7 @@
       avisoDesligado();
       // guarda onde o convidado (o anfitrião) estava rolando: o site novo volta exatamente para lá, sem pular para o início do módulo
       lerRolagem();
-      const f = h('iframe', { src: window.ROTAS.urlMesmaOrigem(eventoAtual) + '?previa=1' + qsRascunho('&') + '#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
+      const f = h('iframe', { src: window.ROTAS.urlMesmaOrigem(eventoAtual) + '?previa=1' + (abaAtual === 'editor' ? '&editor=1' : '') + qsRascunho('&') + '#' + (grupo.ancora || 'hero'), title: 'Prévia de ' + grupo.titulo, tabindex: '-1', style: 'position:absolute;left:0;top:0;width:' + LARG + 'px;height:' + ALT + 'px;border:0;background:#fff;transform:scale(' + ESC + ');transform-origin:0 0;visibility:hidden;' });
       aguardando = f;
       tela.appendChild(f);
     };
@@ -6289,6 +6337,201 @@
     ordemSujo(false);
     toast('Ordem salva. O site já reflete a mudança.');
   });
+
+
+  // =====================================================================
+  //  SITE › EDITAR NO CONVITE (novo modo)
+  //  Convive com Conteúdo, Cores, Tipografia, Formas e Ordem: usa os mesmos campos, as mesmas chaves e o mesmo salvamento.
+  //  Menu de módulos (ligar, desligar e ordenar) + prévia do convite que aceita toque + painel com o que dá para editar.
+  // =====================================================================
+  let ED2_GRUPOS = [];
+  let ed2Sel = { tipo: 'grupo', i: 0 };
+  let ed2Chip = 'cores';
+  const ED2_CHIPS = [
+    { id: 'cores', rotulo: 'Cores e paletas', grupo: () => GRUPO_CORES, salvar: 'Salvar cores', salvo: 'Cores salvas. O site já está atualizado.' },
+    { id: 'tipografia', rotulo: 'Letras', grupo: () => GRUPO_TIPOGRAFIA, salvar: 'Salvar letras', salvo: 'Letras salvas. O site já está atualizado.' },
+    { id: 'formas', rotulo: 'Formas e estilo', grupo: () => GRUPO_FORMAS, salvar: 'Salvar formas e estilo', salvo: 'Formas e estilo salvos. O site já está atualizado.' },
+  ];
+  const ed2Chave = (g) => g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null);
+  function ed2Ordem() {
+    const permitidos = modulosDoTipo(ctDados);
+    const validas = BLOCOS_ORDENAVEIS.map((b) => b.chave).filter((c) => !permitidos || permitidos.includes(c));
+    let salva = []; try { salva = JSON.parse(ctDados['layout.ordem'] || '[]'); } catch (e) { salva = []; }
+    const ord = salva.filter((c) => validas.includes(c));
+    validas.forEach((c) => { if (!ord.includes(c)) ord.push(c); });
+    return ord;
+  }
+  // grupos na ordem em que aparecem no convite: capa, módulos ordenáveis na ordem salva e, por fim, rodapé e compartilhamento
+  function ed2Lista() {
+    const ord = ed2Ordem();
+    const topo = ED2_GRUPOS.filter((g) => !ed2Chave(g) && (g.titulo === 'Capa' || g.especial));
+    const meio = ord.map((c) => ED2_GRUPOS.find((g) => ed2Chave(g) === c)).filter(Boolean);
+    const fim = ED2_GRUPOS.filter((g) => !topo.includes(g) && !meio.includes(g));
+    return { topo, meio, fim, ord };
+  }
+  async function ed2Confirmar() {
+    if (!sujo) return true;
+    const ok = await confirmar({ titulo: 'Trocar sem salvar?', texto: 'As alterações que você fez aqui ainda não foram salvas e serão perdidas.', rotulo: 'Trocar sem salvar', perigo: true });
+    if (!ok) return false;
+    marcarSujo(null);
+    const novo = await api('/api/conteudo'); if (!novo.erro) ctDados = novo;
+    return true;
+  }
+  const ed2Atualizar = () => { const f = document.getElementById('ed2-form'); if (f) f.dispatchEvent(new Event('change', { bubbles: true })); };
+  async function ed2GravarEstrutura(payload) {
+    const d = await api('/api/admin/conteudo', 'POST', payload);
+    if (d.erro) { toast(d.rede ? 'Sem conexão agora. Tente de novo quando a internet voltar.' : d.erro, 'err'); return false; }
+    Object.assign(ctDados, payload);
+    toast('Salvo. O site já está atualizado.');
+    agendarCompartilhar();
+    return true;
+  }
+  function ed2DesenharMenu() {
+    const det = document.getElementById('ed2-menu');
+    const aberto = det.open;
+    det.innerHTML = '';
+    const atualNome = ed2Sel.tipo === 'visual' ? 'Visual do convite' : (ED2_GRUPOS[ed2Sel.i] || {}).titulo || '';
+    det.appendChild(h('summary', {}, h('span', { text: 'Editando: ' + atualNome }), h('small', { text: 'trocar, ligar, ordenar' })));
+    const L = ed2Lista();
+    det.appendChild(h('div', { class: 'ed2-tit', text: 'Site todo' }));
+    const bv = h('div', { class: 'ed2-linha' }, h('button', { type: 'button', class: 'nm', 'aria-current': String(ed2Sel.tipo === 'visual'), onclick: () => ed2Abrir({ tipo: 'visual' }) }, h('span', { text: '🎨', 'aria-hidden': 'true' }), h('span', { text: 'Visual do convite' })));
+    det.appendChild(bv);
+    det.appendChild(h('div', { class: 'ed2-tit', text: 'Módulos (ligar, desligar e ordenar)' }));
+    const linha = (g, ordenavel) => {
+      const i = ED2_GRUPOS.indexOf(g), chave = ed2Chave(g);
+      const ligado = !g.toggle || moduloLigado(g);
+      const k = L.ord.indexOf(chave);
+      const row = h('div', { class: 'ed2-linha' + (ligado ? '' : ' off') });
+      row.appendChild(h('button', { type: 'button', class: 'nm', 'aria-current': String(ed2Sel.tipo === 'grupo' && ed2Sel.i === i), onclick: () => ed2Abrir({ tipo: 'grupo', i }) }, h('span', { text: iconeDoGrupo(g), 'aria-hidden': 'true' }), h('span', { text: g.titulo })));
+      if (ordenavel) {
+        const mover = async (d) => {
+          const ord = L.ord.slice(), a = ord.indexOf(chave), b = a + d;
+          if (b < 0 || b >= ord.length) return;
+          [ord[a], ord[b]] = [ord[b], ord[a]];
+          if (await ed2GravarEstrutura({ 'layout.ordem': JSON.stringify(ord) })) { ed2DesenharMenu(); ed2Atualizar(); const f = document.querySelector('#ed2-menu [data-foco="' + chave + (d < 0 ? ':sobe' : ':desce') + '"]'); if (f) f.focus(); }
+        };
+        row.appendChild(h('button', { type: 'button', class: 'mv', 'data-foco': chave + ':sobe', 'aria-label': 'Subir ' + g.titulo, title: 'Subir', disabled: k <= 0, text: '▲', onclick: () => mover(-1) }));
+        row.appendChild(h('button', { type: 'button', class: 'mv', 'data-foco': chave + ':desce', 'aria-label': 'Descer ' + g.titulo, title: 'Descer', disabled: k < 0 || k >= L.ord.length - 1, text: '▼', onclick: () => mover(1) }));
+        if (g.toggle) {
+          const chk = h('input', { type: 'checkbox', 'aria-label': 'Mostrar ' + g.titulo + ' no site' }); chk.checked = ligado;
+          chk.addEventListener('change', async () => {
+            const novo = chk.checked, tecla = 'secao.' + g.toggle + '.ativa';
+            if (!(await ed2GravarEstrutura({ [tecla]: novo ? '1' : '0' }))) { chk.checked = !novo; return; }
+            // se o módulo aberto é este, o botão "Aparece no site" do painel acompanha (sem marcar como não salvo)
+            const f = document.querySelector('#ed2-form [data-chave="' + tecla + '"]');
+            if (f) { f.checked = novo; f.dispatchEvent(new Event('change')); }
+            ed2DesenharMenu(); ed2Atualizar();
+          });
+          row.appendChild(h('label', { class: 'mini-switch', title: 'Mostrar no site' }, chk, h('span')));
+        }
+      } else row.appendChild(h('span', { class: 'fixo', text: 'fixo' }));
+      det.appendChild(row);
+    };
+    L.topo.forEach((g) => linha(g, false));
+    L.meio.forEach((g) => linha(g, true));
+    L.fim.forEach((g) => linha(g, false));
+    det.open = mqCelular.matches ? aberto : true;
+  }
+  function ed2Chips() {
+    const box = document.getElementById('ed2-chips');
+    box.innerHTML = '';
+    box.hidden = ed2Sel.tipo !== 'visual';
+    if (ed2Sel.tipo !== 'visual') return;
+    ED2_CHIPS.forEach((c) => box.appendChild(h('button', { type: 'button', 'aria-pressed': String(ed2Chip === c.id), text: c.rotulo, onclick: () => ed2Abrir({ tipo: 'visual', chip: c.id }) })));
+  }
+  async function ed2Abrir(sel, semConfirmar) {
+    const igual = sel.tipo === ed2Sel.tipo && (sel.tipo === 'grupo' ? sel.i === ed2Sel.i : (!sel.chip || sel.chip === ed2Chip));
+    if (igual && !semConfirmar) return;
+    if (!igual && !semConfirmar && !(await ed2Confirmar())) return;
+    if (sel.tipo === 'visual' && sel.chip) ed2Chip = sel.chip;
+    ed2Sel = sel.tipo === 'visual' ? { tipo: 'visual' } : sel;
+    Object.keys(rolagemPrevias).forEach((k) => delete rolagemPrevias[k]);
+    if (mqCelular.matches) document.getElementById('ed2-menu').open = false;
+    ed2DesenharMenu(); ed2Chips();
+    const form = document.getElementById('ed2-form'), prev = document.getElementById('ed2-prev');
+    prev.innerHTML = '';
+    if (ed2Sel.tipo === 'visual') {
+      const c = ED2_CHIPS.find((x) => x.id === ed2Chip);
+      renderGrupoEm(c.grupo(), form, { msgId: 'ed2-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia', rotuloSalvar: c.salvar, msgSalvo: c.salvo });
+      prev.appendChild(criarPreviaModulo({ titulo: 'Visual do convite', ancora: 'hero' }, form).el);
+    } else {
+      const g = ED2_GRUPOS[ed2Sel.i];
+      ctGrupoAtivo = Math.max(0, GRUPOS_ATIVOS.indexOf(g));
+      renderGrupoEm(g, form, {
+        msgId: 'ed2-msg', onde: 'conteudo', semCabecalho: false,
+        topo: g.especial === 'savethedate' ? cartaoSaveTheDate : null,
+        aoAlternar: (ligado) => { if (g.toggle) ctDados['secao.' + g.toggle + '.ativa'] = ligado ? '1' : '0'; ed2DesenharMenu(); },
+      });
+      const previa = form.querySelector('.etapas-previa');
+      if (previa) prev.appendChild(previa);
+      else prev.appendChild(h('div', { class: 'dica-campo', text: 'Esta parte não tem prévia do convite.' }));
+    }
+    prev.appendChild(h('p', { class: 'dica-campo', text: 'Toque em um texto, foto ou botão do convite para editá-lo. Toque no fundo para mudar as cores.' }));
+  }
+  const ed2Plano = (s) => { const t = document.createElement('div'); t.innerHTML = String(s || ''); return (t.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
+  // O que foi tocado na prévia vira o campo certo: procura, no módulo, o campo com o mesmo texto (ou a mesma imagem)
+  async function ed2Clique(m) {
+    if (ed2Sel.tipo === 'visual') {
+      const alvo = m.fundo ? 'cores' : (/^(h[1-6]|p|li|span|label|figcaption)$/.test(m.tag || '') ? 'tipografia' : 'formas');
+      if (ed2Chip !== alvo) await ed2Abrir({ tipo: 'visual', chip: alvo });
+      return;
+    }
+    const i = ED2_GRUPOS.findIndex((g) => g.ancora && g.ancora === m.secao);
+    if (i < 0) return;
+    if (i !== ed2Sel.i) { await ed2Abrir({ tipo: 'grupo', i }); if (ed2Sel.i !== i) return; }
+    const form = document.getElementById('ed2-form');
+    const campos = Array.from(form.querySelectorAll('input[data-chave], textarea[data-chave]')).filter((e) => e.type !== 'checkbox' && e.type !== 'radio' && !/^#?[0-9a-f]{3,8}$/i.test(e.value));
+    let achado = null;
+    if (m.img) {
+      const nome = String(m.img).split('?')[0].split('/').pop();
+      achado = campos.find((e) => e.value && nome && e.value.indexOf(nome) !== -1) || null;
+    }
+    for (const t of (m.textos || [])) {
+      if (achado) break;
+      const x = ed2Plano(t); if (!x) continue;
+      achado = campos.find((e) => ed2Plano(e.value) === x) || null;
+      if (!achado) achado = campos.filter((e) => { const v = ed2Plano(e.value); return v.length >= 3 && (x.indexOf(v) !== -1 || v.indexOf(x) !== -1); }).sort((a, b) => ed2Plano(b.value).length - ed2Plano(a.value).length)[0] || null;
+    }
+    const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba'));
+    const paineis = Array.from(form.querySelectorAll('.etapa-painel'));
+    if (achado) {
+      const painel = achado.closest('.etapa-painel');
+      const k = paineis.indexOf(painel);
+      if (k >= 0 && abas[k]) abas[k].click();
+      const caixa = achado.closest('.campo, .rico, .form-linha, .campo-cond') || achado.parentElement;
+      setTimeout(() => {
+        (caixa || achado).scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (caixa) { caixa.classList.remove('ed2-flash'); void caixa.offsetWidth; caixa.classList.add('ed2-flash'); }
+        const foco = achado.type === 'hidden' ? (caixa && caixa.querySelector('[contenteditable], input:not([type=hidden]), textarea')) : achado;
+        if (foco && foco.focus) { try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); } }
+      }, 60);
+      return;
+    }
+    // fundo da seção: abre a etapa de cores do módulo; o resto, a primeira etapa
+    if (m.fundo) {
+      const k = abas.findIndex((b) => /cores|visual|apar/i.test(b.textContent));
+      if (k >= 0) { abas[k].click(); return; }
+    }
+    toast('Esse pedaço não tem um campo próprio. Use as etapas acima do formulário para encontrar o que mudar.');
+  }
+  window.addEventListener('message', (ev) => {
+    if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== 'previa-clique' || abaAtual !== 'editor') return;
+    ed2Clique(ev.data);
+  });
+  async function carregarEditor() {
+    const form = document.getElementById('ed2-form');
+    const d = await api('/api/conteudo');
+    if (d.erro) { form.textContent = 'Não consegui carregar o conteúdo agora. Recarregue a página para tentar de novo.'; return; }
+    await migrarDivisorias(d);
+    ctDados = d;
+    // neste modo todas as etapas aparecem (inclusive Aparência), sem depender de "Opções avançadas"
+    const av = AVANCADO; AVANCADO = true; adaptarAoTipo(ctDados); AVANCADO = av;
+    ED2_GRUPOS = GRUPOS_ATIVOS.slice();
+    agendarCompartilhar();
+    if (ed2Sel.tipo === 'grupo' && ed2Sel.i >= ED2_GRUPOS.length) ed2Sel = { tipo: 'grupo', i: 0 };
+    await ed2Abrir(ed2Sel, true);
+  }
+  mqCelular.addEventListener('change', () => { const det = document.getElementById('ed2-menu'); if (det && !mqCelular.matches) det.open = true; });
 
   // =====================================================================
   //  PRESENTES (lista em página própria: /e/<slug>/presentes)

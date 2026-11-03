@@ -1140,7 +1140,35 @@
       // o site só aparece depois do carregamento: por isso a rolagem até a âncora do endereço é feita aqui
       criarAncoras(); irParaAncora(false);
       if (window.__previa) window.parent.postMessage({ tipo: 'previa-renderizada' }, location.origin);
+      if (window.__previa && /[?&]editor=1/.test(location.search)) ativarEdicaoNaPrevia();
     });
+  }
+  // Prévia dentro do painel em modo "Editar no convite": tocar em um texto, foto ou botão avisa o painel qual foi o pedaço tocado
+  // (o painel abre o campo certo). Nada do que o convidado faz no site de verdade muda: isto só roda dentro do painel.
+  function ativarEdicaoNaPrevia() {
+    if (window.__edPrevia) return;
+    window.__edPrevia = true;
+    document.documentElement.classList.add('ed-modo');
+    var st = document.createElement('style');
+    st.textContent = 'html.ed-modo section,html.ed-modo footer{cursor:pointer;}' +
+      'html.ed-modo :is(h1,h2,h3,h4,p,li,button,a,img,figcaption,label,.hero-eyebrow,.hero-date){outline:1.5px dashed rgba(63,123,208,.9);outline-offset:3px;cursor:pointer;}' +
+      'html.ed-modo :is(h1,h2,h3,h4,p,li,button,a,img,figcaption,label,.hero-eyebrow,.hero-date):hover{outline:2.5px solid #3F7BD0;}';
+    document.head.appendChild(st);
+    document.addEventListener('click', function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      var alvo = ev.target;
+      var seletor = 'h1,h2,h3,h4,p,li,button,a,img,figcaption,label,.hero-eyebrow,.hero-date,span';
+      var sec = alvo.closest ? alvo.closest('section[id], footer[id]') : null;
+      var textos = [], el = alvo.closest ? alvo.closest(seletor) : null, n = 0;
+      while (el && n < 4 && el !== sec) {
+        var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (t && textos.indexOf(t) === -1) textos.push(t);
+        el = el.parentElement ? el.parentElement.closest(seletor) : null; n++;
+      }
+      var img = alvo.tagName === 'IMG' ? (alvo.getAttribute('src') || '') : '';
+      var tag = alvo.closest ? ((alvo.closest(seletor) || {}).tagName || '').toLowerCase() : '';
+      window.parent.postMessage({ tipo: 'previa-clique', secao: sec ? sec.id : '', textos: textos, img: img, tag: tag, fundo: !alvo.closest || !alvo.closest(seletor) }, location.origin);
+    }, true);
   }
   function mostrarErroEvento(dados) {
     window.__revelado = true;
