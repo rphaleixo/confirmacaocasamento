@@ -563,6 +563,25 @@
   .ed2-linha .mv:disabled{opacity:.25;cursor:default;}
   .ed2-linha .fixo{font-size:10.5px;color:var(--ink-faint);padding:0 8px;}
   .ed2-linha .mini-switch{margin:0 6px 0 2px;}
+  .ed2-barra-el{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px;margin:0 0 10px;box-shadow:var(--shadow);}
+  .ed2-barra-topo{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:0 0 8px;}
+  .ed2-barra-topo .tt{min-width:0;font-size:12.5px;color:var(--ink-soft);line-height:1.3;}
+  .ed2-barra-topo .tt b{display:block;color:var(--ink);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ed2-barra-topo .action{margin:0;padding:8px 14px;min-height:38px;font-size:13px;flex-shrink:0;}
+  .ed2-barra-topo .action:disabled{background:var(--muted-bg);color:var(--ink-soft);border-color:var(--line);opacity:1;cursor:default;}
+  .ed2-params{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;}
+  .ed2-params button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font-size:11px;line-height:1.15;color:var(--ink);font-weight:600;text-align:center;min-height:62px;}
+  .ed2-params button .ic{font-size:19px;line-height:1;}
+  .ed2-params button:hover:not(:disabled):not([aria-pressed=true]){border-color:var(--navy);background:var(--info-bg);}
+  .ed2-params button[aria-pressed=true]{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .ed2-params button:disabled{opacity:.4;cursor:help;}
+  .ed2-caixa-box{position:sticky;top:122px;z-index:25;background:var(--surface);border:2px solid var(--navy);border-radius:var(--r-lg);padding:14px;margin:0 0 14px;box-shadow:var(--shadow-lg);}
+  .ed2-caixa-tit{display:flex;flex-direction:column;gap:2px;margin:0 0 10px;} .ed2-caixa-tit b{font-size:15px;} .ed2-caixa-tit span{font-size:12.5px;color:var(--ink-soft);}
+  .ed2-caixa-box fieldset{border:none;padding:0;margin:0;background:transparent;}
+  .ed2-caixa-acoes{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:12px;position:sticky;bottom:8px;}
+  .ed2-caixa-acoes .estado{margin-right:auto;font-size:12.5px;color:var(--ink-soft);} .ed2-caixa-acoes .estado.sujo{color:var(--warn);font-weight:600;}
+  .ed2-caixa-acoes .action{margin:0;}
+  @media (max-width:999px){.ed2-caixa-box{top:60px;}}
   .ed2-flash{animation:ed2flash 1.8s ease;border-radius:8px;}
   @keyframes ed2flash{0%,60%{box-shadow:0 0 0 4px rgba(63,123,208,.55);background:var(--info-bg);}100%{box-shadow:0 0 0 0 rgba(63,123,208,0);background:transparent;}}
   body.ed2-ativo .fab-previa{display:none !important;}
@@ -1123,7 +1142,7 @@
     <div class="ed2-layout">
       <details class="ed2-menu" id="ed2-menu" aria-label="Módulos do convite"></details>
       <div class="ed2-prev" id="ed2-prev"></div>
-      <div class="ed2-painel" id="ed2-painel"><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
+      <div class="ed2-painel" id="ed2-painel"><div id="ed2-caixa"></div><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
     </div>
   </section>
 
@@ -5682,6 +5701,7 @@
 
   // Prévia de um módulo: o próprio site aberto num "celular", já rolado até o módulo, com o que está sendo editado
   // (inclusive o que ainda não foi salvo). Nada é gravado: o site recebe o conteúdo por mensagem, só neste painel.
+  const previaExtra = {};     // valores da caixa de edição de um parâmetro (Site › Editar no convite): valem na prévia antes de salvar
   const rolagemPrevias = {}; // onde cada prévia estava rolada: sobrevive a recarregamentos e a redesenhos do formulário
   let capturarRolagemPrevia = null;
   function criarPreviaModulo(grupo, form) {
@@ -5704,6 +5724,7 @@
       if (grupo.toggle) d['secao.' + grupo.toggle + '.ativa'] = '1';   // mostra o módulo mesmo desligado
       if (grupo.toggle === 'presente_teaser') d['secao.presentes.ativa'] = '1';
       d['config.modo_save_the_date'] = grupo.especial === 'savethedate' ? '1' : '0'; // o Save the Date é visto ligado; os demais módulos, com o site normal
+      Object.assign(d, previaExtra);
       return d;
     };
     const avisoDesligado = () => {
@@ -6449,7 +6470,11 @@
     if (mqCelular.matches) document.getElementById('ed2-menu').open = false;
     ed2DesenharMenu(); ed2Chips();
     const form = document.getElementById('ed2-form'), prev = document.getElementById('ed2-prev');
+    ed2FecharCaixa(); ed2Desc = null;
     prev.innerHTML = '';
+    prev.appendChild(h('div', { class: 'ed2-barra-el', id: 'ed2-barra-el' }));
+    ed2MostrarBarra(null);
+    if (!ed2Intervalo) ed2Intervalo = setInterval(() => { if (abaAtual !== 'editor') return; ed2SincronizarSalvar(); }, 500);
     if (ed2Sel.tipo === 'visual') {
       const c = ED2_CHIPS.find((x) => x.id === ed2Chip);
       renderGrupoEm(c.grupo(), form, { msgId: 'ed2-msg', semCabecalho: true, semMoldura: true, onde: 'aparencia', rotuloSalvar: c.salvar, msgSalvo: c.salvo });
@@ -6469,50 +6494,168 @@
     prev.appendChild(h('p', { class: 'dica-campo', text: 'Toque em um texto, foto ou botão do convite para editá-lo. Toque no fundo para mudar as cores.' }));
   }
   const ed2Plano = (s) => { const t = document.createElement('div'); t.innerHTML = String(s || ''); return (t.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase(); };
-  // O que foi tocado na prévia vira o campo certo: procura, no módulo, o campo com o mesmo texto (ou a mesma imagem)
+  const ed2Mod = (g) => (g.titulo === 'Capa' ? 'hero' : g.toggle || (g.ancora === 'rsvp' ? 'rsvp' : null));
+  // ---- barra de parâmetros (ícones do que dá para mudar no pedaço tocado) e caixa de edição de cada parâmetro ----
+  const ED2_PARAMS = (mod) => {
+    const k = (x) => mod + '.' + x;
+    return {
+      cor_titulo: { ic: '🎨', rot: 'Cor do título', ch: [k('cor_titulo')] },
+      cor_texto: { ic: '🖍️', rot: 'Cor do texto', ch: [k('cor_texto')] },
+      cor_destaque: { ic: '✨', rot: 'Cor de destaque', ch: [k('cor_destaque')] },
+      cor_cartao: { ic: '🃏', rot: 'Cor do cartão', ch: [k('cor_cartao')] },
+      cor_fundo: { ic: '🟦', rot: 'Cor do fundo', ch: [k('cor_fundo'), k('cor_fundo_fim')] },
+      escala: { ic: '🔠', rot: 'Tamanho', ch: [k('escala')] },
+      espaco: { ic: '↕️', rot: 'Espaço em volta', ch: [k('espaco')] },
+      cantos: { ic: '⬜', rot: 'Cantos', ch: [k('cantos')] },
+      sombra: { ic: '🌫️', rot: 'Sombra', ch: [k('sombra')] },
+      imagem: { ic: '🖼️', rot: 'Imagem de fundo', ch: [k('imagem_fundo'), k('fundo_veu')] },
+      div_forma: { ic: '〰️', rot: 'Forma', ch: [k('divisoria_base_forma')] },
+      div_altura: { ic: '📏', rot: 'Altura', ch: [k('divisoria_base_altura')] },
+      div_esp: { ic: '🔁', rot: 'Lado da curva', ch: [k('divisoria_base_espelhar')] },
+    };
+  };
+  let ed2Caixa = null, ed2Desc = null, ed2Intervalo = null;
+  function ed2Achar(desc) { return desc && desc.chaveAchado ? document.querySelector('#ed2-form [data-chave="' + desc.chaveAchado + '"]') : null; }
+  function ed2IrParaCampo(achado) {
+    const form = document.getElementById('ed2-form');
+    const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba')), paineis = Array.from(form.querySelectorAll('.etapa-painel'));
+    const k = paineis.indexOf(achado.closest('.etapa-painel'));
+    if (k >= 0 && abas[k]) abas[k].click();
+    const caixa = achado.closest('.campo, .rico, .form-linha, .campo-cond') || achado.parentElement;
+    setTimeout(() => {
+      (caixa || achado).scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (caixa) { caixa.classList.remove('ed2-flash'); void caixa.offsetWidth; caixa.classList.add('ed2-flash'); }
+      const foco = achado.type === 'hidden' ? (caixa && caixa.querySelector('[contenteditable], input:not([type=hidden]), textarea')) : achado;
+      if (foco && foco.focus) { try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); } }
+    }, 60);
+  }
+  function ed2FecharCaixa() {
+    const c = document.getElementById('ed2-caixa'); if (c) c.innerHTML = '';
+    ed2Caixa = null; Object.keys(previaExtra).forEach((x) => delete previaExtra[x]);
+  }
+  function ed2LerCaixa(fs) {
+    const o = {};
+    fs.querySelectorAll('[data-chave]').forEach((e) => { o[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value; });
+    return o;
+  }
+  function ed2AbrirCaixa(desc, p) {
+    ed2FecharCaixa();
+    const g = desc.g;
+    const campos = p.ch.map((k) => g.campos.find((c) => c.chave === k)).filter(Boolean).map((c) => ({ ...c, se: null, etapa: undefined, avancada: false }));
+    if (!campos.length) { toast('Este ajuste não existe neste módulo.'); return; }
+    const fs = h('fieldset');
+    campos.forEach((c) => renderCampoConteudo(fs, c));
+    const estado = h('span', { class: 'estado', text: 'Sem alterações' });
+    const msgDiv = h('div', { class: 'msg' });
+    const sal = h('button', { type: 'button', class: 'action', text: 'Salvar' });
+    const can = btn('Cancelar', () => { ed2FecharCaixa(); ed2Atualizar(); ed2MostrarBarra(desc); }, 'fantasma');
+    const caixa = h('div', { class: 'ed2-caixa-box', role: 'group', 'aria-label': p.rot }, h('div', { class: 'ed2-caixa-tit' }, h('b', { text: p.ic + ' ' + p.rot }), h('span', { text: desc.rotulo })), fs, msgDiv, h('div', { class: 'ed2-caixa-acoes' }, estado, can, sal));
+    document.getElementById('ed2-caixa').appendChild(caixa);
+    ed2Caixa = { desc, p, fs, sal, mexeu: false };
+    const vivo = () => { ed2Caixa.mexeu = true; estado.textContent = 'Alterações não salvas'; estado.classList.add('sujo'); Object.assign(previaExtra, ed2LerCaixa(fs)); ed2Atualizar(); };
+    fs.addEventListener('input', vivo); fs.addEventListener('change', vivo);
+    sal.addEventListener('click', async () => {
+      const payload = ed2LerCaixa(fs);
+      sal.disabled = true; sal.textContent = 'Salvando…';
+      const d = await api('/api/admin/conteudo', 'POST', payload);
+      sal.disabled = false; sal.textContent = 'Salvar';
+      if (d.erro) { msgDiv.textContent = d.rede ? 'Sem conexão agora. Suas alterações continuam aqui; tente salvar de novo quando a internet voltar.' : d.erro; msgDiv.className = 'msg err'; return; }
+      Object.assign(ctDados, payload);
+      Object.keys(payload).forEach((k) => document.querySelectorAll('#ed2-form [data-chave="' + k + '"]').forEach((e) => { if (e.type === 'checkbox') e.checked = payload[k] === '1'; else e.value = payload[k]; }));
+      ed2FecharCaixa();
+      toast('Salvo. O site já está atualizado.');
+      agendarCompartilhar();
+      if (!sujo) await ed2Abrir(ed2Sel, true); else ed2Atualizar();
+      ed2MostrarBarra(desc);
+    });
+    caixa.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  function ed2ParamsDoElemento(desc) {
+    const g = desc.g, mod = ed2Mod(g), P = mod ? ED2_PARAMS(mod) : {};
+    const tem = (id) => P[id] && P[id].ch.some((k) => g.campos.some((c) => c.chave === k));
+    const L = [];
+    const add = (id) => { if (tem(id)) L.push({ ...P[id], id }); };
+    if (desc.tipo === 'texto' || desc.tipo === 'foto') {
+      L.push({ id: 'texto', ic: desc.tipo === 'foto' ? '📷' : '✏️', rot: desc.tipo === 'foto' ? 'Trocar foto' : 'Texto', abre: () => { const a = ed2Achar(desc); if (a) ed2IrParaCampo(a); else toast('Não achei o campo deste pedaço. Use as etapas abaixo.'); }, desligado: !desc.chaveAchado });
+      if (desc.capaEl) L.push({ id: 'capa_el', ic: '🎚️', rot: 'Posição, tamanho, cor e alinhamento', abre: () => {
+        const form = document.getElementById('ed2-form'), chips = form.querySelector('.af-chips');
+        if (!chips) { toast('O ajuste fino da capa fica na etapa Textos.'); return; }
+        const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba')), paineis = Array.from(form.querySelectorAll('.etapa-painel'));
+        const k = paineis.indexOf(chips.closest('.etapa-painel')); if (k >= 0 && abas[k]) abas[k].click();
+        const b = chips.querySelector('[data-el="' + desc.capaEl + '"]'); if (b) b.click();
+        setTimeout(() => { chips.scrollIntoView({ block: 'center', behavior: 'smooth' }); chips.classList.remove('ed2-flash'); void chips.offsetWidth; chips.classList.add('ed2-flash'); }, 80);
+      } });
+      if (desc.tipo === 'texto' && !desc.capaEl) { ['cor_titulo', 'cor_texto', 'cor_destaque', 'escala', 'espaco'].forEach(add); }
+      if (desc.tipo === 'foto') { ['cantos', 'sombra'].forEach(add); }
+      if (desc.tipo === 'texto' && !desc.capaEl) {
+        [['posicao', '🧭', 'Posição'], ['distancia', '↔️', 'Distância até o próximo'], ['altura_el', '📐', 'Altura']].forEach(([id, ic, rot]) => L.push({ id, ic, rot, desligado: true, dica: 'Ainda não disponível: o convite não guarda este ajuste para cada elemento.' }));
+      }
+    } else if (desc.tipo === 'fundo') {
+      ['cor_fundo', 'imagem', 'cor_cartao', 'cor_destaque', 'espaco', 'cantos', 'sombra', 'escala'].forEach(add);
+      if (g.titulo === 'Capa') L.push({ id: 'capa_midia', ic: '🖼️', rot: 'Imagem ou vídeo da capa', abre: () => { const form = document.getElementById('ed2-form'); const a = form.querySelector('.etapas-abas .etapa-aba'); if (a) a.click(); } });
+    } else if (desc.tipo === 'divisoria') {
+      ['div_forma', 'div_altura', 'div_esp'].forEach(add);
+    }
+    return L;
+  }
+  function ed2MostrarBarra(desc) {
+    ed2Desc = desc;
+    const box = document.getElementById('ed2-barra-el'); if (!box) return;
+    box.innerHTML = '';
+    const sal = h('button', { type: 'button', class: 'action', id: 'ed2-salvar', text: 'Tudo salvo', disabled: true, onclick: ed2SalvarAtivo });
+    box.appendChild(h('div', { class: 'ed2-barra-topo' }, h('div', { class: 'tt' }, h('b', { text: desc ? desc.rotulo : 'Toque em um pedaço do convite' }), h('span', { text: desc ? 'O que dá para mudar nele:' : 'Os ícones do que dá para mudar aparecem aqui.' })), sal));
+    if (desc) {
+      const grade = h('div', { class: 'ed2-params' });
+      ed2ParamsDoElemento(desc).forEach((p) => {
+        const b = h('button', { type: 'button', disabled: !!p.desligado, title: p.dica || p.rot, 'aria-pressed': String(!!(ed2Caixa && ed2Caixa.p.id === p.id)) }, h('span', { class: 'ic', text: p.ic, 'aria-hidden': 'true' }), h('span', { text: p.rot }));
+        b.addEventListener('click', () => { if (p.abre) { ed2FecharCaixa(); p.abre(); } else ed2AbrirCaixa(desc, p); ed2MostrarBarraSeguro(desc); });
+        grade.appendChild(b);
+      });
+      box.appendChild(grade);
+    }
+    ed2SincronizarSalvar();
+  }
+  const ed2MostrarBarraSeguro = (desc) => setTimeout(() => { if (ed2Desc === desc) { const b = document.getElementById('ed2-barra-el'); if (b) { const marcados = ed2Caixa ? ed2Caixa.p.id : ''; b.querySelectorAll('.ed2-params button').forEach((x) => x.setAttribute('aria-pressed', String(!!marcados && x.querySelector('span:last-child').textContent === ed2Caixa.p.rot))); } } }, 0);
+  function ed2SalvarAtivo() {
+    if (ed2Caixa) { ed2Caixa.sal.click(); return; }
+    const b = document.querySelector('#ed2-form .savebar button.action'); if (b) b.click();
+  }
+  function ed2SincronizarSalvar() {
+    const b = document.getElementById('ed2-salvar'); if (!b) return;
+    const sujoAgora = ed2Caixa ? ed2Caixa.mexeu : !!(sujo && (sujo.onde === 'conteudo' || sujo.onde === 'aparencia'));
+    b.disabled = !sujoAgora;
+    b.textContent = sujoAgora ? 'Salvar alterações' : 'Tudo salvo';
+  }
   async function ed2Clique(m) {
     if (ed2Sel.tipo === 'visual') {
-      const alvo = m.fundo ? 'cores' : (/^(h[1-6]|p|li|span|label|figcaption)$/.test(m.tag || '') ? 'tipografia' : 'formas');
+      const alvo = m.alvo === 'divisoria' ? 'formas' : (m.alvo === 'fundo' || m.fundo) ? 'cores' : (/^(h[1-6]|p|li|span|label|figcaption)$/.test(m.tag || '') ? 'tipografia' : 'formas');
       if (ed2Chip !== alvo) await ed2Abrir({ tipo: 'visual', chip: alvo });
       return;
     }
     const i = ED2_GRUPOS.findIndex((g) => g.ancora && g.ancora === m.secao);
     if (i < 0) return;
     if (i !== ed2Sel.i) { await ed2Abrir({ tipo: 'grupo', i }); if (ed2Sel.i !== i) return; }
+    const g = ED2_GRUPOS[i];
+    if (m.alvo === 'fundo') { ed2MostrarBarra({ g, tipo: 'fundo', rotulo: 'Fundo de ' + g.titulo }); return; }
+    if (m.alvo === 'divisoria') { ed2MostrarBarra({ g, tipo: 'divisoria', rotulo: 'Divisória na base de ' + g.titulo }); return; }
     const form = document.getElementById('ed2-form');
     const campos = Array.from(form.querySelectorAll('input[data-chave], textarea[data-chave]')).filter((e) => e.type !== 'checkbox' && e.type !== 'radio' && !/^#?[0-9a-f]{3,8}$/i.test(e.value));
     let achado = null;
-    if (m.img) {
+    // 1) o próprio convite diz qual campo alimenta o pedaço tocado
+    for (const k of (m.chaves || [])) { const e = form.querySelector('[data-chave="' + k + '"]'); if (e) { achado = e; break; } }
+    if (!achado && m.img) {
       const nome = String(m.img).split('?')[0].split('/').pop();
       achado = campos.find((e) => e.value && nome && e.value.indexOf(nome) !== -1) || null;
     }
+    // 2) senão, procura o campo com o mesmo texto
     for (const t of (m.textos || [])) {
       if (achado) break;
       const x = ed2Plano(t); if (!x) continue;
       achado = campos.find((e) => ed2Plano(e.value) === x) || null;
       if (!achado) achado = campos.filter((e) => { const v = ed2Plano(e.value); return v.length >= 3 && (x.indexOf(v) !== -1 || v.indexOf(x) !== -1); }).sort((a, b) => ed2Plano(b.value).length - ed2Plano(a.value).length)[0] || null;
     }
-    const abas = Array.from(form.querySelectorAll('.etapas-abas .etapa-aba'));
-    const paineis = Array.from(form.querySelectorAll('.etapa-painel'));
-    if (achado) {
-      const painel = achado.closest('.etapa-painel');
-      const k = paineis.indexOf(painel);
-      if (k >= 0 && abas[k]) abas[k].click();
-      const caixa = achado.closest('.campo, .rico, .form-linha, .campo-cond') || achado.parentElement;
-      setTimeout(() => {
-        (caixa || achado).scrollIntoView({ block: 'center', behavior: 'smooth' });
-        if (caixa) { caixa.classList.remove('ed2-flash'); void caixa.offsetWidth; caixa.classList.add('ed2-flash'); }
-        const foco = achado.type === 'hidden' ? (caixa && caixa.querySelector('[contenteditable], input:not([type=hidden]), textarea')) : achado;
-        if (foco && foco.focus) { try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); } }
-      }, 60);
-      return;
-    }
-    // fundo da seção: abre a etapa de cores do módulo; o resto, a primeira etapa
-    if (m.fundo) {
-      const k = abas.findIndex((b) => /cores|visual|apar/i.test(b.textContent));
-      if (k >= 0) { abas[k].click(); return; }
-    }
-    toast('Esse pedaço não tem um campo próprio. Use as etapas acima do formulário para encontrar o que mudar.');
+    const trecho = ((m.textos || [])[0] || '').slice(0, 42);
+    ed2MostrarBarra({ g, tipo: m.img ? 'foto' : 'texto', tag: m.tag, capaEl: m.capaEl || '', chaveAchado: achado ? achado.dataset.chave : '', rotulo: m.img ? 'Foto em ' + g.titulo : '“' + trecho + (((m.textos || [])[0] || '').length > 42 ? '…' : '') + '”' });
   }
   window.addEventListener('message', (ev) => {
     if (ev.origin !== location.origin || !ev.data || ev.data.tipo !== 'previa-clique' || abaAtual !== 'editor') return;
