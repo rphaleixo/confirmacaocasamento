@@ -444,6 +444,12 @@
   /* ---------- CONFIRMAÇÃO (RSVP) ---------- */
   .rsvp-card{background:var(--cream);border:1px solid var(--blush-deep);border-radius:20px;padding:30px 22px;box-shadow:var(--shadow-soft);}
   .rsvp-card > p{font-size:14px;color:var(--ink-soft);margin:0 0 16px;text-align:center;}
+  .rsvp-conf-tit{display:block;font-weight:600;margin-bottom:6px;}
+  .rsvp-previa{list-style:none;margin:6px 0 8px;padding:0;text-align:left;}
+  .rsvp-previa li{display:flex;justify-content:space-between;gap:12px;padding:7px 2px;border-bottom:1px solid color-mix(in srgb, var(--wine-soft) 22%, transparent);font-size:14px;}
+  .rsvp-previa li b{font-weight:600;white-space:nowrap;}
+  .rsvp-previa li.sim b{color:#1D7348;} .rsvp-previa li.nao b{color:var(--ink-soft);} .rsvp-previa li.talvez b{color:#8F5600;}
+  .rsvp-conf-aviso{display:block;margin:4px 0 2px;font-size:13px;}
   .rsvp-contato{display:flex;justify-content:center;margin:12px 0 4px;}
   .rsvp-contato .pill{width:auto;}
   .rsvp-prazo{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.5px;color:var(--wine-soft);margin:0 auto 22px;padding:7px 14px;border-radius:999px;background:color-mix(in srgb, var(--blush) 70%, var(--cream));width:max-content;max-width:100%;text-align:center;}
@@ -785,7 +791,7 @@
       <div id="rsvpCarregando" hidden style="text-align:center;font-size:13.5px;color:var(--ink-soft);padding:12px 0;">Abrindo seu convite…</div>
       <div id="rsvpErro" class="rsvp-aviso erro" hidden><span class="ic" aria-hidden="true">!</span><span id="rsvpErroTexto"></span></div>
 
-      <div class="rsvp-contato" id="rsvpContatoWrap" hidden><a class="pill outline small" id="rsvpContato" target="_blank" rel="noopener">Pedir uma alteração pelo WhatsApp</a></div>
+      <div class="rsvp-contato" id="rsvpContatoWrap" hidden><a class="pill outline small" id="rsvpPedirAlteracao" target="_blank" rel="noopener">Pedir uma alteração pelo WhatsApp</a></div>
 
       <form id="rsvpForm" hidden novalidate>
         <div class="rsvp-aviso" id="rsvpJaRespondeu" hidden><span class="ic" aria-hidden="true">✓</span><span>Já recebemos uma resposta deste convite. Se algo mudou, é só ajustar abaixo e enviar de novo.</span></div>
@@ -802,17 +808,17 @@
         <input class="rsvp-input" id="rsvpContato" type="tel" inputmode="tel" placeholder="(21) 90000-0000" autocomplete="tel" required>
         <div class="campo-erro" id="rsvpContatoErro" hidden>Confira o número: precisa ter DDD e 8 ou 9 dígitos.</div>
 
-        <div class="rsvp-ninguem" id="rsvpNinguem" hidden>
+        <div class="rsvp-ninguem" id="rsvpNinguem" role="alertdialog" aria-labelledby="rsvpAvisoTexto" hidden>
           <span id="rsvpAvisoTexto">Você não marcou ninguém. Vamos avisar que o grupo <b>não poderá ir</b>. Está certo?</span>
           <div class="acoes">
-            <button type="button" class="pill outline small" id="rsvpNinguemVoltar">Voltar e revisar</button>
-            <button type="button" class="pill solid small" id="rsvpNinguemEnviar">Sim, enviar</button>
+            <button type="button" class="pill outline small" id="rsvpNinguemVoltar">Voltar e corrigir</button>
+            <button type="button" class="pill solid small" id="rsvpNinguemEnviar">Está certo, enviar</button>
           </div>
         </div>
         <button type="submit" class="pill solid" id="rsvpSubmitBtn" style="margin-top:22px;">Confirmar Presença →</button>
       </form>
 
-      <div id="rsvpSucesso" class="rsvp-sucesso" hidden>
+      <div id="rsvpSucesso" class="rsvp-sucesso" role="status" aria-live="polite" hidden>
         <div class="selo" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
         <p class="rsvp-sucesso-titulo" id="rsvpSucessoTexto">Presença confirmada! Obrigado 💛</p>
         <ul class="rsvp-resumo" id="rsvpResumo"></ul>
@@ -1873,7 +1879,7 @@
       const n = String(t('rsvp.contato_whatsapp', '')).replace(/\D/g, '');
       if (n.length < 10) return;
       const tel = n.length <= 11 ? '55' + n : n;
-      $('rsvpContato').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent('Oi! Sou do grupo ' + (grupo || '') + ' e preciso alterar a minha confirmação de presença.');
+      $('rsvpPedirAlteracao').href = 'https://wa.me/' + tel + '?text=' + encodeURIComponent('Oi! Sou do grupo ' + (grupo || '') + ' e preciso alterar a minha confirmação de presença.');
       $('rsvpContatoWrap').hidden = false;
     }
     function mostrarErro(texto) { $('rsvpErroTexto').textContent = texto; erroBox.hidden = false; }
@@ -2003,7 +2009,10 @@
         .then(function (d) {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
           if (d && d.erro) { esconderAviso(); mostrarErro(d.erro); return; }
+          esconderAviso();
           mostrarSucesso(false);
+          avisar(pessoas.some(function (p) { return p.resposta === 'sim'; }) ? 'Presença confirmada. Obrigado!' : 'Resposta enviada. Obrigado por avisar!');
+          const tit = $('rsvpSucesso').querySelector('[class*="titulo"]'); if (tit) { tit.setAttribute('tabindex', '-1'); setTimeout(function () { tit.focus({ preventScroll: true }); }, 400); }
         })
         .catch(function () {
           btns.forEach(function (b) { b.disabled = false; }); $('rsvpSubmitBtn').textContent = rotulo;
@@ -2064,21 +2073,22 @@
         const primeiro = lista.querySelector('.sem-resposta'); if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
+      // Toda resposta passa por uma conferência antes de ser enviada (vai, não vai ou não sei): o convidado vê o que marcou e confirma
       const sim = pessoas.filter(function (p) { return p.resposta === 'sim'; });
       const individual = contexto.escopo === 'individual';
+      const resumoPrevia = '<ul class="rsvp-previa">' + pessoas.map(function (p) { return '<li class="' + (p.resposta === 'nao' ? 'nao' : p.resposta === 'nao_sei' ? 'talvez' : 'sim') + '"><span>' + escHtml(p.nome) + '</span><b>' + escHtml(ROTULO[p.resposta] || '') + '</b></li>'; }).join('') + '</ul>';
+      let aviso;
       if (!sim.length) {
         const alguemTalvez = pessoas.some(function (p) { return p.resposta === 'nao_sei'; });
-        pedirConfirmacao(alguemTalvez
-          ? 'Por enquanto ' + (individual ? 'você ainda não está confirmado(a)' : 'ninguém está confirmado') + ' (há respostas "Não sei"). Tudo bem enviar assim? Dá para mudar' + (escHtml(ateQuando()) || ' depois') + '.'
-          : 'Vamos avisar que ' + (individual ? 'você <b>não poderá ir</b>' : 'o grupo <b>não poderá ir</b>') + '. Está certo?');
-        return;
+        aviso = alguemTalvez
+          ? 'Por enquanto ' + (individual ? 'você ainda não está confirmado(a)' : 'ninguém está confirmado') + ' (há respostas "Não sei"). Dá para mudar' + (escHtml(ateQuando()) || ' depois') + '.'
+          : 'Vamos avisar que ' + (individual ? 'você <b>não poderá ir</b>' : 'o grupo <b>não poderá ir</b>') + '.';
+      } else if (contexto.adultosNoGrupo > 0 && !(sim.some(function (p) { return p.tipo !== 'crianca'; }) || contexto.outrosAdultosSim > 0)) {
+        aviso = 'Só ' + (sim.length > 1 ? 'crianças estão confirmadas' : 'uma criança está confirmada') + ': <b>nenhum adulto do grupo vai</b>.';
+      } else {
+        aviso = pessoas.some(function (p) { return p.resposta === 'nao_sei'; }) ? 'Quem está com "Não sei" pode atualizar a resposta' + (escHtml(ateQuando()) || ' depois') + '.' : '';
       }
-      const adultoSim = sim.some(function (p) { return p.tipo !== 'crianca'; }) || contexto.outrosAdultosSim > 0;
-      if (contexto.adultosNoGrupo > 0 && !adultoSim) {
-        pedirConfirmacao('Só ' + (sim.length > 1 ? 'crianças estão confirmadas' : 'uma criança está confirmada') + ': <b>nenhum adulto do grupo vai</b>. Está certo?');
-        return;
-      }
-      enviar();
+      pedirConfirmacao('<span class="rsvp-conf-tit">Confira sua resposta antes de enviar</span>' + resumoPrevia + (aviso ? '<span class="rsvp-conf-aviso">' + aviso + '</span>' : ''));
     });
     $('rsvpNinguemVoltar').addEventListener('click', function () { esconderAviso(); const p = lista.querySelector('input'); if (p) p.focus(); });
     $('rsvpNinguemEnviar').addEventListener('click', function () { if (validarCampos(true)) enviar(); });
