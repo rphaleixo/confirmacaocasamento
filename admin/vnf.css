@@ -265,3 +265,41 @@ html[data-tema="escuro"] .opcao-tipo,html[data-tema="escuro"] .campo-url,html[da
 html[data-tema="escuro"] .lista-escolha button{background:var(--vnf-sup-1);color:var(--vnf-texto);}
 html[data-tema="escuro"] .faixa-rascunho{background:var(--vnf-sup-2);color:var(--vnf-texto);border-bottom-color:var(--vnf-linha);}
 html[data-tema="escuro"] input[type=color]{background:var(--vnf-sup-1);}
+
+/* =====================================================================
+   Rodada 2: todas as abas (alvos de 44px e tema escuro nos blocos antigos)
+   ===================================================================== */
+.btn,.btn.sm,.btn.xs,button.action,a.btn,
+.filtros button,.rs-vista button,.rs-seg button,.ct-sub button,.midia-tabs button,.ct-item,
+.rico-btn,.rico-tamanho,.etapa-nav button{min-height:44px;}
+select,input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],input[type=search],input[type=email],input[type=url],input[type=password]{min-height:44px;}
+.rico-btn{min-width:44px;}
+.rico-amostra,.cl-dial .rico-amostra{width:44px;height:44px;}
+.rs-linha .gr{display:flex;align-items:center;min-height:44px;}
+.ct-item{display:flex;align-items:center;}
+.btn.sm,.btn.xs{display:inline-flex;align-items:center;justify-content:center;}
+
+/* tema escuro: blocos com fundo claro fixo */
+html[data-tema="escuro"] .savebar{background:color-mix(in srgb,var(--vnf-sup-1) 96%,transparent);}
+html[data-tema="escuro"] .savebar .estado{color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .ct-item .pill.off,html[data-tema="escuro"] .pill.off{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .std-estado{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .std-estado i{background:var(--vnf-texto-fraco);}
+html[data-tema="escuro"] .bloco-texto.off .bloco-cab,html[data-tema="escuro"] .bloco-cab{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .bloco-cab .rot{color:var(--vnf-texto);}
+html[data-tema="escuro"] .bloco-cab .rot .sub,html[data-tema="escuro"] .bloco-estado{color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .previa-carregando{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .lugar-mapa{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .rs-linha:hover:not(.cab){background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .fila-bolha{background:#1F4D3A;border-color:#2C6A50;color:#E9EDF3;}
+html[data-tema="escuro"] .recado-linha.recado-pendente{background:var(--vnf-sup-2);border-color:var(--vnf-aviso);}
+html[data-tema="escuro"] .cor-hex[aria-invalid=true]{background:color-mix(in srgb,var(--vnf-erro) 18%,var(--vnf-sup-1));}
+#rs-ferramentas .rs-vista button{min-height:44px !important;} .rs-vista button{min-height:44px;}
+.cor-botao{min-height:44px;}
+html[data-tema="escuro"] .cor-botao{background:var(--vnf-sup-1);color:var(--vnf-texto);}
+.rs-acoes .btn,.btn.sm,.btn.xs{min-width:44px;}
+
+/* Plataforma: grade de templates sem estourar em 320px; chips clicáveis com alvo de 44px */
+#tp-lista{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));}
+.tp-card{min-width:0;} .tp-card h4{flex-wrap:wrap;overflow-wrap:anywhere;}
+button.chip{min-height:44px;}
