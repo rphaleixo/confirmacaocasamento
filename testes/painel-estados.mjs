@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
 
 const BASE = process.argv[2] || 'http://localhost:8799';
 const SLUG = process.argv[3] || 'casamento';
+if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(BASE)) { console.error('Recusado: este teste só roda contra localhost.'); process.exit(2); }
 const USER = process.env.ADMIN_USER || 'mestre', PASS = process.env.ADMIN_PASSWORD || 'senha123';
 const AUTH = 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64');
 
@@ -124,6 +125,21 @@ try {
   await page.waitForTimeout(1500);
   verificar('P9 clique duplo em "Publicar agora" envia uma só vez', 1, envios);
   verificar('P9b o convite aparece como publicado', true, !!(await api('GET', '/api/admin/publicacao')).publicado);
+
+  // ---------- fila de envio pelo WhatsApp: clique duplo não abre a mesma pessoa duas vezes nem pula a próxima ----------
+  await ctx.addInitScript(() => { window.__abertas = []; const original = window.open; window.open = function (u) { if (/whatsapp/.test(String(u))) { window.__abertas.push(String(u)); return { focus() {} }; } return original.apply(window, arguments); }; });
+  await page.goto(BASE + '/admin/?e=' + SLUG + '#convidados');
+  await page.reload(); // o script de preparação acima só vale depois de uma carga completa da página
+  await page.waitForSelector('#rs-lembrar', { state: 'attached' }); await page.waitForTimeout(1500);
+  await page.evaluate(() => document.getElementById('rs-lembrar').click());
+  await page.getByRole('button', { name: /Iniciar envio/ }).click();
+  await page.waitForTimeout(400);
+  await page.getByRole('button', { name: /Abrir no WhatsApp e ir para o próximo/ }).dblclick();
+  await page.waitForTimeout(1500);
+  const abertas = await page.evaluate(() => window.__abertas.length);
+  const cabecalho = (await page.locator('.hint', { hasText: /^Mensagem \d+ de/ }).first().textContent().catch(() => '')) || '';
+  verificar('P10 clique duplo na fila de WhatsApp abre o WhatsApp uma só vez', 1, abertas);
+  verificar('P10b a fila avançou exatamente um item', true, /^Mensagem 2 de \d+ · 1 já tratadas/.test(cabecalho));
   await ctx.close();
 } catch (e) {
   resultados.push({ cenario: 'ERRO NO TESTE', esperado: 'sem exceção', obtido: String((e && e.message) || e).split('\n')[0], ok: false });

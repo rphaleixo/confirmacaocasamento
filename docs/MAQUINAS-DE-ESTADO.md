@@ -34,9 +34,9 @@ Profundidade: "lida" quer dizer que o código da máquina foi lido por inteiro; 
 | 14 | Recado | pendente, aprovado, excluído | manter | parcial |
 | 15 | Removidos recentemente | ativo, na lixeira (30 dias), restaurado, apagado de vez | manter | lida |
 | 16 | Preparação e assistente do convite | checklist por tarefa (pendente, feita), assistente visto ou não | manter | parcial |
-| 17 | Fila de envio por WhatsApp (botão "Enviar em fila") | não analisada em profundidade | pendente | não lida |
-| 18 | Lembranças (situação por pessoa) | não analisada em profundidade | pendente | não lida |
-| 19 | Criação de evento e acesso do anfitrião (convite de uso único, código de troca) | não analisada em profundidade | pendente | parcial |
+| 17 | Fila de envio por WhatsApp (botão "Enviar em fila") | fases: config, envio, fim, fechada; cada item: pendente, enviado, pulado | corrigir | lida |
+| 18 | Lembranças (situação por pessoa e lembrança) | automática, planejada, separada, entregue, não recebe (e "fora do critério", derivada) | corrigir | lida |
+| 19 | Criação de evento e acesso do anfitrião | convite de acesso: pendente, usado, vencido; código de troca: criado, usado, vencido; acesso do evento: sem acesso, com senha, com Google | corrigir | lida (exceto a conferência do token do Google) |
 
 ### 1. Situação do grupo
 
@@ -117,16 +117,31 @@ carregando → (sem código | erro | prazo encerrado) ou formulário → conferi
 
 Lidas só nos pontos de entrada e saída. Recado: pendente → aprovado ou excluído, só aprovados são públicos. Removidos: ficam 30 dias e podem ser restaurados (o código do grupo muda se foi tomado por outro). Preparação: o checklist é calculado a partir do conteúdo; o assistente abre uma vez por evento no primeiro acesso.
 
-### 17 a 19
+### 17. Fila de envio por WhatsApp
 
-Não foram analisadas em profundidade (fila de envio por WhatsApp; Lembranças; criação de evento e convites de acesso). Estão listadas para que a próxima análise comece por elas.
+Fases: config → envio → fim, e "fechada" a qualquer momento. Cada item da fila: pendente → enviado (ao abrir o WhatsApp) ou pulado. "Já recebeu nas últimas 24 horas" fica guardado no aparelho e tira a pessoa da próxima fila. Corrigido: depois de abrir o WhatsApp há uma pausa de meio segundo antes de ir para o próximo; um clique duplo nesse intervalo abria a mesma pessoa duas vezes e fazia a fila pular o próximo. Agora o clique repetido (no botão principal, em Voltar, em Pular ou na lista) é ignorado durante a pausa, e fechar a janela cancela o avanço pendente.
+
+### 18. Lembranças
+
+Para cada par (lembrança, pessoa) existe uma linha só quando há algo marcado. Estados: automática (sem linha, ou linha sem situação: o critério da lembrança decide "vai receber" ou "fora do critério"), planejada, separada, entregue e não recebe. O critério depende da resposta da pessoa, então "vai receber" muda sozinho quando a resposta muda; uma situação marcada pelo anfitrião não muda. Voltar ao automático e limpar a informação e o comentário apaga a linha. Corrigido: a gravação lia a linha, mudava e escrevia de volta; duas alterações simultâneas na mesma pessoa (por exemplo, a situação e a informação) se sobrescreviam e uma se perdia. Agora cada campo é gravado direto no banco, só se veio no pedido.
+
+### 19. Criação de evento e acesso do anfitrião
+
+Acesso do evento: sem acesso → com senha e/ou com Google → sem acesso (revogar apaga senha, contas Google, sessões abertas, convites não usados e códigos de troca).
+
+Convite de primeiro acesso: pendente → usado | vencido (7 dias). O código de troca (leva o login de vemnafesta.com para o endereço do evento) vale 2 minutos e uma vez. Corrigido: o convite era usado em dois passos (verificar, depois marcar como usado), então duas pessoas com o mesmo convite ao mesmo tempo passavam as duas e a segunda sobrescrevia a senha da primeira. Agora a ordem é validar os dados, reivindicar o convite (uma só instrução, que só vale para o primeiro pedido) e só então gravar o acesso; dados inválidos não gastam o convite. O código de troca passou a ser apagado e lido numa só instrução (RETURNING). Esse segundo ponto não foi reproduzido como defeito antes da mudança (o teste local passava), foi corrigido por construção.
+
+Criação de evento: o endereço (slug) é único; pedidos simultâneos para o mesmo endereço recebem um deles a mensagem de endereço repetido (testado localmente, sem defeito encontrado). A API não apaga eventos (só revoga o acesso do anfitrião).
+
+Não testado: a conferência do token do Google (precisa de uma conta e de um Client ID reais).
 
 ## Testes
 
 Todos usam só o Node (e o Playwright, para o painel no navegador).
 
 - `node --test testes/*.test.mjs`: regra da situação do grupo e da pessoa (sem servidor).
-- `node testes/api-estados.mjs [url] [slug]`: transições pela API real, com 13 cenários (precisa do servidor local; veja o README).
-- `PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/painel-estados.mjs [url] [slug]`: situação no painel e no CSV, aviso de alterações não salvas, edição durante o salvamento e clique duplo em publicar.
+- `node testes/api-estados.mjs [url] [slug]`: transições de grupo e respostas pela API real (precisa do servidor local; veja o README).
+- `node testes/api-acesso.mjs [url] [slug]`: convite e código de troca (inclusive usados ao mesmo tempo), revogação, criação de evento e lembranças. Cria eventos de teste, por isso só roda em localhost.
+- `PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/painel-estados.mjs [url] [slug]`: situação no painel e no CSV, aviso de alterações não salvas, edição durante o salvamento e clique duplo em publicar e na fila de WhatsApp.
 
 O banco local novo precisa da migração 014 já registrada (limitação conhecida do banco novo: a migração tenta criar uma coluna que o `schema.sql` já cria). O README explica como subir o servidor; se o servidor devolver erro 500 em banco novo, marque as migrações como aplicadas na tabela `_migracoes`.

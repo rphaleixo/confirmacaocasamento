@@ -8,6 +8,7 @@
 // Sai com código 1 se algum cenário falhar.
 const BASE = process.argv[2] || 'http://localhost:8799';
 const SLUG = process.argv[3] || 'casamento';
+if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(BASE)) { console.error('Recusado: este teste só roda contra localhost.'); process.exit(2); }
 const AUTH = 'Basic ' + Buffer.from((process.env.ADMIN_USER || 'mestre') + ':' + (process.env.ADMIN_PASSWORD || 'senha123')).toString('base64');
 
 async function chamar(metodo, caminho, corpo, comAuth = true) {

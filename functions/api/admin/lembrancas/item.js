@@ -28,22 +28,21 @@ export async function onRequestPost({ request, env }) {
   const permitidos = validos.map((r) => r.id);
   if (!permitidos.length) return jsonResponse({ erro: 'Convidado não encontrado.' }, 404);
 
-  const { results: atuais } = await env.DB
-    .prepare(`SELECT convidado_id, situacao, info, comentario FROM lembranca_itens WHERE lembranca_id = ? AND convidado_id IN (${permitidos.map(() => '?').join(',')})`)
-    .bind(lem.id, ...permitidos)
-    .all();
-  const porId = new Map(atuais.map((r) => [r.convidado_id, r]));
-
-  const comandos = permitidos.map((cid) => {
-    const at = porId.get(cid) || {};
-    const situacao = mudaSituacao ? (p.situacao === 'auto' ? null : p.situacao) : (at.situacao || null);
-    const info = mudaInfo ? texto(p.info, 80) : (at.info || '');
-    const comentario = mudaComentario ? texto(p.comentario, 500) : (at.comentario || '');
-    if (!situacao && !info && !comentario) return env.DB.prepare('DELETE FROM lembranca_itens WHERE lembranca_id = ? AND convidado_id = ?').bind(lem.id, cid);
-    return env.DB
-      .prepare("INSERT OR REPLACE INTO lembranca_itens (lembranca_id, convidado_id, evento_id, situacao, info, comentario, atualizado_em) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
-      .bind(lem.id, cid, evento.id, situacao, info || null, comentario || null);
-  });
+  // Cada campo é gravado só se veio no corpo, direto no banco (sem ler a linha antes): duas alterações simultâneas na mesma
+  // pessoa (uma muda a situação, outra a informação) não se sobrescrevem. Linhas que ficam sem nada são apagadas no fim.
+  const situacao = mudaSituacao ? (p.situacao === 'auto' ? null : p.situacao) : null;
+  const info = mudaInfo ? (texto(p.info, 80) || null) : null;
+  const comentario = mudaComentario ? (texto(p.comentario, 500) || null) : null;
+  const grava = env.DB.prepare(`INSERT INTO lembranca_itens (lembranca_id, convidado_id, evento_id, situacao, info, comentario, atualizado_em)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(lembranca_id, convidado_id) DO UPDATE SET
+        situacao = CASE WHEN ? THEN excluded.situacao ELSE lembranca_itens.situacao END,
+        info = CASE WHEN ? THEN excluded.info ELSE lembranca_itens.info END,
+        comentario = CASE WHEN ? THEN excluded.comentario ELSE lembranca_itens.comentario END,
+        atualizado_em = datetime('now')`);
+  const comandos = permitidos.map((cid) => grava.bind(lem.id, cid, evento.id, situacao, info, comentario, mudaSituacao ? 1 : 0, mudaInfo ? 1 : 0, mudaComentario ? 1 : 0));
+  comandos.push(env.DB.prepare(`DELETE FROM lembranca_itens WHERE lembranca_id = ? AND convidado_id IN (${permitidos.map(() => '?').join(',')})
+      AND situacao IS NULL AND COALESCE(info, '') = '' AND COALESCE(comentario, '') = ''`).bind(lem.id, ...permitidos));
   await env.DB.batch(comandos);
   return jsonResponse({ ok: true, alterados: permitidos.length });
 }

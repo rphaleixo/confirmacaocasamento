@@ -45,8 +45,12 @@ export async function buscarConviteAcesso(db, token) {
   return db.prepare("SELECT c.evento_id AS eventoId, e.slug, e.nome, e.tipo FROM convites_acesso c JOIN eventos e ON e.id = c.evento_id WHERE c.token_hash = ? AND c.usado_em IS NULL AND c.expira_em > datetime('now')")
     .bind(await hashDe('convite', String(token).toLowerCase())).first();
 }
+// Marca o convite como usado e diz se ESTE pedido foi quem o usou. A troca é uma só instrução (só muda se ainda não foi usado
+// e não venceu): se duas pessoas usam o mesmo convite ao mesmo tempo, só uma recebe true. Chame antes de gravar qualquer acesso.
 export async function usarConviteAcesso(db, token) {
-  await db.prepare("UPDATE convites_acesso SET usado_em = datetime('now') WHERE token_hash = ?").bind(await hashDe('convite', String(token).toLowerCase())).run();
+  const r = await db.prepare("UPDATE convites_acesso SET usado_em = datetime('now') WHERE token_hash = ? AND usado_em IS NULL AND expira_em > datetime('now')")
+    .bind(await hashDe('convite', String(token).toLowerCase())).run();
+  return !!(r.meta && r.meta.changes > 0);
 }
 
 // ---- código de troca (vale 2 minutos, uma vez): leva o login feito em vemnafesta.com para o subdomínio do evento ----
@@ -57,10 +61,11 @@ export async function criarCodigoTroca(db, { tipo, eventoId, email }) {
     .bind(await hashDe('troca', codigo), tipo, eventoId || null, email || null).run();
   return codigo;
 }
+// Gasta o código e devolve quem ele representa, ou null (inexistente, vencido ou já usado). Apagar e ler é uma só instrução,
+// então dois pedidos simultâneos com o mesmo código nunca recebem os dois a sessão.
 export async function consumirCodigoTroca(db, codigo) {
   if (!/^[a-f0-9]{64}$/i.test(String(codigo || ''))) return null;
   const h = await hashDe('troca', String(codigo).toLowerCase());
-  const linha = await db.prepare("SELECT tipo, evento_id AS eventoId, email FROM codigos_troca WHERE codigo_hash = ? AND expira_em > datetime('now')").bind(h).first();
-  await db.prepare('DELETE FROM codigos_troca WHERE codigo_hash = ?').bind(h).run();
-  return linha || null;
+  const { results } = await db.prepare("DELETE FROM codigos_troca WHERE codigo_hash = ? AND expira_em > datetime('now') RETURNING tipo, evento_id AS eventoId, email").bind(h).all();
+  return results[0] || null;
 }

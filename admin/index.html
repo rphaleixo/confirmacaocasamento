@@ -2690,6 +2690,10 @@
       fase: 'config', tipo: opc.tipoInicial || 'convite', porGrupo: !!opc.porGrupoPadrao, incluirRecentes: false, guardarLembrete: false,
       texto: '', itens: [], semTel: [], i: 0, estado: {},
     };
+    // Fases da fila: config → envio → fim (ou fechada, a qualquer momento). Cada item: pendente → enviado | pulado.
+    // "avancando" vale durante a pausa de meio segundo depois de abrir o WhatsApp: clique repetido (duplo ou em outro botão)
+    // ali reabriria a mesma pessoa e pularia o próximo da fila, então é ignorado.
+    let avancando = false;
     const modelo = (tipo) => (tipo === 'lembrete' ? (ultimoPainelDados.mensagemLembrete || LEMBRETE_PADRAO) : ultimoPainelDados.mensagemTemplate);
     st.texto = modelo(st.tipo);
     const montar = () => {
@@ -2770,19 +2774,21 @@
       st.itens.forEach((x, k) => {
         const marca = st.estado[k] === 'enviado' ? '✓' : st.estado[k] === 'pulado' ? '⏭' : k === st.i ? '●' : '○';
         const b = h('button', { type: 'button', class: k === st.i ? 'atual' : '', role: 'listitem' }, h('span', { class: 'st', text: marca }), x.nome, h('span', { class: 'gr', text: x.g.nome }));
-        b.addEventListener('click', () => { st.i = k; telaEnvio(); });
+        b.addEventListener('click', () => { if (avancando) return; st.i = k; telaEnvio(); });
         lista.appendChild(b);
       });
       corpo.appendChild(lista);
       const avancar = () => { const n = proximoPendente(st.i); if (n === -1) { st.fase = 'fim'; telaFim(); } else { st.i = n; telaEnvio(); } };
       montarRodape([
-        { rotulo: '← Voltar', esquerda: true, desativado: st.i === 0, fn: () => { st.i = Math.max(0, st.i - 1); telaEnvio(); } },
-        { rotulo: 'Pular', esquerda: true, fn: () => { st.estado[st.i] = st.estado[st.i] || 'pulado'; avancar(); } },
+        { rotulo: '← Voltar', esquerda: true, desativado: st.i === 0, fn: () => { if (avancando) return; st.i = Math.max(0, st.i - 1); telaEnvio(); } },
+        { rotulo: 'Pular', esquerda: true, fn: () => { if (avancando) return; st.estado[st.i] = st.estado[st.i] || 'pulado'; avancar(); } },
         { rotulo: 'Fechar', fn: fecharDialogo },
         { rotulo: 'Abrir no WhatsApp e ir para o próximo →', prim: true, fn: () => {
+          if (avancando) return;
           if (!abrirWhatsappDaFila(it, textoDe(it))) return;
+          avancando = true;
           st.estado[st.i] = 'enviado'; marcarEnviadoFila(it.chave);
-          setTimeout(avancar, 500);
+          setTimeout(() => { avancando = false; if (st.fase !== 'fechada') avancar(); }, 500);
         } },
       ]);
       foco();
@@ -2796,7 +2802,7 @@
         h('p', { style: 'text-align:center;color:var(--ink-soft);margin:0;', text: plural(env, 'mensagem aberta no WhatsApp', 'mensagens abertas no WhatsApp') + (pul ? ' · ' + plural(pul, 'pulada', 'puladas') : '') + '. Quem recebeu fica fora das próximas filas por 24 horas.' }));
       montarRodape([{ rotulo: 'Fechar', prim: true, fn: fecharDialogo }]);
     };
-    abrirDialogo({ titulo: opc.titulo || 'Enviar pelo WhatsApp', largura: '560px', aoFechar: () => { delete dlgEvento.dataset.fixo; carregarPainel(); } });
+    abrirDialogo({ titulo: opc.titulo || 'Enviar pelo WhatsApp', largura: '560px', aoFechar: () => { st.fase = 'fechada'; delete dlgEvento.dataset.fixo; carregarPainel(); } });
     telaConfig();
   }
 
