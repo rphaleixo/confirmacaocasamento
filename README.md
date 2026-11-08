@@ -30,7 +30,10 @@ Fora de vemnafesta.com (testes locais, workers.dev) o evento fica em `/e/nome/`.
 - `functions/`: rotas da API e roteamento por endereço (`_middleware.js`, `_enderecos.js`).
 - `formas.js`, `fontes.js`, `compartilhar.js`, `datas.js`, `ancoras.js`, `html-seguro.js`, `rotas.js`: partes compartilhadas.
 - `ferramentas/montar-site.mjs`: monta a pasta pública `.public` com só o que pode ser publicado.
+- `situacao.js`: regra única da situação de pessoas e grupos (usada pelo painel e pelo servidor).
 - `schema.sql`, `seed-conteudo.sql`, `seed.sql`: banco e dados de exemplo.
+- `testes/`: testes das regras e dos fluxos (como rodar: `docs/MAQUINAS-DE-ESTADO.md`).
+- `docs/MAQUINAS-DE-ESTADO.md`: os estados do sistema, o que muda cada um e onde mora cada regra.
 - `design/capturas/`: capturas das telas para consulta de design.
 - `ROADMAP.md`: ideias para depois.
 
