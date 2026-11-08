@@ -1,4 +1,5 @@
 import { buscarSessao } from './_sessao.js';
+import SITUACAO from '../situacao.js'; // regra única da situação do grupo (a mesma que o painel usa)
 
 // Helpers compartilhados pelas rotas de /functions/api. Prefixo "_" faz a Cloudflare Pages
 // ignorar este arquivo como rota — só é importado pelos outros.
@@ -107,21 +108,19 @@ export function nomeParaChamar(c) {
   return (trat ? trat + ' ' : '') + base;
 }
 
+// Grava a resposta de uma pessoa. "confirmado" é só uma cópia de "resposta === 'sim'" (as contagens antigas ainda leem
+// essa coluna); gravar sempre pelos dois juntos é o que mantém as duas iguais. resposta vazia = voltou a "sem resposta".
+export function gravarResposta(db, convidadoId, resposta) {
+  return db.prepare('UPDATE convidados SET resposta = ?, confirmado = ? WHERE id = ?').bind(resposta || null, resposta === 'sim' ? 1 : 0, Number(convidadoId));
+}
+
+// Recalcula grupos.status_confirmacao pela regra única de situacao.js (mesma do painel) e devolve o texto guardado.
+// Deve rodar sempre que muda algo que a regra lê: respostas, abertura do link, data de confirmação ou pessoas do grupo.
 export async function recalcularStatusGrupo(db, codigo) {
-  const { results } = await db
-    .prepare('SELECT confirmado FROM convidados WHERE codigo_grupo = ?')
-    .bind(codigo)
-    .all();
-  const total = results.length;
-  const confirmados = results.filter((r) => r.confirmado === 1).length;
-  const grupo = await db.prepare('SELECT status_abertura FROM grupos WHERE codigo = ?').bind(codigo).first();
-
-  let status;
-  if (total === 0) status = 'Pendente';
-  else if (confirmados === 0) status = grupo && grupo.status_abertura === 'Aberto' ? 'Aguardando resposta' : 'Pendente';
-  else if (confirmados === total) status = 'Confirmado';
-  else status = `Parcial (${confirmados}/${total})`;
-
+  const { results } = await db.prepare('SELECT resposta FROM convidados WHERE codigo_grupo = ?').bind(codigo).all();
+  const grupo = await db.prepare('SELECT status_abertura, data_confirmacao FROM grupos WHERE codigo = ?').bind(codigo).first();
+  const sit = SITUACAO.situacaoGrupo({ membros: results, dataConfirmacao: grupo && grupo.data_confirmacao, statusAbertura: grupo && grupo.status_abertura });
+  const status = SITUACAO.statusParaBanco(sit);
   await db.prepare('UPDATE grupos SET status_confirmacao = ? WHERE codigo = ?').bind(status, codigo).run();
   return status;
 }

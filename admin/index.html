@@ -17,6 +17,7 @@
 <script src="/compartilhar.js"></script>
 <script src="/ancoras.js"></script>
 <script src="/datas.js"></script>
+<script src="/situacao.js"></script>
 <script src="/html-seguro.js"></script>
 <style>
   /* Painel: ferramenta de trabalho em azul-marinho neutro. Topo fixo com menu, conteúdo em coluna de até 1120px. */
@@ -1921,7 +1922,22 @@
     if (forcar || tab !== abaAtual) abrirAba(tab);
     window.scrollTo({ top: 0 });
   }
-  window.addEventListener('hashchange', () => abrirHash(false));
+  // Trocar de aba por fora do menu (botão Voltar do navegador, endereço editado, link com #) também passa pelo aviso de
+  // "alterações não salvas": desfaz a troca, pergunta e, se a pessoa confirmar, segue para onde ela pediu.
+  window.addEventListener('hashchange', async () => {
+    const destino = location.hash.replace('#', '');
+    if (sujo && abaAtual && destino !== abaAtual) {
+      history.replaceState(null, '', '#' + abaAtual); // volta o endereço sem disparar outro hashchange
+      await navegar(destino);
+      return;
+    }
+    abrirHash(false);
+  });
+  // Fechar ou recarregar a página com alterações não salvas: o próprio navegador pergunta antes.
+  window.addEventListener('beforeunload', (ev) => {
+    if (!sujo && !(ed2Caixa && ed2Caixa.mexeu)) return;
+    ev.preventDefault(); ev.returnValue = '';
+  });
   document.querySelectorAll('#navMaster button').forEach((b) => b.addEventListener('click', () => navegar(b.dataset.tab)));
 
   // =====================================================================
@@ -2425,20 +2441,10 @@
     return ((c['hero.prazo_display'] || '') + ' ' + (c['hero.prazo_horario_display'] || '')).trim();
   }
 
-  // Situação do grupo, do jeito que o anfitrião entende
-  // Respondeu = tem data de confirmação ou alguém já tem resposta (sim, não sei ou não)
-  function respondeu(g) { return !!g.dataConfirmacao || g.membros.some((m) => !!m.resposta); }
-  function situacaoGrupo(g) {
-    if (respondeu(g)) {
-      if (g.confirmados === g.membros.length && g.membros.length) return { id: 'confirmado', rot: 'Confirmado', cls: 'ok' };
-      const duvida = g.membros.filter((m) => m.resposta === 'nao_sei').length;
-      if (g.confirmados === 0 && !duvida) return { id: 'naovao', rot: 'Não vão', cls: 'err' };
-      if (g.confirmados === 0) return { id: 'duvida', rot: 'Em dúvida: ' + duvida + ' de ' + g.membros.length, cls: 'warn' };
-      return { id: 'parcial', rot: 'Parcial: ' + g.confirmados + ' de ' + g.membros.length + (duvida ? ' (' + duvida + ' em dúvida)' : ''), cls: 'warn' };
-    }
-    if (g.statusAbertura === 'Aberto') return { id: 'aberto', rot: 'Abriu, sem resposta', cls: 'info' };
-    return { id: 'naoaberto', rot: 'Não abriu o convite', cls: '' };
-  }
+  // Situação do grupo, do jeito que o anfitrião entende. A regra fica em /situacao.js (a mesma que o servidor usa para
+  // gravar o status do grupo): não repita a regra aqui, só chame. g = { membros: [{ resposta }], dataConfirmacao, statusAbertura }.
+  function situacaoGrupo(g) { return window.SITUACAO.situacaoGrupo(g); }
+  function respondeu(g) { return ['confirmado', 'parcial', 'duvida', 'naovao'].indexOf(situacaoGrupo(g).id) !== -1; }
   const FILTROS_PAINEL = [
     { id: 'todos', rot: 'Todos' },
     { id: 'naoaberto', rot: 'Não abriram' },
@@ -2712,6 +2718,10 @@
       fase: 'config', tipo: opc.tipoInicial || 'convite', porGrupo: !!opc.porGrupoPadrao, incluirRecentes: false, guardarLembrete: false,
       texto: '', itens: [], semTel: [], i: 0, estado: {},
     };
+    // Fases da fila: config → envio → fim (ou fechada, a qualquer momento). Cada item: pendente → enviado | pulado.
+    // "avancando" vale durante a pausa de meio segundo depois de abrir o WhatsApp: clique repetido (duplo ou em outro botão)
+    // ali reabriria a mesma pessoa e pularia o próximo da fila, então é ignorado.
+    let avancando = false;
     const modelo = (tipo) => (tipo === 'lembrete' ? (ultimoPainelDados.mensagemLembrete || LEMBRETE_PADRAO) : ultimoPainelDados.mensagemTemplate);
     st.texto = modelo(st.tipo);
     const montar = () => {
@@ -2792,19 +2802,21 @@
       st.itens.forEach((x, k) => {
         const marca = st.estado[k] === 'enviado' ? 'check' : st.estado[k] === 'pulado' ? 'pular' : k === st.i ? 'ponto' : 'vazio';
         const b = h('button', { type: 'button', class: k === st.i ? 'atual' : '', role: 'listitem' }, h('span', { class: 'st', role: 'img', 'aria-label': { check: 'enviado', pular: 'pulado', ponto: 'atual', vazio: 'pendente' }[marca], html: iconeSvg(marca, 14) }), x.nome, h('span', { class: 'gr', text: x.g.nome }));
-        b.addEventListener('click', () => { st.i = k; telaEnvio(); });
+        b.addEventListener('click', () => { if (avancando) return; st.i = k; telaEnvio(); });
         lista.appendChild(b);
       });
       corpo.appendChild(lista);
       const avancar = () => { const n = proximoPendente(st.i); if (n === -1) { st.fase = 'fim'; telaFim(); } else { st.i = n; telaEnvio(); } };
       montarRodape([
-        { rotulo: '← Voltar', esquerda: true, desativado: st.i === 0, fn: () => { st.i = Math.max(0, st.i - 1); telaEnvio(); } },
-        { rotulo: 'Pular', esquerda: true, fn: () => { st.estado[st.i] = st.estado[st.i] || 'pulado'; avancar(); } },
+        { rotulo: '← Voltar', esquerda: true, desativado: st.i === 0, fn: () => { if (avancando) return; st.i = Math.max(0, st.i - 1); telaEnvio(); } },
+        { rotulo: 'Pular', esquerda: true, fn: () => { if (avancando) return; st.estado[st.i] = st.estado[st.i] || 'pulado'; avancar(); } },
         { rotulo: 'Fechar', fn: fecharDialogo },
         { rotulo: 'Abrir no WhatsApp e ir para o próximo →', prim: true, fn: () => {
+          if (avancando) return;
           if (!abrirWhatsappDaFila(it, textoDe(it))) return;
+          avancando = true;
           st.estado[st.i] = 'enviado'; marcarEnviadoFila(it.chave);
-          setTimeout(avancar, 500);
+          setTimeout(() => { avancando = false; if (st.fase !== 'fechada') avancar(); }, 500);
         } },
       ]);
       foco();
@@ -2818,7 +2830,7 @@
         h('p', { style: 'text-align:center;color:var(--ink-soft);margin:0;', text: plural(env, 'mensagem aberta no WhatsApp', 'mensagens abertas no WhatsApp') + (pul ? ' · ' + plural(pul, 'pulada', 'puladas') : '') + '. Quem recebeu fica fora das próximas filas por 24 horas.' }));
       montarRodape([{ rotulo: 'Fechar', prim: true, fn: fecharDialogo }]);
     };
-    abrirDialogo({ titulo: opc.titulo || 'Enviar pelo WhatsApp', largura: '560px', aoFechar: () => { delete dlgEvento.dataset.fixo; carregarPainel(); } });
+    abrirDialogo({ titulo: opc.titulo || 'Enviar pelo WhatsApp', largura: '560px', aoFechar: () => { st.fase = 'fechada'; delete dlgEvento.dataset.fixo; carregarPainel(); } });
     telaConfig();
   }
 
@@ -3258,7 +3270,7 @@
       const mensagem = preencherMensagem(ultimoPainelDados.mensagemTemplate, c.nome, link);
       linhas.push([
         c.nome, c.grupo, c.responsavel || '', c.telefone || '', link, mensagem,
-        c.statusAbertura, c.dataAbertura || '', c.statusConfirmacao, c.dataConfirmacao || '',
+        c.statusAbertura, c.dataAbertura || '', (gruposPainel.find((g) => g.codigo === c.codigoGrupo) || { sit: { rot: c.statusConfirmacao } }).sit.rot, c.dataConfirmacao || '',
         c.tipo === 'crianca' ? 'criança' : 'adulto', ({ sim: 'Sim', nao_sei: 'Não sei', nao: 'Não' })[c.resposta] || 'Sem resposta',
       ].map(escapar).join(','));
     });
@@ -6101,9 +6113,13 @@
       });
       return payload;
     };
+    // Estados da barra: limpo → sujo (mexeu) → salvando → limpo | sujo (erro) | guardado neste aparelho (sem internet).
+    // "rev" conta as edições: se alguém mexe DEPOIS de clicar em salvar, o que foi enviado já não é tudo e a tela continua "suja".
+    let rev = 0;
     const salvar = async (automatico) => {
       if (btnSalvar.disabled) return;
       btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando…';
+      const revAoSalvar = rev;
       const payload = coletar();
       // campos que geram algo ao salvar (ex.: a imagem de compartilhamento) acrescentam suas chaves ao envio
       for (const gancho of (fs._antesDeSalvar || [])) { try { Object.assign(payload, await gancho(payload)); } catch (e) { /* segue sem elas */ } }
@@ -6118,9 +6134,16 @@
         } else msg(msgDiv.id, d.erro, false);
         return;
       }
+      Object.assign(ctDados, payload);
+      if (rev !== revAoSalvar) {
+        // houve edição durante o envio: mantém o rascunho local e o aviso de "não salvo" para o que veio depois
+        msgDiv.textContent = '';
+        toast('Salvo. Você continuou editando enquanto salvava: essas últimas alterações ainda não foram salvas.');
+        agendarCompartilhar();
+        return;
+      }
       apagarRascunhoLocal(kRasc);
       if (opcoes.rascunho) Object.keys(opcoes.rascunho).forEach((k) => delete opcoes.rascunho[k]);
-      Object.assign(ctDados, payload);
       msgDiv.textContent = '';
       ficarSujo(false);
       toast(automatico ? 'Conexão de volta: alterações enviadas. Tudo salvo.' : (opcoes.msgSalvo || 'Salvo. O site já está atualizado.'));
@@ -6136,6 +6159,7 @@
       const e = ev.target;
       if (!e || !e.dataset || !e.dataset.chave) return;
       if (opcoes.rascunho) opcoes.rascunho[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value;
+      rev++;
       ficarSujo(true);
       // guarda uma cópia neste aparelho (sem travar a digitação)
       clearTimeout(esperaRasc);
@@ -6694,8 +6718,9 @@
     sal.addEventListener('click', async () => {
       const payload = ed2LerCaixa(fs);
       sal.disabled = true; sal.textContent = 'Salvando…';
+      fs.disabled = true; // travar os campos: o que for digitado durante o envio seria sobrescrito pelo valor salvo
       const d = await api('/api/admin/conteudo', 'POST', payload);
-      sal.disabled = false; sal.textContent = 'Salvar';
+      fs.disabled = false; sal.disabled = false; sal.textContent = 'Salvar';
       if (d.erro) { msgDiv.textContent = d.rede ? 'Sem conexão agora. Suas alterações continuam aqui; tente salvar de novo quando a internet voltar.' : d.erro; msgDiv.className = 'msg err'; return; }
       Object.assign(ctDados, payload);
       Object.keys(payload).forEach((k) => document.querySelectorAll('#ed2-form [data-chave="' + k + '"]').forEach((e) => { if (e.type === 'checkbox') e.checked = payload[k] === '1'; else e.value = payload[k]; }));
@@ -7183,17 +7208,24 @@
       corpo.append(h('label', { class: 'check', for: 'pb-esconder', style: 'margin-top:14px;' }, esconder, 'Esconder o que ainda não preenchi (' + opcPend.map((t) => t.titulo.toLowerCase()).join(', ') + '). Dá para ligar depois.'));
     }
     const erro = h('div', { class: 'erro-campo', hidden: true }); corpo.appendChild(erro);
+    // Estados: aguardando → publicando (clique repetido é ignorado) → publicado | erro (dá para tentar de novo: os dois passos são repetíveis)
+    let publicando = false;
     const publicar = async () => {
-      const extras = {};
-      if (esconder && esconder.checked) opcPend.forEach((t) => { extras['secao.' + t.modulo + '.ativa'] = '0'; });
-      extras['config.modo_save_the_date'] = modo === 'std' ? '1' : '0';
-      const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
-      Object.assign(ctDados, extras);
-      const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; }
-      PUB.publicado = true; desenharFaixaRascunho();
-      mostrarPublicado();
-      if (typeof atualizarSTD === 'function') atualizarSTD();
-      carregarPreparacao();
+      if (publicando) return;
+      publicando = true;
+      try {
+        const extras = {};
+        if (esconder && esconder.checked) opcPend.forEach((t) => { extras['secao.' + t.modulo + '.ativa'] = '0'; });
+        extras['config.modo_save_the_date'] = modo === 'std' ? '1' : '0';
+        erro.hidden = true;
+        const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
+        Object.assign(ctDados, extras);
+        const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; }
+        PUB.publicado = true; desenharFaixaRascunho();
+        mostrarPublicado();
+        if (typeof atualizarSTD === 'function') atualizarSTD();
+        carregarPreparacao();
+      } finally { publicando = false; }
     };
     montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Publicar agora', prim: true, fn: publicar }]);
     abrirDialogo({ titulo: 'Publicar o convite', largura: '540px' });

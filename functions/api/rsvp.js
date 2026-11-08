@@ -1,7 +1,7 @@
 // API pública de RSVP — sem autenticação, é o que o convidado usa a partir do link ?c=CODIGO
 // O código pode ser de um grupo (todos respondem juntos) ou individual (só aquela pessoa responde).
 // Cada pessoa responde "sim", "não sei" ou "não", e pode mudar de ideia até o fim do prazo do evento.
-import { jsonResponse, recalcularStatusGrupo, nomeParaChamar } from '../_lib.js';
+import { jsonResponse, recalcularStatusGrupo, gravarResposta, nomeParaChamar } from '../_lib.js';
 
 const RESPOSTAS = ['sim', 'nao_sei', 'nao'];
 
@@ -42,6 +42,7 @@ export async function onRequestGet({ request, env }) {
       .prepare('UPDATE grupos SET status_abertura = ?, data_abertura = ? WHERE codigo = ?')
       .bind('Aberto', new Date().toISOString(), grupo.codigo)
       .run();
+    await recalcularStatusGrupo(db, grupo.codigo); // "abriu, sem resposta" faz parte da situação guardada do grupo
   }
 
   const { results: todos } = await db.prepare('SELECT * FROM convidados WHERE codigo_grupo = ? ORDER BY id').bind(grupo.codigo).all();
@@ -98,14 +99,12 @@ export async function onRequestPost({ request, env }) {
   const validas = respostas.filter((r) => permitidos.has(Number(r.id)) && RESPOSTAS.includes(r.resposta));
   if (!validas.length) return jsonResponse({ erro: 'Escolha uma resposta para cada pessoa.' });
 
-  for (const r of validas) {
-    await db.prepare('UPDATE convidados SET resposta = ?, confirmado = ? WHERE id = ?').bind(r.resposta, r.resposta === 'sim' ? 1 : 0, Number(r.id)).run();
-  }
-
-  await db
-    .prepare('UPDATE grupos SET responsavel = ?, contato_responsavel = ?, data_confirmacao = ? WHERE codigo = ?')
-    .bind(payload.responsavel || '', payload.contatoResponsavel || '', new Date().toISOString(), grupo.codigo)
-    .run();
+  // tudo numa só gravação: ou o grupo inteiro é atualizado ou nada muda (nenhuma pessoa fica com a resposta nova e outra com a antiga)
+  await db.batch([
+    ...validas.map((r) => gravarResposta(db, r.id, r.resposta)),
+    db.prepare('UPDATE grupos SET responsavel = ?, contato_responsavel = ?, data_confirmacao = ? WHERE codigo = ?')
+      .bind(payload.responsavel || '', payload.contatoResponsavel || '', new Date().toISOString(), grupo.codigo),
+  ]);
 
   await recalcularStatusGrupo(db, grupo.codigo);
   return jsonResponse({ ok: true });
