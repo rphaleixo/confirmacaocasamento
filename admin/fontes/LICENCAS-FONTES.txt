@@ -1,0 +1,35 @@
+Vem na Festa - Sistema A - créditos e licenças de terceiros
+
+Fontes (SIL Open Font License 1.1, via pacotes fontsource)
+- Corben (Vernon Adams / Cyreal)
+- Figtree (Erik Kennedy)
+
+Mecanismos adaptados de código aberto. Nenhum arquivo foi copiado inteiro;
+a ideia e parte da estrutura foram reescritas em HTML, CSS e JS puros,
+usando os tokens do sistema A.
+
+Uiverse (repositório uiverse-io/galaxy, licença MIT)
+- Checkbox com traço desenhado: elijahgummer, SelfMadeSystem
+- Radio: cbolson
+- Tooltip: SmookyDev
+- Notificação (referência do aviso): ahmed150up
+- Carregando (arco girando): barisdogansutcu
+- Campo com rótulo flutuante (referência): Allyhere
+
+Magic UI (repositório magicuidesign/magicui, licença MIT)
+- Number Ticker  -> VNF.contar (contar.js, só site de venda e home)
+- Avatar Circles -> .vnf-avatares
+- Animated List  -> .vnf-toasts / VNF.toast
+
+Aviso MIT (vale para os dois repositórios acima):
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files, to deal in the software
+without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the
+software, subject to the following condition: the copyright notice and this
+permission notice shall be included in all copies or substantial portions of
+the software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+Ícone do WhatsApp (símbolo i-whatsapp)
+- Caminho do desenho: Simple Icons (simple-icons/simple-icons), domínio público CC0 1.0.
+- WhatsApp é marca de seus titulares. O ícone aparece só para indicar ações que envolvem o WhatsApp.

@@ -252,7 +252,11 @@ const MIGRACOES = [
   {
     // quem abriu o convite pelo link individual: a abertura é registrada por pessoa, não só pelo grupo
     id: '014-aberto-por-pessoa',
-    async comandos() {
+    async comandos(db) {
+      // instalações novas já recebem a coluna pelo schema.sql: só cria se ainda não existir
+      if (!(await tabelaExiste(db, 'convidados'))) return null;
+      const tem = await db.prepare("SELECT 1 AS ok FROM pragma_table_info('convidados') WHERE name = 'aberto_em'").first();
+      if (tem) return null;
       return ['ALTER TABLE convidados ADD COLUMN aberto_em TEXT'];
     },
   },

@@ -1,0 +1,305 @@
+/* =====================================================================
+   Vem na Festa · Sistema A (marca e plataforma) · tokens.css · v0.6
+   Prefixo --vnf-. Nada aqui vale para o convite (sistema B usa --ev-).
+   Dois temas nos MESMOS nomes de token:
+     claro  = padrão do arquivo (:root) ou [data-tema="claro"] em qualquer elemento      → site, e-mails, marca
+     escuro = [data-tema="escuro"] no <html> → painel do anfitrião (padrão do painel)
+   Regra: componentes só leem os tokens semânticos (seção 2). As cores
+   cruas da marca (seção 1) existem para o logo e para montar os temas.
+   Sem #000 e sem #fff no tema escuro. Pares de texto medidos (ver
+   contraste-tokens.md), nunca estimados.
+   ===================================================================== */
+
+@font-face{font-family:'Corben';font-weight:400;font-style:normal;font-display:swap;src:url('/admin/fontes/corben-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Corben';font-weight:700;font-style:normal;font-display:swap;src:url('/admin/fontes/corben-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Figtree';font-weight:400;font-style:normal;font-display:swap;src:url('/admin/fontes/figtree-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Figtree';font-weight:700;font-style:normal;font-display:swap;src:url('/admin/fontes/figtree-latin-700-normal.woff2') format('woff2')}
+
+:root,[data-tema="claro"]{   /* v0.6: [data-tema="claro"] permite um trecho claro dentro de página escura */
+  color-scheme:light;
+
+  /* ---------- 1. MARCA (cores cruas; só o logo e os temas leem) ---------- */
+  --vnf-anil:#1F3A5F;
+  --vnf-anil-claro:#2C4F7C;
+  --vnf-anil-noite:#142842;
+  --vnf-dourado:#C9A227;
+  --vnf-confete:#D2492A;
+  --vnf-papel:#F7F4EF;
+  --vnf-tinta:#17202E;
+
+  /* ---------- 2. SEMÂNTICOS · TEMA CLARO ---------- */
+  --vnf-bg:#F7F4EF;               /* fundo do app inteiro (papel) */
+  --vnf-sup-1:#FFFFFF;            /* cartão, lista, campo */
+  --vnf-sup-2:#EFEAE0;            /* faixa, cabeçalho de tabela, hover */
+  --vnf-sup-3:#E6DFD2;            /* pressionado */
+  --vnf-papel-cartao:#FFFCF4;     /* faixa de papel do cartão-manchete (só no claro) */
+  --vnf-linha:#E1DACB;            /* só separação (não carrega significado) */
+  --vnf-linha-forte:#B9B09C;      /* divisor que precisa aparecer */
+  --vnf-borda-campo:#76808F;      /* borda de campo e de controle: ≥3:1 */
+  --vnf-texto:#17202E;
+  --vnf-texto-suave:#4B566A;
+  --vnf-texto-fraco:#5A6478;      /* só apoio ≥13px */
+  --vnf-link:#1F3A5F;
+  --vnf-titulo:#1F3A5F;           /* títulos de marca no claro; no escuro viram texto */
+  --vnf-dourado-txt:#7A5C06;
+  --vnf-confete-txt:#B8381C;
+  --vnf-primario-bg:#1F3A5F;
+  --vnf-primario-bg-h:#142842;
+  --vnf-primario-fg:#FFFFFF;
+  --vnf-foco:#2D68B8;
+  --vnf-barra-bg:#142842;         /* barra de ação flutuante / salvar */
+  --vnf-barra-fg:#F4F6FA;
+  --vnf-ok-barra:#7BD6A6;         /* ícones de status sobre a barra escura (a barra é escura nos dois temas) */
+  --vnf-erro-barra:#F28B82;
+
+  --vnf-ok:#1D7348;
+  --vnf-aviso:#8F5600;
+  --vnf-info:#1F5FA8;
+  --vnf-erro:#B3261E;
+  --vnf-erro-bg-forte:#B3261E;    /* botão perigo cheio */
+  --vnf-erro-fg-forte:#FFFFFF;
+
+  /* status de resposta (grupo e pessoa). "Não vão" é terra, não erro. */
+  --vnf-st-confirmado:#1D7348;
+  --vnf-st-parcial:#0F6E6E;
+  --vnf-st-duvida:#8F5600;
+  --vnf-st-naovai:#6A4A3C;
+  --vnf-st-aberto:#1F5FA8;
+  --vnf-st-naoaberto:#566377;
+  --vnf-st-sobre:#FFFFFF;         /* texto dentro de bloco cheio de status */
+
+  --vnf-wa:#0F6B3A; --vnf-wa-h:#0B5530; --vnf-wa-fg:#FFFFFF;
+  --vnf-interruptor-off:#6B7587;
+
+  /* ---------- 3. TIPOGRAFIA ---------- */
+  --vnf-fonte-display:'Corben','Georgia',serif;   /* manchetes (400) e logo (700) */
+  --vnf-fonte:'Figtree','Segoe UI',sans-serif;    /* interface */
+  --vnf-fonte-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --vnf-t-display:clamp(2.5rem,1.6rem + 3.6vw,4.5rem);  /* só site/landing */
+  --vnf-t-manchete:clamp(1.75rem,1.4rem + 1.4vw,2.5rem);/* manchete do app (Corben 400) */
+  --vnf-t-heroi:clamp(2.25rem,1.5rem + 2.6vw,3.5rem);   /* manchete da primeira tela do site (coluna de texto) */
+  --vnf-t-h1:1.75rem;   /* 28 */
+  --vnf-t-h2:1.3125rem; /* 21 */
+  --vnf-t-h3:1rem;      /* 16 (era 17: fundido com o corpo; o peso 700 já distingue) */
+  --vnf-t-corpo:1rem;   /* 16 */
+  --vnf-t-ui:.875rem;   /* 14 botão, campo, tabela, apoio */
+  --vnf-t-apoio:.875rem; /* 14 (era 13: fundido com o texto de interface) */
+  --vnf-t-minimo:.75rem; /* 12 chip; nada abaixo */
+  --vnf-entrelinha:1.55; --vnf-entrelinha-titulo:1.2;
+
+  /* ---------- 4. ESPAÇO (base 4), RAIO, ALVO ---------- */
+  --vnf-e-1:4px; --vnf-e-2:8px; --vnf-e-3:12px; --vnf-e-4:16px; --vnf-e-5:20px;
+  --vnf-e-6:24px; --vnf-e-8:32px; --vnf-e-10:40px; --vnf-e-12:48px; --vnf-e-16:64px;
+  --vnf-r-xs:6px; --vnf-r-sm:8px; --vnf-r:10px; --vnf-r-lg:14px; --vnf-r-xl:18px; --vnf-r-2xl:24px; --vnf-r-pill:999px;
+  --vnf-alvo:44px;
+  --vnf-largura-texto:70ch; --vnf-largura-app:720px; --vnf-largura-larga:1040px;
+
+  /* ---------- 5. PROFUNDIDADE: bordas e degraus; sombra só em flutuante ---------- */
+  --vnf-sombra-flutuante:0 10px 28px rgba(20,40,66,.22);
+  --vnf-veu:rgba(20,40,66,.5);
+
+  /* ---------- 6. MOVIMENTO (escala da skill 02) ---------- */
+  --vnf-dur-clique:140ms; --vnf-dur-estado:220ms; --vnf-dur-folha:320ms;
+  --vnf-curva:cubic-bezier(.16,1,.3,1);
+  --vnf-escalonar:40ms;   /* v0.6: intervalo entre itens que entram em fila */
+
+  /* ---------- 7. CAMADAS ---------- */
+  --vnf-z-nav:50; --vnf-z-fab:60; --vnf-z-previa:70; --vnf-z-folha:90; --vnf-z-dialogo:300; --vnf-z-toast:1000;
+}
+
+/* ===================== TEMA ESCURO (composto) =====================
+   Fundo tintado pela matiz da marca (azul-noite), degraus de luminosidade,
+   texto fora de #fff, acento dourado só em preenchimento e texto dourado claro. */
+[data-tema="escuro"]{
+  color-scheme:dark;
+  --vnf-bg:#0E1A2B;
+  --vnf-sup-1:#15253B;
+  --vnf-sup-2:#1C3050;
+  --vnf-sup-3:#243B5E;
+  --vnf-papel-cartao:#243447;     /* papel escuro: claramente mais claro que o cartão comum (texto fraco ainda ≥4,5:1) */
+  --vnf-linha:#2B4264;
+  --vnf-linha-forte:#41608C;
+  --vnf-borda-campo:#6B86AB;
+  --vnf-texto:#E9EDF3;
+  --vnf-texto-suave:#A9B7CC;
+  --vnf-texto-fraco:#8D9CB4;
+  --vnf-link:#8FBBF2;
+  --vnf-titulo:#E9EDF3;
+  --vnf-dourado-txt:#E3C35A;
+  --vnf-confete-txt:#F08A6E;
+  --vnf-primario-bg:#C9A227;
+  --vnf-primario-bg-h:#D9B538;
+  --vnf-primario-fg:#142842;
+  --vnf-foco:#7DB1F0;
+  --vnf-barra-bg:#243B5E;
+  --vnf-barra-fg:#E9EDF3;
+
+  --vnf-ok:#7BD6A6;
+  --vnf-aviso:#F0B84A;
+  --vnf-info:#7DB1F0;
+  --vnf-erro:#F28B82;
+  --vnf-erro-bg-forte:#F28B82;
+  --vnf-erro-fg-forte:#2B0B09;
+
+  --vnf-st-confirmado:#7BD6A6;
+  --vnf-st-parcial:#6FD3CB;
+  --vnf-st-duvida:#F0B84A;
+  --vnf-st-naovai:#D9A58F;
+  --vnf-st-aberto:#7DB1F0;
+  --vnf-st-naoaberto:#9AA8BE;
+  --vnf-st-sobre:#0E1A2B;
+
+  --vnf-wa:#58C98A; --vnf-wa-h:#6FD79B; --vnf-wa-fg:#0B2A1A;
+  --vnf-interruptor-off:#6B86AB;
+
+  --vnf-sombra-flutuante:0 12px 32px rgba(3,8,16,.55);
+  --vnf-veu:rgba(5,10,18,.66);
+}
+
+@media (prefers-reduced-motion:reduce){
+  :root{--vnf-dur-clique:0ms;--vnf-dur-estado:0ms;--vnf-dur-folha:0ms}
+}
+
+/* =====================================================================
+   PONTE: os nomes antigos do painel (--navy, --bg, --surface...) passam a
+   ler os tokens --vnf-. Assim cada aba muda de cor sem trocar uma classe.
+   Quando todas as abas usarem --vnf- direto, este bloco pode sair.
+   ===================================================================== */
+:root{
+  --navy:var(--vnf-primario-bg); --navy-2:var(--vnf-anil-claro); --navy-deep:var(--vnf-anil-noite);
+  --bg:var(--vnf-bg); --surface:var(--vnf-sup-1); --surface-2:var(--vnf-sup-2);
+  --ink:var(--vnf-texto); --ink-soft:var(--vnf-texto-suave); --ink-faint:var(--vnf-texto-fraco);
+  --line:var(--vnf-linha); --line-soft:color-mix(in srgb,var(--vnf-linha) 55%,var(--vnf-sup-1));
+  --gold:var(--vnf-dourado);
+  --ok:var(--vnf-ok); --warn:var(--vnf-aviso); --info:var(--vnf-info); --err:var(--vnf-erro);
+  --ok-bg:color-mix(in srgb,var(--vnf-ok) 13%,var(--vnf-sup-1));
+  --warn-bg:color-mix(in srgb,var(--vnf-aviso) 14%,var(--vnf-sup-1));
+  --info-bg:color-mix(in srgb,var(--vnf-info) 12%,var(--vnf-sup-1));
+  --err-bg:color-mix(in srgb,var(--vnf-erro) 12%,var(--vnf-sup-1));
+  --muted-bg:var(--vnf-sup-2); --focus:var(--vnf-foco);
+  --font:var(--vnf-fonte);
+}
+/* Tema escuro do painel: o azul de preenchimento continua com texto branco (as abas antigas escrevem #fff nele). */
+html[data-tema="escuro"]{
+  --navy:#2D68B8; --navy-2:#3F7BD0; --navy-deep:#1E4F96;
+  --shadow:none; --shadow-lg:var(--vnf-sombra-flutuante);
+}
+html[data-tema="escuro"] header.hd{background:var(--vnf-barra-bg);}
+html[data-tema="escuro"] nav.nav button.active,
+html[data-tema="escuro"] .prep-opc summary,
+html[data-tema="escuro"] .separador-campo,
+html[data-tema="escuro"] .md-passo.atual span,
+html[data-tema="escuro"] .opcao-tipo em,
+html[data-tema="escuro"] .ct-sub button.on,
+html[data-tema="escuro"] .rico-btn.on,
+html[data-tema="escuro"] .fonte-cat{color:var(--vnf-link);}
+html[data-tema="escuro"] nav.nav button.active{border-top-color:var(--vnf-link);}
+html[data-tema="escuro"] .btn:hover{border-color:var(--vnf-linha-forte);}
+html[data-tema="escuro"] .prep-compacto{border-color:var(--vnf-linha);}
+html[data-tema="escuro"] .barra-envio{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .btn.wa{color:var(--vnf-wa);}
+
+/* ---------- base ---------- */
+body{font-size:var(--vnf-t-ui);line-height:var(--vnf-entrelinha);}
+:focus-visible{outline:3px solid var(--vnf-foco);outline-offset:2px;}
+.btn:hover{border-color:var(--vnf-linha-forte);}
+.btn.wa{color:var(--vnf-wa);}
+
+/* ---------- alvo mínimo de 44px na moldura e na aba Painel ---------- */
+.hd-btn{min-height:44px;}
+#subheader button{min-height:44px;}
+#tab-painel .btn,#tab-painel .btn.sm,#tab-painel .btn.xs,#tab-painel button.action,
+#tab-painel .filtros button,#tab-painel .rs-seg button,#tab-painel .lb-seg button{min-height:44px;}
+#tab-painel input[type=date],#tab-painel input[type=time],#tab-painel input[type=number],#tab-painel input[type=search]{min-height:44px;}
+#tab-painel select{min-height:44px;}
+.hd-tema .t-escuro{display:none;} html[data-tema="escuro"] .hd-tema .t-claro{display:none;} html[data-tema="escuro"] .hd-tema .t-escuro{display:inline;}
+
+/* ---------- identidade: papel e confete discreto (aba Painel) ---------- */
+.pag-head h2,.painel-id h2{font-family:var(--vnf-fonte-display);font-weight:400;font-size:var(--vnf-t-manchete);line-height:var(--vnf-entrelinha-titulo);color:var(--vnf-titulo);}
+.painel-id{position:relative;background:var(--vnf-papel-cartao);border:1px solid var(--vnf-linha);border-radius:var(--vnf-r-lg);padding:20px 24px;padding-right:120px;margin-bottom:16px;}
+.painel-id::after{content:'';position:absolute;top:20px;right:76px;width:18px;height:18px;border-radius:4px;background:var(--vnf-confete);
+  box-shadow:26px 0 0 var(--vnf-dourado),52px 0 0 var(--vnf-texto-suave);}
+@media (max-width:479px){.painel-id{padding-right:24px;padding-top:44px}.painel-id::after{top:18px;right:auto;left:24px}}
+.painel-id .chip{margin-bottom:8px;}
+.painel-id p{margin:6px 0 0;}
+/* blocos principais: papel só no cartão de preparo; o resto fica no cartão comum */
+.prep-card{background:var(--vnf-sup-1);box-shadow:none;}
+.contagem,.kpi,.rapido .rp,.grupo{box-shadow:none;}
+.contagem .ico svg,.prep-item .bola svg{display:block;}
+.prep-item .bola{border-color:var(--vnf-borda-campo);}
+.prep-item.ok .bola{border-color:var(--vnf-ok);background:var(--vnf-ok);color:var(--vnf-st-sobre);}
+.prep-item.ok .nm{color:var(--vnf-texto-suave);}
+.chip{font-size:var(--vnf-t-minimo);}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important;}}
+
+/* ---------- moldura em telas estreitas ---------- */
+header.hd{flex-wrap:wrap;}
+.hd-acoes{flex-wrap:wrap;justify-content:flex-end;min-width:0;}
+@media (max-width:639px){.hd-tema span{display:none !important;} .hd-tema{min-width:44px;padding:0 12px;}}
+
+/* ---------- alvos de 44px dentro dos grupos ---------- */
+.membro .mover{min-width:44px;min-height:44px;font-size:12px;font-weight:700;padding:4px 8px;}
+.grupo a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;}
+.prep-opc summary{display:flex;align-items:center;min-height:44px;}
+#tab-painel .btn,#tab-painel button.action{white-space:nowrap;}
+
+/* ---------- tema escuro: pontos que as abas antigas pintam com cor fixa ---------- */
+html[data-tema="escuro"] .kpi.destaque{background:var(--vnf-sup-3);border-color:var(--vnf-linha-forte);color:var(--vnf-texto);}
+html[data-tema="escuro"] .kpi.destaque .v,html[data-tema="escuro"] .kpi.destaque .v small{color:var(--vnf-texto);}
+html[data-tema="escuro"] .kpi.destaque .lbl,html[data-tema="escuro"] .kpi.destaque .det{color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .bolha-wrap{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .bolha{background:#1F4D3A;color:#E9EDF3;box-shadow:none;}
+html[data-tema="escuro"] .bolha .lk{color:var(--vnf-link);}
+html[data-tema="escuro"] .rs-seg button.on.sim{background:var(--vnf-st-confirmado);color:var(--vnf-st-sobre);}
+html[data-tema="escuro"] .mini-switch span{background:var(--vnf-interruptor-off);}
+.hd-btn{min-width:44px;}
+.hd-acoes{flex-shrink:1;max-width:100%;}
+
+/* tema escuro: campos e blocos que as abas antigas pintam de branco */
+html[data-tema="escuro"] input[type=text],html[data-tema="escuro"] input[type=tel],html[data-tema="escuro"] input[type=date],
+html[data-tema="escuro"] input[type=time],html[data-tema="escuro"] input[type=number],html[data-tema="escuro"] input[type=password],
+html[data-tema="escuro"] input[type=search],html[data-tema="escuro"] input[type=email],html[data-tema="escuro"] input[type=url],
+html[data-tema="escuro"] textarea,html[data-tema="escuro"] select{background-color:var(--vnf-sup-1);color:var(--vnf-texto);border-color:var(--vnf-borda-campo);}
+html[data-tema="escuro"] input::placeholder,html[data-tema="escuro"] textarea::placeholder{color:var(--vnf-texto-fraco);}
+html[data-tema="escuro"] .opcao-tipo,html[data-tema="escuro"] .campo-url,html[data-tema="escuro"] .radio-bloco,
+html[data-tema="escuro"] .lista-escolha button{background:var(--vnf-sup-1);color:var(--vnf-texto);}
+html[data-tema="escuro"] .faixa-rascunho{background:var(--vnf-sup-2);color:var(--vnf-texto);border-bottom-color:var(--vnf-linha);}
+html[data-tema="escuro"] input[type=color]{background:var(--vnf-sup-1);}
+
+/* =====================================================================
+   Rodada 2: todas as abas (alvos de 44px e tema escuro nos blocos antigos)
+   ===================================================================== */
+.btn,.btn.sm,.btn.xs,button.action,a.btn,
+.filtros button,.rs-vista button,.rs-seg button,.ct-sub button,.midia-tabs button,.ct-item,
+.rico-btn,.rico-tamanho,.etapa-nav button{min-height:44px;}
+select,input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],input[type=search],input[type=email],input[type=url],input[type=password]{min-height:44px;}
+.rico-btn{min-width:44px;}
+.rico-amostra,.cl-dial .rico-amostra{width:44px;height:44px;}
+.rs-linha .gr{display:flex;align-items:center;min-height:44px;}
+.ct-item{display:flex;align-items:center;}
+.btn.sm,.btn.xs{display:inline-flex;align-items:center;justify-content:center;}
+
+/* tema escuro: blocos com fundo claro fixo */
+html[data-tema="escuro"] .savebar{background:color-mix(in srgb,var(--vnf-sup-1) 96%,transparent);}
+html[data-tema="escuro"] .savebar .estado{color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .ct-item .pill.off,html[data-tema="escuro"] .pill.off{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .std-estado{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .std-estado i{background:var(--vnf-texto-fraco);}
+html[data-tema="escuro"] .bloco-texto.off .bloco-cab,html[data-tema="escuro"] .bloco-cab{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .bloco-cab .rot{color:var(--vnf-texto);}
+html[data-tema="escuro"] .bloco-cab .rot .sub,html[data-tema="escuro"] .bloco-estado{color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .previa-carregando{background:var(--vnf-sup-2);color:var(--vnf-texto-suave);}
+html[data-tema="escuro"] .lugar-mapa{background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .rs-linha:hover:not(.cab){background:var(--vnf-sup-2);}
+html[data-tema="escuro"] .fila-bolha{background:#1F4D3A;border-color:#2C6A50;color:#E9EDF3;}
+html[data-tema="escuro"] .recado-linha.recado-pendente{background:var(--vnf-sup-2);border-color:var(--vnf-aviso);}
+html[data-tema="escuro"] .cor-hex[aria-invalid=true]{background:color-mix(in srgb,var(--vnf-erro) 18%,var(--vnf-sup-1));}
+#rs-ferramentas .rs-vista button{min-height:44px !important;} .rs-vista button{min-height:44px;}
+.cor-botao{min-height:44px;}
+html[data-tema="escuro"] .cor-botao{background:var(--vnf-sup-1);color:var(--vnf-texto);}
+.rs-acoes .btn,.btn.sm,.btn.xs{min-width:44px;}
+
+/* Plataforma: grade de templates sem estourar em 320px; chips clicáveis com alvo de 44px */
+#tp-lista{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));}
+.tp-card{min-width:0;} .tp-card h4{flex-wrap:wrap;overflow-wrap:anywhere;}
+button.chip{min-height:44px;}
