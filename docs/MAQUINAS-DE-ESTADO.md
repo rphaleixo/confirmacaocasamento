@@ -142,6 +142,7 @@ Todos usam só o Node (e o Playwright, para o painel no navegador).
 - `node --test testes/*.test.mjs`: regra da situação do grupo e da pessoa (sem servidor).
 - `node testes/api-estados.mjs [url] [slug]`: transições de grupo e respostas pela API real (precisa do servidor local; veja o README).
 - `node testes/api-acesso.mjs [url] [slug]`: convite e código de troca (inclusive usados ao mesmo tempo), revogação, criação de evento e lembranças. Cria eventos de teste, por isso só roda em localhost.
+- `PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/seguranca.mjs [url] [slug]`: cor de evento com código dentro (servidor e navegador) e upload de arquivos (SVG, HTML e vídeo falso são recusados; o formato vem do conteúdo). Só roda em localhost.
 - `PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/painel-estados.mjs [url] [slug]`: situação no painel e no CSV, aviso de alterações não salvas, edição durante o salvamento e clique duplo em publicar e na fila de WhatsApp.
 
-O banco local novo precisa da migração 014 já registrada (limitação conhecida do banco novo: a migração tenta criar uma coluna que o `schema.sql` já cria). O README explica como subir o servidor; se o servidor devolver erro 500 em banco novo, marque as migrações como aplicadas na tabela `_migracoes`.
+O README explica como subir o servidor local com um banco novo (a migração 014 já funciona em banco novo).

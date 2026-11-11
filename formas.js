@@ -3,7 +3,7 @@
 // Cada forma é uma linha de fronteira y(u), com u de 0 a 1 ao longo da largura e y de 0 a 64: o que fica ABAIXO da linha
 // é a seção nova; o que fica acima é a seção anterior. Algumas formas têm ainda um enfeite desenhado por cima
 // (bandeirinhas, folhagem, confete, ornamento).
-// API: window.FORMAS_SECAO = { LISTA, ALTURAS, existe, caminho, temEnfeite, enfeite, mini }
+// API: window.FORMAS_SECAO = { corSegura, LISTA, ALTURAS, existe, caminho, temEnfeite, enfeite, mini }
 (function () {
   'use strict';
   var PI = Math.PI;
@@ -88,8 +88,20 @@
     return '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')"><path fill="' + cor + '" d="M0,0 C' + (comp * 0.25).toFixed(1) + ',-' + larg.toFixed(1) + ' ' + (comp * 0.75).toFixed(1) + ',-' + (larg * 0.8).toFixed(1) + ' ' + comp.toFixed(1) + ',0 C' + (comp * 0.75).toFixed(1) + ',' + (larg * 0.8).toFixed(1) + ' ' + (comp * 0.25).toFixed(1) + ',' + larg.toFixed(1) + ' 0,0Z"/></g>';
   }
 
+  // Toda cor que entra em texto de SVG passa por aqui: só formatos de cor conhecidos (#hex, rgb/hsl com números, nome de cor em letras).
+  // Qualquer outra coisa vira a cor padrão. Cor de evento vem do anfitrião e NUNCA pode virar atributo ou tag.
+  function corSegura(v, padrao) {
+    var s = String(v == null ? '' : v).trim();
+    if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(s) || /^(rgb|hsl)a?\([0-9\s.,%\/-]{1,60}\)$/i.test(s) || /^[a-z]{3,20}$/i.test(s)) return s;
+    return padrao;
+  }
+  function paletaSegura(pal) {
+    return { dest: corSegura(pal && pal.dest, '#C9A227'), sec: corSegura(pal && pal.sec, '#2F5D9A'), prim: corSegura(pal && pal.prim, '#0B2545') };
+  }
+
   // enfeite desenhado por cima da divisória, em pixels (W x H): pal = { dest, sec, prim }
   function enfeite(id, W, H, pal, espelhar) {
+    pal = paletaSegura(pal);
     var out = '', i, r, esc = H / 64, f = Y[id];
     var yAt = function (x) { var u = x / W; if (espelhar) u = 1 - u; return f(u) * esc; };
     if (id === 'ornamento') {
@@ -136,6 +148,7 @@
   // miniatura para o painel: duas cores separadas pela forma (viewBox 100 x 46)
   function mini(id, corDeCima, corDeBaixo, pal) {
     var W = 100, H = 46;
+    corDeCima = corSegura(corDeCima, '#0B2545'); corDeBaixo = corSegura(corDeBaixo, '#EAF1FB');
     var topo = '<rect width="' + W + '" height="' + H + '" rx="6" fill="' + corDeCima + '"/>';
     if (id === 'reta') return '<svg viewBox="0 0 ' + W + ' ' + H + '"><rect width="' + W + '" height="' + H + '" rx="6" fill="' + corDeCima + '"/><rect y="24" width="' + W + '" height="22" rx="0" fill="' + corDeBaixo + '"/></svg>';
     var d = caminho(id, false);
@@ -146,5 +159,5 @@
     return svg + '</g></svg>';
   }
 
-  window.FORMAS_SECAO = { LISTA: LISTA, ALTURAS: ALTURAS, existe: existe, caminho: caminho, temEnfeite: temEnfeite, enfeite: enfeite, mini: mini };
+  window.FORMAS_SECAO = { corSegura: corSegura, LISTA: LISTA, ALTURAS: ALTURAS, existe: existe, caminho: caminho, temEnfeite: temEnfeite, enfeite: enfeite, mini: mini };
 })();

@@ -3726,7 +3726,7 @@
   ]};
 
   // Desenhos dos cartões de "Tamanho" e "Fundo" da chamada de presentes (usam as cores do evento)
-  const corEv = (d, k, p) => (d && d[k]) || p;
+  const corEv = (d, k, p) => window.FORMAS_SECAO.corSegura(d && d[k], p); // a cor do evento vira texto de SVG nas miniaturas: só cor válida passa
   const DESENHO_LAYOUT = {
     pequeno: () => '<svg viewBox="0 0 100 58"><rect x="6" y="19" width="88" height="20" rx="8" fill="#fff" stroke="#B9C3D3"/><circle cx="19" cy="29" r="5" fill="#E7DDB8"/><rect x="29" y="24" width="30" height="4" rx="2" fill="#8A94A6"/><rect x="29" y="31" width="22" height="3" rx="1.5" fill="#C3CBD8"/><rect x="66" y="23" width="22" height="12" rx="6" fill="#1F3A5F"/></svg>',
     medio: () => '<svg viewBox="0 0 100 58"><rect x="12" y="4" width="76" height="50" rx="9" fill="#fff" stroke="#B9C3D3"/><circle cx="50" cy="15" r="5" fill="#E7DDB8"/><rect x="32" y="24" width="36" height="4" rx="2" fill="#8A94A6"/><rect x="26" y="31" width="48" height="3" rx="1.5" fill="#C3CBD8"/><rect x="28" y="40" width="44" height="9" rx="4.5" fill="#1F3A5F"/></svg>',

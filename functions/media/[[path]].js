@@ -1,3 +1,5 @@
+import { TIPOS_SEGUROS } from '../_midia.js';
+
 // Serve arquivos do bucket R2 — GET /media/<chave>
 // Suporta "Range" (trechos do arquivo): sem isso o Safari/iPhone não reproduz vídeo e nenhum navegador consegue avançar.
 export async function onRequestGet({ request, params, env }) {
@@ -8,6 +10,14 @@ export async function onRequestGet({ request, params, env }) {
 
   const headers = new Headers();
   objeto.writeHttpMetadata(headers);
+  // Nada daqui roda como página: sem adivinhar o tipo, com scripts desligados (sandbox) e, para qualquer tipo que não seja
+  // imagem ou vídeo conhecido (como um SVG enviado antes de existir a conferência de formato), como download.
+  headers.set('x-content-type-options', 'nosniff');
+  headers.set('content-security-policy', 'sandbox');
+  if (!TIPOS_SEGUROS.has(String(headers.get('content-type') || '').toLowerCase())) {
+    headers.set('content-type', 'application/octet-stream');
+    headers.set('content-disposition', 'attachment');
+  }
   headers.set('etag', objeto.httpEtag);
   headers.set('accept-ranges', 'bytes');
   headers.set('cache-control', 'public, max-age=31536000, immutable');
