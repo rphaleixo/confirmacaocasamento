@@ -1,5 +1,6 @@
 // Teste do FLUXO DE CRIAÇÃO DO CONVITE: evento novo nasce sem dados inventados, checklist, bloqueio de publicação,
-// prévia do assistente e marca de exemplo (etapa 1); criação em uma tela, nomes na criação e link de primeiro acesso (etapa 2).
+// prévia do assistente e marca de exemplo (etapa 1); criação em uma tela, nomes na criação e link de primeiro acesso (etapa 2);
+// assistente com rótulos neutros, local sem depender do Google Maps, publicar no último passo, passo dos convidados e retomada em outro aparelho (etapa 3).
 //
 //   1. Servidor local rodando (README, "Rodar no computador") com os dados de exemplo.
 //   2. PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/fluxo-criacao.mjs [http://localhost:8799] [slug-de-um-evento-existente]
@@ -83,8 +84,8 @@ try {
   await page.locator('#faixaRascunho button', { hasText: 'Publicar' }).first().click();
   await page.waitForTimeout(600);
   const aviso = await page.locator('[role=alert]', { hasText: 'Para publicar, falta' }).first().innerText().catch(() => '');
-  verificar('F6 janela de publicação avisa o que falta (nomes e data)', true, /nomes do casal e dia e hora/i.test(aviso));
-  verificar('F6b o botão "Publicar agora" fica desativado', true, await page.getByRole('button', { name: 'Publicar agora' }).isDisabled());
+  verificar('F6 o passo de publicar avisa o que falta (nomes e data)', true, /nomes do casal e dia e hora/i.test(aviso));
+  verificar('F6b o botão "Publicar o convite" fica desativado', true, await page.getByRole('button', { name: 'Publicar o convite' }).isDisabled());
   await page.getByRole('button', { name: /Preencher: nomes do casal/i }).click();
   await page.waitForTimeout(900);
   verificar('F6c "Preencher" leva ao passo dos nomes do assistente', 'Quem vai se casar?', (await page.locator('#as-titulo').innerText()).trim());
@@ -221,6 +222,71 @@ try {
   await capa.goto(BASE + '/e/' + slugN + '/?rascunho=' + tokenN); await capa.waitForTimeout(2500);
   const nomesCapa = await capa.evaluate(() => document.querySelector('#hero h1').innerText.replace(/\s+/g, ' ').trim());
   verificar('G14 a capa do evento novo mostra os nomes informados, não "Noiva & Noivo"', { temNomes: true, semProvisorio: true }, { temNomes: /Ana/.test(nomesCapa) && /Beto/.test(nomesCapa), semProvisorio: !/Noiva|Noivo/.test(nomesCapa) });
+
+  // ================= ETAPA 3: assistente e publicação =================
+  const slugH = 'etapa3-' + sufixo;
+  await api('POST', '/api/admin/eventos', { nome: 'Etapa 3 ' + sufixo, slug: slugH, tipo: 'casamento', nomes: { primeiro: 'Bia', segundo: 'Caê' } });
+  await api('POST', '/api/admin/conteudo', { 'hero.data_iso': '2031-03-15T16:00:00-03:00', 'hero.data_display': '15 de março de 2031' }, slugH);
+  const estadoAssist = async () => (await api('GET', '/api/admin/publicacao', null, slugH)).assistente;
+  verificar('H1 evento novo: o servidor diz que o assistente nunca foi aberto', { passo: null, concluido: false }, await estadoAssist());
+  verificar('H1b passo desconhecido é recusado pelo servidor', 400, (await api('POST', '/api/admin/publicacao', { assistente: { passo: 'qualquer' } }, slugH))._http);
+  const entrar = async (contexto) => {
+    const pg = await contexto.newPage();
+    pg.on('pageerror', (e) => erros.push('etapa 3: ' + e.message));
+    await pg.goto(BASE + '/admin/?e=' + slugH + '#painel');
+    await pg.fill('#loginUsuario', USER); await pg.fill('#loginSenha', PASS); await pg.click('#loginBtn');
+    await pg.waitForSelector('#app:not([hidden])');
+    return pg;
+  };
+  // aparelho 1: o assistente abre sozinho, com rótulos neutros; o anfitrião avança um passo e sai
+  const ap1 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const h1 = await entrar(ap1);
+  await h1.waitForSelector('#assistente:not([hidden])', { timeout: 15000 }); await h1.waitForTimeout(500);
+  verificar('H2 passo dos nomes do casamento usa rótulos neutros', ['Primeiro nome', 'Segundo nome'], await h1.$$eval('#as-corpo label', (ls) => ls.map((l) => l.textContent)));
+  await h1.click('#as-proximo'); await h1.waitForFunction(() => document.getElementById('as-titulo').textContent === 'Quando vai ser?'); await h1.waitForTimeout(400);
+  await h1.click('#as-fechar'); await h1.waitForTimeout(900);
+  verificar('H3 ao sair, o servidor guarda o passo em que o anfitrião parou', { passo: 'data', concluido: false }, await estadoAssist());
+  // aparelho 2: não abre sozinho de novo; "Continuar de onde parei" retoma no mesmo passo
+  const ap2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const h2 = await entrar(ap2);
+  await h2.waitForTimeout(2500);
+  verificar('H4 em outro aparelho o assistente não abre sozinho por cima do painel', true, await h2.evaluate(() => document.getElementById('assistente').hidden));
+  await h2.locator('#p-prep button', { hasText: 'Continuar de onde parei' }).click();
+  await h2.waitForSelector('#assistente:not([hidden])'); await h2.waitForTimeout(700);
+  verificar('H5 em outro aparelho, "Continuar de onde parei" abre no passo guardado', 'Quando vai ser?', await h2.textContent('#as-titulo'));
+  // passo do local: nome e endereço primeiro; o link do Google Maps é opcional
+  await h2.click('#as-proximo'); await h2.waitForFunction(() => document.getElementById('as-titulo').textContent === 'Onde vai ser?'); await h2.waitForTimeout(500);
+  verificar('H6 passo do local começa pelo nome e endereço, e o link do Google Maps vem depois, como opcional', { nomeAntesDoLink: true, rotuloLink: 'Ou cole o link do local no Google Maps (opcional)' },
+    await h2.evaluate(() => { const n = document.querySelector('#as-corpo [data-chave="mapa.local_nome"]'), l = document.getElementById('lugar-link'); return { nomeAntesDoLink: !!(n.compareDocumentPosition(l) & Node.DOCUMENT_POSITION_FOLLOWING), rotuloLink: document.querySelector('label[for="lugar-link"]').textContent }; }));
+  await h2.fill('#as-corpo [data-chave="mapa.local_nome"]', 'Sítio das Flores'); await h2.fill('#as-corpo [data-chave="mapa.local_endereco"]', 'Estrada Velha, 100, Petrópolis');
+  await h2.click('#as-proximo'); await h2.waitForFunction(() => /capa/i.test(document.getElementById('as-titulo').textContent)); await h2.waitForTimeout(300);
+  const ch = await conteudoDe(slugH);
+  verificar('H6b dá para preencher o local sem link do Google Maps', { nome: 'Sítio das Flores', endereco: 'Estrada Velha, 100, Petrópolis' }, { nome: ch['mapa.local_nome'], endereco: ch['mapa.local_endereco'] });
+  await h2.click('#as-pular'); await h2.waitForTimeout(500); await h2.click('#as-pular');
+  await h2.waitForSelector('#as-resumo'); await h2.waitForTimeout(500);
+  // conferir e publicar no mesmo passo, sem janela por cima
+  verificar('H7 conferência e publicação em um passo só: resumo, escolha do modo e botão de publicar, sem janela',
+    { titulo: 'Conferir e publicar', resumo: true, modos: 2, esconder: true, botao: 'Publicar o convite', travado: false, janela: false },
+    await h2.evaluate(() => ({ titulo: document.getElementById('as-titulo').textContent, resumo: document.querySelectorAll('#as-resumo .prep-item').length >= 4, modos: document.querySelectorAll('#as-corpo input[name="pb-modo"]').length,
+      esconder: !!document.getElementById('pb-esconder'), botao: document.getElementById('as-proximo').textContent, travado: document.getElementById('as-proximo').disabled, janela: !!document.querySelector('dialog[open]') })));
+  let publicacoes = 0;
+  h2.on('request', (r) => { if (r.method() === 'POST' && /\/api\/admin\/publicacao/.test(r.url()) && /"publicado"/.test(r.postData() || '')) publicacoes++; });
+  await h2.dblclick('#as-proximo');
+  await h2.waitForFunction(() => document.getElementById('as-titulo').textContent === 'Agora convide as pessoas', null, { timeout: 15000 }); await h2.waitForTimeout(1200);
+  verificar('H8 clique duplo em publicar: publica uma vez e para no passo dos convidados (o segundo clique não fecha o passo)',
+    { pedidos: 1, publicado: true, passoVisivel: true, concluido: false },
+    { pedidos: publicacoes, publicado: !!(await api('GET', '/api/admin/publicacao', null, slugH)).publicado, passoVisivel: await h2.evaluate(() => !document.getElementById('assistente').hidden), concluido: (await estadoAssist()).concluido });
+  verificar('H9 depois de publicar: criar o primeiro grupo, importar a lista, como enviar pelo WhatsApp e a opção de deixar para depois',
+    { botoes: ['Criar o primeiro grupo', 'Importar a lista de uma planilha'], comoEnviar: 3, depois: 'Deixar para depois' },
+    await h2.evaluate(() => ({ botoes: Array.from(document.querySelectorAll('#as-convidar-acoes button')).map((b) => b.textContent), comoEnviar: document.querySelectorAll('#as-como-enviar li').length, depois: document.getElementById('as-proximo').textContent })));
+  const semRolagem = await h2.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth && document.querySelector('.as-corpo-wrap').scrollWidth <= document.querySelector('.as-corpo-wrap').clientWidth);
+  verificar('H9b o passo dos convidados cabe em 390 px sem rolagem lateral', true, semRolagem);
+  await h2.locator('#as-convidar-acoes button', { hasText: 'Criar o primeiro grupo' }).click();
+  await h2.waitForSelector('dialog[open]', { timeout: 10000 }); await h2.waitForTimeout(500);
+  verificar('H10 "Criar o primeiro grupo" fecha o assistente, abre a janela de novo grupo e marca o assistente como concluído',
+    { assistenteFechado: true, janelaGrupo: true, concluido: true },
+    { assistenteFechado: await h2.evaluate(() => document.getElementById('assistente').hidden), janelaGrupo: /grupo/i.test(await h2.textContent('#me-titulo')), concluido: (await estadoAssist()).concluido });
+  await ap1.close(); await ap2.close();
 
   if (erros.length) resultados.push({ cenario: 'F11 erros de página no painel', esperado: [], obtido: erros.slice(0, 3), ok: false });
 } catch (e) {

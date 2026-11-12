@@ -124,12 +124,14 @@ try {
   await page.goto(BASE + '/admin/?e=' + SLUG + '#painel');
   await page.waitForSelector('#faixaRascunho:not([hidden])'); await page.waitForTimeout(800);
   let envios = 0;
-  page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/admin\/publicacao/.test(r.url())) envios++; });
+  // só os pedidos de publicar contam (a mesma rota também guarda em que passo do assistente o anfitrião está)
+  page.on('request', (r) => { if (r.method() === 'POST' && /\/api\/admin\/publicacao/.test(r.url()) && /"publicado"/.test(r.postData() || '')) envios++; });
   await page.locator('#faixaRascunho button', { hasText: 'Publicar' }).first().click();
-  await page.waitForTimeout(500);
-  await page.getByRole('button', { name: 'Publicar agora' }).dblclick();
+  await page.waitForSelector('#as-resumo'); await page.waitForTimeout(500);
+  await page.getByRole('button', { name: 'Publicar o convite' }).dblclick(); // publicar agora é o último passo do assistente
   await page.waitForTimeout(1500);
-  verificar('P9 clique duplo em "Publicar agora" envia uma só vez', 1, envios);
+  verificar('P9 clique duplo em "Publicar o convite" envia uma só vez', 1, envios);
+  await page.click('#as-fechar'); await page.waitForTimeout(600); // sai do assistente para os próximos cenários
   verificar('P9b o convite aparece como publicado', true, !!(await api('GET', '/api/admin/publicacao')).publicado);
 
   // ---------- fila de envio pelo WhatsApp: clique duplo não abre a mesma pessoa duas vezes nem pula a próxima ----------

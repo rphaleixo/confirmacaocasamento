@@ -117,6 +117,8 @@ carregando → (sem código | erro | prazo encerrado) ou formulário → conferi
 
 Lidas só nos pontos de entrada e saída. Recado: pendente → aprovado ou excluído, só aprovados são públicos. Removidos: ficam 30 dias e podem ser restaurados (o código do grupo muda se foi tomado por outro). Preparação: o checklist é calculado a partir do conteúdo; o assistente abre uma vez por evento no primeiro acesso.
 
+Assistente do convite (passos: nomes, data, local, capa, tema, fim, convidar). O servidor guarda em `eventos.assistente_passo` onde o anfitrião parou (vazio = nunca abriu) e em `eventos.assistente_concluido` se terminou; a rota é a mesma da publicação. O assistente só abre sozinho para quem nunca o abriu em aparelho nenhum; depois disso, "Continuar de onde parei" retoma no passo guardado. O passo "fim" é onde se publica (conferindo → publicando → publicado | erro; clique repetido é ignorado) e leva ao passo "convidar", que só existe depois de publicar. O assistente fica concluído quando o anfitrião escolhe uma ação do passo "convidar" ou "Deixar para depois".
+
 ### 17. Fila de envio por WhatsApp
 
 Fases: config → envio → fim, e "fechada" a qualquer momento. Cada item da fila: pendente → enviado (ao abrir o WhatsApp) ou pulado. "Já recebeu nas últimas 24 horas" fica guardado no aparelho e tira a pessoa da próxima fila. Corrigido: depois de abrir o WhatsApp há uma pausa de meio segundo antes de ir para o próximo; um clique duplo nesse intervalo abria a mesma pessoa duas vezes e fazia a fila pular o próximo. Agora o clique repetido (no botão principal, em Voltar, em Pular ou na lista) é ignorado durante a pausa, e fechar a janela cancela o avanço pendente.

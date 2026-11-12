@@ -1275,7 +1275,7 @@
   let tiposCatalogo = [];
   let AVANCADO = false; // opções avançadas visíveis? (lembrado neste aparelho)
   try { AVANCADO = localStorage.getItem('rsvp-avancado') === '1'; } catch (e) { /* segue no modo simples */ }
-  const PUB = { publicado: true, token: '' }; // convite publicado? (e o token que abre o site real enquanto está "em breve")
+  const PUB = { publicado: true, token: '', assist: { passo: null, concluido: false } }; // convite publicado? (e o token que abre o site real enquanto está "em breve")
   function urlSite() { return window.ROTAS.urlSite(eventoAtual); }
   function urlSiteDe(slug) { return window.ROTAS.urlSite(slug); }
   function urlAnfitriao(slug) { return window.ROTAS.urlAdmin(slug); }
@@ -4692,7 +4692,7 @@
       const linkStatus = h('div', { class: 'dica-campo', 'aria-live': 'polite', style: 'min-height:16px;' });
       const linkBtn = btn('Usar este link', () => usarLink(), 'sm');
       const blocoLink = h('div', { class: 'lugar-link' },
-        h('label', { for: 'lugar-link', text: 'Link do local no Google Maps' }),
+        h('label', { for: 'lugar-link', text: campo.camposPrimeiro ? 'Ou cole o link do local no Google Maps (opcional)' : 'Link do local no Google Maps' }),
         h('div', { style: 'display:flex;gap:8px;align-items:center;' }, linkIn, linkBtn),
         h('div', { class: 'dica-campo', text: 'No Google Maps, abra o local, toque em Compartilhar e copie o link. Funciona com links curtos (maps.app.goo.gl) e completos.' }),
         linkStatus);
@@ -4706,9 +4706,10 @@
       const linkProcurar = h('a', { class: 'btn sm', href: '#', target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Procurar no Google Maps' });
       const ajudaPin = h('div', { class: 'lugar-ajuda', hidden: true },
         h('b', { text: 'O pin está no lugar errado?' }),
-        h('ol', {}, h('li', { text: 'Abra o Google Maps e encontre o local exato (você pode mover o mapa e tocar no ponto certo).' }), h('li', { text: 'Toque em Compartilhar e copie o link.' }), h('li', { text: 'Cole o link no campo "Link do local no Google Maps", no alto desta página.' })),
+        h('ol', {}, h('li', { text: 'Abra o Google Maps e encontre o local exato (você pode mover o mapa e tocar no ponto certo).' }), h('li', { text: 'Toque em Compartilhar e copie o link.' }), h('li', { text: campo.camposPrimeiro ? 'Cole o link no campo do link do Google Maps, logo acima do mapa.' : 'Cole o link no campo "Link do local no Google Maps", no alto desta página.' })),
         linkProcurar);
-      fs.append(
+      if (campo.camposPrimeiro) { camposBox.style.cssText = 'margin-top:0;padding-top:0;border-top:0;'; fs.append(camposBox, blocoLink, blocoBusca, painel, avisoPin, mapa, ajudaPin); }
+      else fs.append(
         blocoLink, blocoBusca, painel,
         avisoPin, mapa, ajudaPin, camposBox);
 
@@ -4746,7 +4747,7 @@
               btn('Trocar o local', () => { trocando = true; pintar(); linkIn.value = ''; linkIn.focus(); }, 'sm'),
               btn('Remover confirmação', () => { trocando = false; [hId, hLat, hLng, hUrl].forEach((i) => { i.value = ''; emitir(i); }); pintar(); atualizarMapa(); }, 'sm fantasma'))));
         } else if ((campoEnd() && campoEnd().value.trim()) || (campoNome() && campoNome().value.trim())) {
-          painel.appendChild(h('div', { class: 'lugar-aviso', text: 'Este endereço ainda não foi conferido no Google Maps. Cole acima o link do local no Google Maps para garantir que está certo.' }));
+          painel.appendChild(h('div', { class: 'lugar-aviso', text: campo.camposPrimeiro ? 'Confira no mapa abaixo se o pin está no lugar certo. Se não estiver, cole o link do local no Google Maps.' : 'Este endereço ainda não foi conferido no Google Maps. Cole acima o link do local no Google Maps para garantir que está certo.' }));
         }
       };
       const fechar = () => { lista.hidden = true; busca.setAttribute('aria-expanded', 'false'); ativo = -1; };
@@ -7157,7 +7158,7 @@
   let CONT_PREP = null;
   async function carregarPublicacao() {
     const r = await api('/api/admin/publicacao');
-    if (r && !r.erro) { PUB.publicado = !!r.publicado; PUB.token = r.token || ''; }
+    if (r && !r.erro) { PUB.publicado = !!r.publicado; PUB.token = r.token || ''; if (r.assistente) PUB.assist = { passo: r.assistente.passo || null, concluido: !!r.assistente.concluido }; }
     const ver = document.getElementById('verSite'); if (ver && !ver.hidden) ver.href = urlSiteVer();
     desenharFaixaRascunho();
   }
@@ -7182,7 +7183,7 @@
     try {
       const chave = 'rsvp-assist-visto:' + eventoAtual;
       const ess = tarefasConvite(d).filter((t) => t.essencial);
-      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => !t.feito).length >= 2) { localStorage.setItem(chave, '1'); abrirAssistente('nomes'); } // começa pelos nomes: se vieram da criação da festa, o anfitrião confere
+      if (!PUB.publicado && !PUB.assist.passo && !PUB.assist.concluido && !localStorage.getItem(chave) && ess.filter((t) => !t.feito).length >= 2) { localStorage.setItem(chave, '1'); abrirAssistente('nomes'); } // começa pelos nomes: se vieram da criação da festa, o anfitrião confere
     } catch (e) { /* sem armazenamento: não abre sozinho */ }
   }
   function desenharPreparacao(d) {
@@ -7206,7 +7207,7 @@
         h('p', { text: pronto ? (PUB.publicado ? 'Os convidados já veem o site. Que tal caprichar nos extras?' : 'Falta só publicar para os convidados verem.') : feitos + ' de ' + ess.length + ' passos essenciais feitos. Cada passo leva poucos minutos.' })),
       h('div', { class: 'prep-acoes' },
         !PUB.publicado ? btn(pronto ? 'Publicar convite' : 'Revisar e publicar', () => abrirPublicar(), pronto ? 'prim' : '') : null,
-        !pronto ? btn(feitos ? 'Continuar' : 'Começar', () => abrirAssistente(pend[0] && pend[0].passo), 'prim') : null));
+        !pronto ? btn(feitos || PUB.assist.passo ? 'Continuar de onde parei' : 'Começar', () => abrirAssistente(), 'prim') : null));
     const barra = h('div', { class: 'prep-barra', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }, h('i', { style: 'width:' + pct + '%' }));
     const tudo = h('div', {});
     tudo.append(cab, barra);
@@ -7230,66 +7231,8 @@
   }
 
   // ---- publicar: confere o que falta e escolhe entre convite completo e Save the Date ----
-  async function abrirPublicar() {
-    const d = (await api('/api/conteudo')) || {};
-    if (d.erro) { toast(d.erro, 'err'); return; }
-    CONT_PREP = d;
-    montarPassos(0, []); delete dlgEvento.dataset.fixo;
-    const corpo = corpoDialogo();
-    const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial);
-    // só os nomes e a data impedem de publicar (o servidor confere de novo); o resto continua opcional
-    const bloqueio = ess.filter((t) => (t.id === 'nomes' || t.id === 'data') && !t.feito), pend = ess.filter((t) => !t.feito && t.id !== 'nomes' && t.id !== 'data');
-    const opcPend = tarefas.filter((t) => t.opcional && !t.feito && t.modulo);
-    corpo.appendChild(h('p', { class: 'hint', style: 'margin:0 0 12px;', text: 'Ao publicar, o link do convite passa a mostrar o site para quem receber. Antes disso, os convidados veem uma página de "Em breve".' }));
-    if (bloqueio.length) {
-      corpo.appendChild(h('div', { class: 'aviso-midia', role: 'alert', style: 'margin:0 0 12px;' }, h('b', { text: 'Para publicar, falta: ' }), bloqueio.map((t) => t.titulo.toLowerCase()).join(' e ') + '.',
-        h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;' }, bloqueio.map((t) => btn('Preencher: ' + t.titulo.toLowerCase(), () => { fecharDialogo(); abrirAssistente(t.passo); }, 'sm prim')))));
-    }
-    if (pend.length) {
-      corpo.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 12px;' }, h('b', { text: 'Ainda falta: ' }), pend.map((t) => t.titulo.toLowerCase()).join(', ') + '. Dá para publicar assim mesmo e completar depois.'));
-    } else if (!bloqueio.length) corpo.appendChild(h('div', { class: 'ok-aviso', style: 'margin:0 0 12px;', text: 'Todos os passos essenciais estão feitos.' }));
-    let modo = 'convite';
-    const opcModo = (id, tit, sub) => {
-      const r = h('input', { type: 'radio', name: 'pb-modo', id: 'pb-' + id }); r.checked = modo === id; r.addEventListener('change', () => { modo = id; });
-      return h('label', { class: 'pb-modo', for: 'pb-' + id }, r, h('span', {}, h('b', { text: tit }), h('small', { text: sub })));
-    };
-    corpo.append(opcModo('convite', 'Convite completo', 'Todos os módulos ligados e a confirmação de presença aberta.'), opcModo('std', 'Só o Save the Date', 'O site mostra só a capa com a data. Você liga o convite completo quando quiser.'));
-    let esconder = null;
-    if (opcPend.length) {
-      esconder = h('input', { type: 'checkbox', id: 'pb-esconder' }); esconder.checked = true;
-      corpo.append(h('label', { class: 'check', for: 'pb-esconder', style: 'margin-top:14px;' }, esconder, 'Esconder o que ainda não preenchi (' + opcPend.map((t) => t.titulo.toLowerCase()).join(', ') + '). Dá para ligar depois.'));
-    }
-    const erro = h('div', { class: 'erro-campo', hidden: true }); corpo.appendChild(erro);
-    // Estados: aguardando → publicando (clique repetido é ignorado) → publicado | erro (dá para tentar de novo: os dois passos são repetíveis)
-    let publicando = false;
-    const publicar = async () => {
-      if (publicando || bloqueio.length) return;
-      publicando = true;
-      try {
-        const extras = {};
-        if (esconder && esconder.checked) opcPend.forEach((t) => { extras['secao.' + t.modulo + '.ativa'] = '0'; });
-        extras['config.modo_save_the_date'] = modo === 'std' ? '1' : '0';
-        erro.hidden = true;
-        const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
-        Object.assign(ctDados, extras);
-        const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; } // (o servidor também barra publicar sem nomes ou data)
-        PUB.publicado = true; desenharFaixaRascunho();
-        mostrarPublicado();
-        if (typeof atualizarSTD === 'function') atualizarSTD();
-        carregarPreparacao();
-      } finally { publicando = false; }
-    };
-    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Publicar agora', prim: true, desativado: bloqueio.length > 0, fn: publicar }]);
-    abrirDialogo({ titulo: 'Publicar o convite', largura: '540px' });
-  }
-  function mostrarPublicado() {
-    const corpo = corpoDialogo(); const link = urlSite();
-    corpo.append(h('div', { style: 'text-align:center;padding:6px 0;' }, h('div', { style: 'color:var(--ok);', 'aria-hidden': 'true', html: iconeSvg('check', 40) }), h('h3', { style: 'margin:6px 0 4px;', text: 'Convite publicado!' }),
-      h('p', { class: 'hint', text: 'Agora quem abrir o link vê o convite de verdade. Quando for compartilhar com os convidados, use o link de cada grupo (na área Convidados).' }),
-      h('div', { class: 'copiavel', style: 'margin-top:12px;' }, h('div', { class: 't' }, h('code', { text: link })))));
-    montarRodape([{ rotulo: 'Fechar', fn: fecharDialogo }, { rotulo: 'Copiar link do site', fn: () => copiar(link, 'Link do site') }, { rotulo: 'Ver o convite', prim: true, fn: () => window.open(urlSiteVer(), '_blank', 'noopener') }]);
-    document.getElementById('me-titulo').textContent = 'Publicado';
-  }
+  // Publicar é o passo "Conferir e publicar" do assistente (resumo, escolha do modo e o botão de publicar no mesmo lugar)
+  function abrirPublicar() { return abrirAssistente('fim'); }
 
   // ---- assistente passo a passo (uma pergunta por tela, com a prévia do site ao lado) ----
   const ASSIST = { ativo: false, passo: 0, passos: [], previa: null };
@@ -7298,7 +7241,7 @@
     const ativo = (m) => (!mods || mods.includes(m)) && d['secao.' + m + '.ativa'] !== '0';
     const p = [{ id: 'nomes', ancora: 'hero' }, { id: 'data', ancora: 'hero' }];
     if (ativo('mapa')) p.push({ id: 'local', ancora: 'map' });
-    p.push({ id: 'capa', ancora: 'hero' }, { id: 'tema', ancora: 'hero' }, { id: 'fim', ancora: 'hero' });
+    p.push({ id: 'capa', ancora: 'hero' }, { id: 'tema', ancora: 'hero' }, { id: 'fim', ancora: 'hero' }, { id: 'convidar', ancora: 'hero' });
     return p.map((x) => Object.assign({ aniv }, x));
   }
   function fecharAssistente() { agendarCompartilhar(); const a = document.getElementById('assistente'); if (a) a.hidden = true; ASSIST.ativo = false; document.body.classList.remove('assistente-aberto'); }
@@ -7307,18 +7250,25 @@
     if (d.erro) { toast(d.erro, 'err'); return; }
     ctDados = Object.assign(ctDados || {}, d); CONT_PREP = d;
     ASSIST.passos = passosDoAssistente(d); ASSIST.ativo = true;
-    const i = ASSIST.passos.findIndex((x) => x.id === passoId);
-    ASSIST.passo = i >= 0 ? i : Math.max(0, ASSIST.passos.findIndex((x) => { const t = tarefasConvite(d).find((q) => q.passo === x.id && q.essencial); return t && !t.feito; }));
+    // Onde abrir: no passo pedido; senão onde o anfitrião parou (guardado no servidor, vale em qualquer aparelho); senão no primeiro
+    // passo essencial que falta; com tudo feito, em "Conferir e publicar". O passo dos convidados só existe depois de publicar.
+    const indice = (id) => ASSIST.passos.findIndex((x) => x.id === id && (id !== 'convidar' || PUB.publicado));
+    const falta = ASSIST.passos.findIndex((x) => { const t = tarefasConvite(d).find((q) => q.passo === x.id && q.essencial); return t && !t.feito; });
+    let i = passoId ? indice(passoId) : -1;
+    if (i < 0 && !passoId && PUB.assist.passo && !PUB.assist.concluido) i = indice(PUB.assist.passo);
+    if (i < 0) i = falta >= 0 ? falta : indice('fim');
+    ASSIST.passo = Math.max(0, i);
     document.getElementById('assistente').hidden = false; document.body.classList.add('assistente-aberto');
     desenharPasso();
   }
   const TEXTOS_PASSO = {
     nomes: (aniv) => aniv ? ['Quem faz aniversário?', 'O nome aparece na capa, no título do site e na imagem que acompanha o link.'] : ['Quem vai se casar?', 'Os nomes aparecem na capa, no título do site e na imagem que acompanha o link.'],
     data: () => ['Quando vai ser?', 'A data alimenta a contagem regressiva, o "salvar na agenda" e o texto da capa. O prazo de confirmação é sugerido por nós.'],
-    local: () => ['Onde vai ser?', 'Cole o link do local no Google Maps: o nome, o endereço e o mapa se preenchem sozinhos.'],
+    local: () => ['Onde vai ser?', 'Escreva o nome e o endereço do local. Se preferir, cole o link do Google Maps e eles se preenchem sozinhos.'],
     capa: () => ['Uma foto para a capa', 'É a primeira coisa que o convidado vê. Pode ser uma foto de vocês ou de um vídeo curto.'],
     tema: () => ['Escolha o visual', 'Um clique define cores, letras e o estilo do site. Você pode mudar tudo depois.'],
-    fim: () => ['Quase lá!', 'Confira como o convite está ficando. Dá para publicar agora ou continuar depois.'],
+    fim: () => PUB.publicado ? ['Seu convite já está publicado', 'Quem abrir o link vê o convite. Confira abaixo o que está preenchido.'] : ['Conferir e publicar', 'Veja o que já está preenchido, escolha como publicar e pronto. Antes de publicar, os convidados veem uma página de "Em breve".'],
+    convidar: () => ['Agora convide as pessoas', 'Seu convite está publicado. Cada grupo (uma família, um casal ou uma pessoa) recebe um link próprio para confirmar a presença.'],
   };
   function textoCampo(chave, rotulo, valor, placeholder, dica) {
     const i = h('input', { type: 'text', 'data-chave': chave, placeholder: placeholder || null, autocomplete: 'off' }); i.value = valor || '';
@@ -7338,7 +7288,7 @@
     const mudarPadrao = (k, pad) => (String(d[k] === undefined ? '' : d[k]).trim() === pad ? '' : String(d[k] === undefined ? '' : d[k]));
     if (passo.id === 'nomes') {
       if (aniv) { fs.append(textoCampo('hero.noiva', 'Nome do aniversariante', mudarPadrao('hero.noiva', ''), 'Ex.: Helena'), textoCampo('hero.idade', 'Idade ou destaque (opcional)', d['hero.idade'] || '', 'Ex.: 5 anos')); }
-      else fs.append(textoCampo('hero.noiva', 'Nome da noiva', mudarPadrao('hero.noiva', 'Noiva'), 'Ex.: Ana'), textoCampo('hero.noivo', 'Nome do noivo', mudarPadrao('hero.noivo', 'Noivo'), 'Ex.: Beto'));
+      else fs.append(textoCampo('hero.noiva', 'Primeiro nome', mudarPadrao('hero.noiva', 'Noiva'), 'Ex.: Ana'), textoCampo('hero.noivo', 'Segundo nome', mudarPadrao('hero.noivo', 'Noivo'), 'Ex.: Beto'));
       // nomes que já vieram preenchidos (informados na criação da festa): o anfitrião só confere
       if (Array.from(fs.querySelectorAll('[data-chave="hero.noiva"], [data-chave="hero.noivo"]')).some((i) => i.value.trim())) fs.appendChild(h('div', { class: 'dica-campo', id: 'as-nomes-conferir', style: 'margin-top:12px;', text: 'Já está preenchido. Confira se está certo e corrija aqui se precisar.' }));
     } else if (passo.id === 'data') {
@@ -7369,7 +7319,7 @@
       fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.data_iso') aoMudarData(); });
       setTimeout(aoMudarData, 0);
     } else if (passo.id === 'local') {
-      renderCampoConteudo(fs, { chave: '__lugar__', tipo: 'lugar' });
+      renderCampoConteudo(fs, { chave: '__lugar__', tipo: 'lugar', camposPrimeiro: true }); // no assistente: primeiro o nome e o endereço; o link do Google Maps é opcional
     } else if (passo.id === 'capa') {
       renderCampoConteudo(fs, { chave: '__midia__', tipo: 'midia_capa' });
       const sug = h('div', { class: 'as-sug', hidden: true }); corpo.appendChild(sug);
@@ -7393,24 +7343,111 @@
       lista.forEach((t) => cartao(t.id, t.nome, t.desc, t.cores, async () => { await salvarChaves(chavesDoTema(t)); toast('Tema "' + t.nome + '" aplicado'); }));
       pintar();
     } else if (passo.id === 'fim') {
+      // Conferir e publicar em um passo só. Estados: conferindo → publicando (clique repetido é ignorado) → publicado (vai ao passo
+      // dos convidados) | erro (fica aqui; dá para tentar de novo, porque gravar o modo e publicar são repetíveis).
       const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial);
-      const ul = h('div', { class: 'prep-lista' });
+      const bloqueio = ess.filter((t) => (t.id === 'nomes' || t.id === 'data') && !t.feito); // só nomes e data impedem de publicar (o servidor confere de novo)
+      const opcPend = tarefas.filter((t) => t.opcional && !t.feito && t.modulo);
+      const ul = h('div', { class: 'prep-lista', id: 'as-resumo' });
       ess.forEach((t) => { const b = h('button', { type: 'button', class: 'prep-item' + (t.feito ? ' ok' : '') }, h('span', { class: 'bola', 'aria-hidden': 'true', html: t.feito ? iconeSvg('check', 14) : '' }), h('span', { class: 'nm', text: t.titulo }), h('span', { class: 'tp', text: t.feito ? 'feito' : 'fazer agora' })); b.addEventListener('click', () => { const i = ASSIST.passos.findIndex((x) => x.id === t.passo); if (i >= 0) { ASSIST.passo = i; desenharPasso(); } }); ul.appendChild(b); });
       fs.appendChild(ul);
-      fs.appendChild(h('p', { class: 'hint', style: 'margin-top:14px;', text: 'Depois de publicar, a área Convidados ajuda a enviar os links. Os extras (história, padrinhos, galeria, presentes…) ficam no checklist do Painel.' }));
+      ASSIST.pub = { bloqueio, publicar: null };
+      if (!PUB.publicado) {
+        if (bloqueio.length) {
+          fs.appendChild(h('div', { class: 'aviso-midia', role: 'alert', id: 'as-bloqueio', style: 'margin-top:14px;' }, h('b', { text: 'Para publicar, falta: ' }), bloqueio.map((t) => t.titulo.toLowerCase()).join(' e ') + '.',
+            h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;' }, bloqueio.map((t) => btn('Preencher: ' + t.titulo.toLowerCase(), () => { const i = ASSIST.passos.findIndex((x) => x.id === t.passo); if (i >= 0) { ASSIST.passo = i; desenharPasso(); } }, 'prim')))));
+        } else if (ess.some((t) => !t.feito)) {
+          fs.appendChild(h('div', { class: 'aviso-midia', style: 'margin-top:14px;' }, h('b', { text: 'Ainda falta: ' }), ess.filter((t) => !t.feito).map((t) => t.titulo.toLowerCase()).join(', ') + '. Dá para publicar assim mesmo e completar depois.'));
+        }
+        let modo = 'convite';
+        const opcModo = (id, tit, sub) => {
+          const r = h('input', { type: 'radio', name: 'pb-modo', id: 'pb-' + id }); r.checked = modo === id; r.addEventListener('change', () => { modo = id; });
+          return h('label', { class: 'pb-modo', for: 'pb-' + id }, r, h('span', {}, h('b', { text: tit }), h('small', { text: sub })));
+        };
+        fs.append(h('label', { style: 'display:block;margin-top:18px;', text: 'Como você quer publicar?' }),
+          opcModo('convite', 'Convite completo', 'Todas as partes ligadas e a confirmação de presença aberta.'), opcModo('std', 'Só o Save the Date', 'O site mostra só a capa com a data. Você liga o convite completo quando quiser.'));
+        let esconder = null;
+        if (opcPend.length) {
+          esconder = h('input', { type: 'checkbox', id: 'pb-esconder' }); esconder.checked = true;
+          fs.append(h('label', { class: 'check', for: 'pb-esconder', style: 'margin-top:14px;min-height:44px;' }, esconder, 'Esconder o que ainda não preenchi (' + opcPend.map((t) => t.titulo.toLowerCase()).join(', ') + '). Dá para ligar depois.'));
+        }
+        const erro = h('div', { class: 'erro-campo', role: 'alert', id: 'as-pub-erro', hidden: true }); fs.appendChild(erro);
+        let publicando = false;
+        ASSIST.pub.publicar = async (botao) => {
+          if (publicando || bloqueio.length) return;
+          publicando = true; botao.disabled = true; botao.textContent = 'Publicando…';
+          try {
+            const extras = {};
+            if (esconder && esconder.checked) opcPend.forEach((t) => { extras['secao.' + t.modulo + '.ativa'] = '0'; });
+            extras['config.modo_save_the_date'] = modo === 'std' ? '1' : '0';
+            erro.hidden = true;
+            const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
+            Object.assign(ctDados, extras);
+            const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; } // (o servidor também barra publicar sem nomes ou data)
+            PUB.publicado = true; desenharFaixaRascunho();
+            if (typeof atualizarSTD === 'function') atualizarSTD();
+            toast('Convite publicado!');
+            ASSIST.recemPublicado = true; // o segundo clique de um clique duplo não pode cair no botão do passo seguinte
+            ASSIST.passo = ASSIST.passos.findIndex((x) => x.id === 'convidar'); desenharPasso();
+          } finally { publicando = false; if (!PUB.publicado) { botao.disabled = false; botao.textContent = 'Publicar o convite'; } }
+        };
+      } else {
+        fs.appendChild(h('p', { class: 'hint', style: 'margin-top:14px;', text: 'Os extras (história, padrinhos, galeria, presentes…) ficam no checklist do Painel.' }));
+      }
+    } else if (passo.id === 'convidar') {
+      // Depois de publicar: o próximo passo é cadastrar os convidados e mandar os links. O anfitrião pode deixar para depois.
+      const concluir = async () => { await concluirAssistente(); };
+      const acoes = h('div', { id: 'as-convidar-acoes', style: 'display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;' });
+      fs.appendChild(acoes);
+      const criarGrupo = async () => { await concluir(); if (abaAtual !== 'painel') await navegar('painel'); abrirNovoGrupo(); };
+      const importar = async () => { await concluir(); navegar('importar'); };
+      acoes.append(btn('Criar o primeiro grupo', criarGrupo, 'prim'), btn('Importar a lista de uma planilha', importar, ''));
+      api('/api/admin/grupos').then((gs) => {
+        if (!Array.isArray(gs) || !gs.length || !acoes.isConnected) return;
+        acoes.innerHTML = '';
+        acoes.append(h('p', { class: 'hint', style: 'margin:0;flex-basis:100%;', text: 'Você já tem ' + plural(gs.length, 'grupo cadastrado', 'grupos cadastrados') + '.' }),
+          btn('Ver meus convidados', async () => { await concluir(); if (abaAtual !== 'painel') navegar('painel'); }, 'prim'), btn('Criar outro grupo', criarGrupo, ''), btn('Importar a lista de uma planilha', importar, ''));
+      });
+      fs.append(h('label', { style: 'display:block;margin-top:22px;', text: 'Como enviar o link de um grupo pelo WhatsApp' }),
+        h('ol', { class: 'passos-lista', id: 'as-como-enviar', style: 'margin-top:8px;' },
+          h('li', { text: 'Crie o grupo e adicione as pessoas, com o telefone de quem vai receber o convite.' }),
+          h('li', { text: 'No Painel, cada grupo tem o botão "WhatsApp". Ele abre a conversa com a mensagem e o link do grupo já prontos: é só enviar.' }),
+          h('li', { text: 'Para mandar a vários grupos em sequência, use o botão "Enviar em fila".' })),
+        h('div', { style: 'margin-top:14px;' }, h('a', { class: 'btn', style: 'min-height:44px;display:inline-flex;align-items:center;', href: urlSiteVer(), target: '_blank', rel: 'noopener', html: ICONES.abrir + 'Ver o convite como o convidado vê' })));
     }
     // prévia ao vivo
     const lado = document.getElementById('as-previa'); lado.innerHTML = '';
     ASSIST.previa = criarPreviaModulo({ titulo: 'Assistente ' + passo.id, ancora: passo.ancora }, corpo);
     lado.appendChild(ASSIST.previa.el);
     // botões
-    const ult = ASSIST.passo === n - 1;
     const voltar = document.getElementById('as-voltar'), pular = document.getElementById('as-pular'), prox = document.getElementById('as-proximo');
-    voltar.hidden = ASSIST.passo === 0; pular.hidden = ult || passo.id === 'nomes';
-    prox.textContent = ult ? 'Publicar o convite' : 'Continuar';
-    voltar.onclick = () => irPasso(-1, false); pular.onclick = () => irPasso(1, false);
-    prox.onclick = async () => { if (ult) { await salvarPasso(); fecharAssistente(); abrirPublicar(); } else irPasso(1, true); };
+    voltar.hidden = ASSIST.passo === 0; voltar.onclick = () => irPasso(-1, false);
+    prox.disabled = false; pular.textContent = 'Pular este passo';
+    if (passo.id === 'fim' && !PUB.publicado) {
+      pular.hidden = true; prox.textContent = 'Publicar o convite'; prox.disabled = ASSIST.pub.bloqueio.length > 0;
+      prox.onclick = () => ASSIST.pub.publicar(prox);
+    } else if (passo.id === 'convidar') {
+      pular.hidden = true; prox.textContent = 'Deixar para depois'; prox.onclick = () => concluirAssistente();
+      if (ASSIST.recemPublicado) { ASSIST.recemPublicado = false; prox.disabled = true; setTimeout(() => { prox.disabled = false; }, 800); }
+    } else {
+      pular.hidden = passo.id === 'nomes' || passo.id === 'fim'; prox.textContent = 'Continuar';
+      pular.onclick = () => irPasso(1, false); prox.onclick = () => irPasso(1, passo.id !== 'fim');
+    }
+    guardarPassoAssistente(passo.id);
     raiz.querySelector('.as-corpo-wrap').scrollTop = 0;
+  }
+  // O servidor guarda em que passo o anfitrião está: em outro aparelho, "Continuar de onde parei" abre no mesmo lugar.
+  // Não trava a tela nem avisa em caso de falha: na pior das hipóteses o assistente reabre no primeiro passo que falta.
+  function guardarPassoAssistente(id) {
+    if (PUB.assist.passo === id || PUB.assist.concluido) return;
+    PUB.assist.passo = id;
+    api('/api/admin/publicacao', 'POST', { assistente: { passo: id } }).catch(() => {});
+  }
+  async function concluirAssistente() {
+    PUB.assist = { passo: 'convidar', concluido: true };
+    await api('/api/admin/publicacao', 'POST', { assistente: { passo: 'convidar', concluido: true } });
+    fecharAssistente();
+    if (abaAtual === 'painel') carregarPreparacao();
   }
   async function salvarChaves(obj) {
     const r = await api('/api/admin/conteudo', 'POST', obj);
@@ -7432,6 +7469,7 @@
     if (salvar && delta > 0 && ASSIST.passos[ASSIST.passo].id === 'tema' && !(await salvarChaves({ 'aparencia.visual_confirmado': '1' }))) return;
     const novo = ASSIST.passo + delta;
     if (novo < 0 || novo >= ASSIST.passos.length) return;
+    if (ASSIST.passos[novo].id === 'convidar' && !PUB.publicado) return;
     ASSIST.passo = novo; desenharPasso();
   }
   document.getElementById('as-fechar').addEventListener('click', async () => { await salvarPasso(); fecharAssistente(); if (abaAtual === 'painel') carregarPreparacao(); else toast('Tudo o que você preencheu foi salvo. Continue quando quiser pelo Painel.'); });

@@ -260,6 +260,16 @@ const MIGRACOES = [
       return ['ALTER TABLE convidados ADD COLUMN aberto_em TEXT'];
     },
   },
+  {
+    // assistente do convite: em que passo o anfitrião parou e se já concluiu (guardado no servidor para continuar em outro aparelho)
+    id: '015-assistente-do-convite',
+    async comandos(db) {
+      if (!(await tabelaExiste(db, 'eventos'))) return null;
+      const tem = await db.prepare("SELECT 1 AS ok FROM pragma_table_info('eventos') WHERE name = 'assistente_passo'").first();
+      if (tem) return null;
+      return ['ALTER TABLE eventos ADD COLUMN assistente_passo TEXT', 'ALTER TABLE eventos ADD COLUMN assistente_concluido INTEGER NOT NULL DEFAULT 0'];
+    },
+  },
 ];
 
 let emAndamento = null; // uma verificação por instância do worker

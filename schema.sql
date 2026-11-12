@@ -13,7 +13,10 @@ CREATE TABLE eventos (
   admin_senha_hash TEXT,
   -- 0 = convite em preparação: os convidados veem a página "Em breve" (o anfitrião vê o site real com o token do rascunho)
   publicado INTEGER NOT NULL DEFAULT 1,
-  token_rascunho TEXT
+  token_rascunho TEXT,
+  -- assistente do convite: passo em que o anfitrião parou (NULL = nunca abriu) e se já concluiu
+  assistente_passo TEXT,
+  assistente_concluido INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE grupos (
