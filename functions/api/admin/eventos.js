@@ -1,5 +1,5 @@
 // Gestão transversal da plataforma — SÓ o admin master. O anfitrião (login do evento) recebe 403.
-import { jsonResponse, hashSenha, novoSalt } from '../../_lib.js';
+import { jsonResponse, hashSenha, novoSalt, limparHtml } from '../../_lib.js';
 import { TIPOS, tipoDe, padroesIniciais } from '../../_tipos.js';
 import { RESERVADOS } from '../../_enderecos.js';
 
@@ -34,7 +34,12 @@ export async function onRequestGet({ env, data }) {
   return jsonResponse(results.map((r) => ({ ...r, tipoNome: TIPOS[tipoDe(r.tipo)].nome })));
 }
 
-// POST body: { nome, slug?, tipo?, copiarDe?, anfitriaoUsuario?, anfitriaoSenha? }
+// Nome de pessoa informado na criação: texto de uma linha, até 80 letras, passado pela mesma limpeza dos textos do convite.
+const nomePessoa = (v) => limparHtml(String(typeof v === 'string' ? v : '').slice(0, 80)).replace(/\s+/g, ' ').trim();
+
+// POST body: { nome, slug?, tipo?, copiarDe?, anfitriaoUsuario?, anfitriaoSenha?, nomes?: { primeiro, segundo?, idade? } }
+// nomes = quem aparece na capa (casamento: as duas pessoas; aniversário: o aniversariante e, se quiser, a idade). Vão direto
+// para o convite, para o anfitrião não digitar de novo: o assistente mostra o que veio daqui para ele conferir.
 // Cria um evento novo em /e/<slug>. O login do anfitrião é opcional na criação (pode ser definido depois).
 // copiarDe = slug de outro evento cujas configurações/conteúdo serão copiados como ponto de partida
 // (convidados, grupos e recados nunca são copiados).
@@ -95,6 +100,16 @@ export async function onRequestPost({ request, env, data }) {
         ? db.prepare('INSERT INTO conteudo (evento_id, chave, valor) VALUES (?, ?, ?) ON CONFLICT(evento_id, chave) DO UPDATE SET valor = excluded.valor').bind(id, chave, doEvento[chave])
         : db.prepare('DELETE FROM conteudo WHERE evento_id = ? AND chave = ?').bind(id, chave))));
     }
+  }
+
+  // nomes da capa informados na criação (depois da cópia, para valerem os deste evento e não os do evento de origem)
+  const nomes = payload.nomes && typeof payload.nomes === 'object' ? payload.nomes : {};
+  const capa = { 'hero.noiva': nomePessoa(nomes.primeiro) };
+  if (tipo === 'aniversario') capa['hero.idade'] = nomePessoa(nomes.idade); else capa['hero.noivo'] = nomePessoa(nomes.segundo);
+  const preenchidos = Object.entries(capa).filter(([, valor]) => valor);
+  if (preenchidos.length) {
+    const ins = db.prepare('INSERT INTO conteudo (evento_id, chave, valor) VALUES (?, ?, ?) ON CONFLICT(evento_id, chave) DO UPDATE SET valor = excluded.valor');
+    await db.batch(preenchidos.map(([chave, valor]) => ins.bind(id, chave, valor)));
   }
 
   return jsonResponse({ id, slug, nome, tipo });

@@ -1,5 +1,5 @@
 // Teste do FLUXO DE CRIAÇÃO DO CONVITE: evento novo nasce sem dados inventados, checklist, bloqueio de publicação,
-// prévia do assistente e marca de exemplo.
+// prévia do assistente e marca de exemplo (etapa 1); criação em uma tela, nomes na criação e link de primeiro acesso (etapa 2).
 //
 //   1. Servidor local rodando (README, "Rodar no computador") com os dados de exemplo.
 //   2. PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/fluxo-criacao.mjs [http://localhost:8799] [slug-de-um-evento-existente]
@@ -136,6 +136,92 @@ try {
     const cv = await conteudoDe(SLUG_EXISTENTE);
     verificar('F10 evento existente com data e local preenchidos continua mostrando os dele', { semNeutro: true, temData: true }, { semNeutro: !/a definir/i.test(tv.data + tv.local), temData: tv.data.trim().length > 0 });
   }
+  // ================= ETAPA 2: criação em uma tela, nomes na criação e link de primeiro acesso =================
+  // ---------- servidor: os nomes informados na criação vão para o convite ----------
+  const slugN = 'nomes-' + sufixo;
+  await api('POST', '/api/admin/eventos', { nome: 'Casamento com nomes ' + sufixo, slug: slugN, tipo: 'casamento', nomes: { primeiro: '  Ana  ', segundo: 'Beto <script>x</script>' } });
+  const cn = await conteudoDe(slugN);
+  verificar('G1 nomes da criação são gravados no convite (limpos)', { a: 'Ana', b: 'Beto' }, { a: cn['hero.noiva'], b: cn['hero.noivo'] });
+  const slugC = 'copia-' + sufixo;
+  await api('POST', '/api/admin/eventos', { nome: 'Cópia ' + sufixo, slug: slugC, tipo: 'casamento', copiarDe: slugN, nomes: { primeiro: 'Caio', segundo: 'Davi' } });
+  const cc = await conteudoDe(slugC);
+  verificar('G2 ao copiar de outro evento valem os nomes deste, não os do evento de origem', { a: 'Caio', b: 'Davi' }, { a: cc['hero.noiva'], b: cc['hero.noivo'] });
+  const slugA = 'aniv-nomes-' + sufixo;
+  await api('POST', '/api/admin/eventos', { nome: 'Aniversário com nome ' + sufixo, slug: slugA, tipo: 'aniversario', nomes: { primeiro: 'Helena', idade: '5 anos' } });
+  const ca = await conteudoDe(slugA);
+  verificar('G3 aniversário: nome e idade gravados', { nome: 'Helena', idade: '5 anos' }, { nome: ca['hero.noiva'], idade: ca['hero.idade'] });
+
+  // ---------- painel geral: tela única ----------
+  const geral = await ctx.newPage();
+  geral.on('pageerror', (e) => erros.push('criação: ' + e.message));
+  await geral.goto(BASE + '/admin/#eventos');
+  await geral.fill('#loginUsuario', USER); await geral.fill('#loginSenha', PASS); await geral.click('#loginBtn');
+  await geral.waitForSelector('#app:not([hidden])'); await geral.waitForTimeout(1200);
+  await geral.click('#btnNovoEvento'); await geral.waitForSelector('#me-primeiro');
+  const botaoCriar = () => geral.evaluate(() => { const b = document.querySelector('#me-foot .prim'); return { texto: b.textContent, travado: b.disabled }; });
+  verificar('G4 tudo em uma tela (tipo, nomes, nome e endereço), sem passos, com o botão travado enquanto falta algo',
+    { campos: true, passos: false, botao: { texto: 'Criar evento', travado: true } },
+    { campos: await geral.evaluate(() => ['me-primeiro', 'me-segundo', 'me-nome', 'me-slug'].every((id) => !!document.getElementById(id)) && document.querySelectorAll('#me-corpo .opcao-tipo').length >= 2),
+      passos: await geral.evaluate(() => !document.getElementById('me-passos').hidden), botao: await botaoCriar() });
+  const pn = 'Lia' + sufixo;
+  await geral.fill('#me-primeiro', pn); await geral.fill('#me-segundo', 'Noa');
+  verificar('G5 nome do evento e endereço sugeridos a partir dos nomes', { nome: 'Casamento de ' + pn + ' e Noa', slug: (pn + '-e-noa').toLowerCase(), travado: false },
+    { nome: await geral.inputValue('#me-nome'), slug: await geral.inputValue('#me-slug'), travado: (await botaoCriar()).travado });
+  // caminho secundário: marcar "criar usuário e senha" traz o usuário sugerido (antes vinha vazio e o botão nunca liberava)
+  await geral.click('#me-mais summary'); await geral.check('#me-criar-login');
+  verificar('G6 ao marcar usuário e senha, o usuário vem sugerido do endereço e o botão continua liberado', { usuario: (pn + '-e-noa').toLowerCase(), travado: false },
+    { usuario: await geral.inputValue('#me-usuario'), travado: (await botaoCriar()).travado });
+  await geral.uncheck('#me-criar-login');
+  // clique duplo: cria um evento só
+  let criacoes = 0;
+  geral.on('request', (rq) => { if (rq.method() === 'POST' && /\/api\/admin\/eventos/.test(rq.url())) criacoes++; });
+  await geral.dblclick('#me-foot .prim');
+  await geral.waitForSelector('#me-link-acesso code', { timeout: 15000 });
+  const link = await geral.textContent('#me-link-acesso code');
+  const tokenAcesso = (link.match(/\/entrar\/([a-f0-9]{48})$/) || [])[1] || '';
+  const conv = tokenAcesso ? await (await fetch(BASE + '/api/entrar/convite?t=' + tokenAcesso)).json() : {};
+  verificar('G7 clique duplo em "Criar evento" cria um evento só', 1, criacoes);
+  verificar('G8 ao concluir aparece o link de primeiro acesso, válido para o evento criado, com copiar mensagem e WhatsApp',
+    { linkDoEvento: (pn + '-e-noa').toLowerCase(), botoes: ['Gerir este evento', 'Copiar mensagem', 'Enviar por WhatsApp'] },
+    { linkDoEvento: conv.evento && conv.evento.slug, botoes: await geral.$$eval('#me-foot button', (bs) => bs.map((x) => x.textContent)) });
+  const cl = await conteudoDe((pn + '-e-noa').toLowerCase());
+  verificar('G9 os nomes digitados na tela foram para o convite', { a: pn, b: 'Noa' }, { a: cl['hero.noiva'], b: cl['hero.noivo'] });
+  const semLogin = (await api('GET', '/api/admin/eventos')).find((e) => e.slug === (pn + '-e-noa').toLowerCase());
+  verificar('G10 pelo caminho principal o evento nasce sem usuário e senha', null, semLogin ? semLogin.anfitriaoUsuario : 'evento não achado');
+  await geral.click('#me-x');
+
+  // caminho secundário de ponta a ponta: usuário e senha criados na mesma tela entram no painel do evento
+  await geral.click('#btnNovoEvento'); await geral.waitForSelector('#me-primeiro');
+  const ps = 'Rui' + sufixo;
+  await geral.fill('#me-primeiro', ps); await geral.fill('#me-segundo', 'Teo');
+  await geral.click('#me-mais summary'); await geral.check('#me-criar-login');
+  const senhaGerada = await geral.inputValue('#me-senha');
+  await geral.click('#me-foot .prim');
+  await geral.waitForFunction(() => /está pronto/.test(document.getElementById('me-titulo').textContent), null, { timeout: 15000 });
+  const slugS = (ps + '-e-teo').toLowerCase();
+  const entra = await fetch(BASE + '/api/admin/painel?e=' + slugS, { headers: { Authorization: 'Basic ' + Buffer.from(slugS + ':' + senhaGerada).toString('base64') } });
+  verificar('G11 caminho secundário: o usuário e a senha mostrados entram no painel do evento, e a tela não mostra link de acesso', { http: 200, link: false },
+    { http: entra.status, link: await geral.evaluate(() => !!document.getElementById('me-link-acesso')) });
+  await geral.click('#me-x');
+
+  // ---------- anfitrião: assistente com os nomes já preenchidos e capa sem "Noiva & Noivo" ----------
+  const anf = await ctx.newPage();
+  anf.on('pageerror', (e) => erros.push('assistente: ' + e.message));
+  await anf.goto(BASE + '/admin/?e=' + slugN + '#painel');
+  await anf.fill('#loginUsuario', USER); await anf.fill('#loginSenha', PASS); await anf.click('#loginBtn');
+  await anf.waitForSelector('#assistente:not([hidden])', { timeout: 15000 }); await anf.waitForTimeout(600);
+  verificar('G12 no primeiro acesso o assistente abre nos nomes, já preenchidos, com o aviso para conferir',
+    { titulo: 'Quem vai se casar?', a: 'Ana', b: 'Beto', aviso: true },
+    { titulo: await anf.textContent('#as-titulo'), a: await anf.inputValue('#as-corpo [data-chave="hero.noiva"]'), b: await anf.inputValue('#as-corpo [data-chave="hero.noivo"]'), aviso: await anf.evaluate(() => !!document.getElementById('as-nomes-conferir')) });
+  await anf.click('#as-fechar'); await anf.waitForTimeout(1500);
+  const itemNomes = await anf.evaluate(() => { const i = Array.from(document.querySelectorAll('#p-prep .prep-item')).find((x) => /Nomes do casal/.test(x.textContent)); return i ? i.classList.contains('ok') : null; });
+  verificar('G13 nomes vindos da criação contam como preenchidos no checklist', true, itemNomes);
+  const tokenN = (await api('GET', '/api/admin/publicacao', null, slugN)).token;
+  const capa = await ctx.newPage();
+  await capa.goto(BASE + '/e/' + slugN + '/?rascunho=' + tokenN); await capa.waitForTimeout(2500);
+  const nomesCapa = await capa.evaluate(() => document.querySelector('#hero h1').innerText.replace(/\s+/g, ' ').trim());
+  verificar('G14 a capa do evento novo mostra os nomes informados, não "Noiva & Noivo"', { temNomes: true, semProvisorio: true }, { temNomes: /Ana/.test(nomesCapa) && /Beto/.test(nomesCapa), semProvisorio: !/Noiva|Noivo/.test(nomesCapa) });
+
   if (erros.length) resultados.push({ cenario: 'F11 erros de página no painel', esperado: [], obtido: erros.slice(0, 3), ok: false });
 } catch (e) {
   resultados.push({ cenario: 'ERRO NO TESTE', esperado: 'sem exceção', obtido: String((e && e.message) || e).split('\n')[0], ok: false });

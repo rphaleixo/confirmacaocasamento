@@ -2081,7 +2081,7 @@
     const r = await api('/api/admin/convite-acesso?e=' + encodeURIComponent(ev.slug), 'POST', {});
     corpo.innerHTML = '';
     if (r.erro) { corpo.appendChild(h('div', { class: 'erro-campo', text: r.erro })); return; }
-    const msg = 'Oi! Seu painel da festa "' + ev.nome + '" está pronto. Abra este link para criar seu acesso (vale por ' + r.dias + ' dias e só funciona uma vez): ' + r.url;
+    const msg = mensagemConviteAcesso(ev.nome, r);
     corpo.append(
       h('p', { class: 'hint', style: 'margin:0 0 10px;', text: 'Mande este link ao anfitrião. Ele escolhe entrar com o Google ou criar um usuário e uma senha, e cai direto no assistente da festa. Só funciona uma vez e vale ' + r.dias + ' dias. Se gerar outro, os anteriores continuam valendo até serem usados ou vencerem.' }),
       h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('code', { style: 'overflow-wrap:anywhere;', text: r.url }))));
@@ -2209,137 +2209,183 @@
     return 'Acesso ao painel de ' + nome + '\n\nSite para os convidados: ' + urlSiteDe(slug) + '\nPainel: ' + urlAnfitriao(slug) + (usuario ? '\nUsuário: ' + usuario + '\nSenha: ' + senha : '');
   }
 
-  // ----- Novo evento -----
-  const PASSOS_NOVO = ['Tipo', 'Evento', 'Anfitrião', 'Revisão'];
+  // ----- Novo evento: uma tela só (tipo, nomes da capa, nome e endereço). Ao concluir, o link de primeiro acesso do anfitrião. -----
+  // Estados da janela: preenchendo → criando (botão travado) → criado (link de acesso, ou usuário e senha) | erro (volta a preenchendo).
+  const juntarNomes = (a, b) => [a, b].map((x) => String(x || '').trim()).filter(Boolean).join(' e ');
+  function nomeEventoSugerido(est) {
+    const p = est.primeiro.trim(), s = est.segundo.trim();
+    if (est.tipo === 'aniversario') return p ? 'Aniversário de ' + p : '';
+    return p || s ? 'Casamento de ' + juntarNomes(p, s) : '';
+  }
+  function enderecoLivre(slug) { return !!slug && !window.ROTAS.RESERVADOS[slug] && slugDisponivel(slug); }
+  // endereço curto, tirado dos nomes das pessoas (é o que o convidado vê); se já existir, tenta o nome do evento e depois um número
+  function enderecoSugerido(est) {
+    const base = slugifyLocal(est.tipo === 'aniversario' ? est.primeiro : juntarNomes(est.primeiro, est.segundo));
+    const doNome = slugifyLocal(est.nome);
+    const candidatos = [base, doNome];
+    for (let n = 2; n <= 9 && base; n++) candidatos.push(base.slice(0, 37) + '-' + n);
+    return candidatos.find(enderecoLivre) || base || doNome;
+  }
+  function mensagemConviteAcesso(nome, r) {
+    return 'Oi! Seu painel da festa "' + nome + '" está pronto. Abra este link para criar seu acesso (vale por ' + r.dias + ' dias e só funciona uma vez): ' + r.url;
+  }
   async function abrirNovoEvento() {
     if (!tiposCatalogo.length) await carregarTemplates();
     if (!listaEventos.length) { const l = await api('/api/admin/eventos'); if (Array.isArray(l)) listaEventos = l; }
-    const est = { passo: 0, tipo: '', nome: '', slug: '', slugManual: false, copiarDe: '', criarLogin: true, usuario: '', usuarioManual: false, senha: gerarSenha(), erro: '', enviando: false };
+    const est = { tipo: (tiposCatalogo[0] || {}).id || 'casamento', primeiro: '', segundo: '', idade: '', nome: '', nomeManual: false, slug: '', slugManual: false, copiarDe: '',
+      maisAberto: false, criarLogin: false, usuario: '', usuarioManual: false, senha: gerarSenha(), erro: '', enviando: false };
     dlgEvento.dataset.fixo = '1';
-    document.getElementById('me-titulo').textContent = 'Novo evento';
     renderNovo(est);
     abrirDialogo({ titulo: 'Novo evento', largura: '600px', aoFechar: () => { delete dlgEvento.dataset.fixo; } });
   }
   document.getElementById('btnNovoEvento').addEventListener('click', abrirNovoEvento);
   document.querySelectorAll('[data-novo-evento]').forEach((b) => b.addEventListener('click', abrirNovoEvento));
 
-  function renderNovo(est) {
+  function renderNovo(est, focar) {
     const corpo = corpoDialogo();
-    montarPassos(est.passo, PASSOS_NOVO);
-    const erroBox = h('div', { class: 'erro-campo', text: est.erro, hidden: !est.erro });
+    montarPassos(0, []);
+    document.getElementById('me-titulo').textContent = 'Novo evento';
+    const aniv = est.tipo === 'aniversario';
+    const rotulo = (para, texto) => h('label', { for: para, text: texto });
+    const bloco = (...filhos) => h('div', { style: 'margin-top:16px;' }, ...filhos);
 
-    if (est.passo === 0) {
-      corpo.appendChild(el('p', 'Que tipo de evento é? O tipo define quais partes o site terá e os textos iniciais.', 'margin:0 0 14px;color:var(--ink-soft);'));
-      const grade = h('div', { class: 'opcoes-tipo', role: 'radiogroup' });
-      tiposCatalogo.forEach((tp) => {
-        const b = h('button', { type: 'button', class: 'opcao-tipo' + (est.tipo === tp.id ? ' sel' : ''), role: 'radio', 'aria-checked': est.tipo === tp.id ? 'true' : 'false' },
-          h('b', { text: tp.nome }), h('span', { text: tp.descricao }), h('em', { text: plural(tp.modulos.length, 'módulo', 'módulos') + ' no site' }));
-        b.addEventListener('click', () => { est.tipo = tp.id; est.copiarDe = ''; renderNovo(est); });
-        b.addEventListener('dblclick', () => { est.tipo = tp.id; est.passo = 1; renderNovo(est); });
-        grade.appendChild(b);
-      });
-      corpo.appendChild(grade);
-      montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Continuar →', prim: true, desativado: !est.tipo, fn: () => { est.passo = 1; renderNovo(est); } }]);
-    }
+    // 1) tipo
+    const grade = h('div', { class: 'opcoes-tipo', role: 'radiogroup', 'aria-label': 'Tipo de evento' });
+    tiposCatalogo.forEach((tp) => {
+      const b = h('button', { type: 'button', class: 'opcao-tipo' + (est.tipo === tp.id ? ' sel' : ''), role: 'radio', 'aria-checked': est.tipo === tp.id ? 'true' : 'false', 'data-tipo': tp.id },
+        h('b', { text: tp.nome }), h('span', { text: tp.descricao }));
+      b.addEventListener('click', () => { if (est.tipo === tp.id) return; est.tipo = tp.id; est.copiarDe = ''; sincronizar(); renderNovo(est, 'me-primeiro'); });
+      grade.appendChild(b);
+    });
+    corpo.append(h('label', { text: 'Que tipo de festa é?' }), grade);
 
-    if (est.passo === 1) {
-      const tipo = tiposCatalogo.find((t) => t.id === est.tipo);
-      const nome = inputTexto(est.nome, tipo && tipo.id === 'aniversario' ? 'Ex.: Aniversário da Helena' : 'Ex.: Casamento Ana e Beto');
-      const slug = inputTexto(est.slug, 'ana-e-beto');
-      const status = h('div');
-      const validar = () => {
-        const s = slugifyLocal(slug.value);
-        if (!s) { status.className = 'erro-campo'; status.textContent = 'Informe um endereço com letras e números.'; return false; }
-        if (!slugDisponivel(s)) { status.className = 'erro-campo'; status.textContent = 'Esse endereço já está em uso por outro evento.'; return false; }
-        status.className = 'ok-campo'; status.textContent = '✓ Disponível: ' + window.ROTAS.endereco(s);
-        return true;
-      };
-      const atualizarRodape = () => { est.nome = nome.value; est.slug = slugifyLocal(slug.value); rod.querySelector('.prim').disabled = !(est.nome.trim() && validar()); };
-      nome.addEventListener('input', () => { if (!est.slugManual) slug.value = slugifyLocal(nome.value); atualizarRodape(); });
-      slug.addEventListener('input', () => { est.slugManual = true; atualizarRodape(); });
-      slug.addEventListener('blur', () => { slug.value = slugifyLocal(slug.value); });
-      nome.id = 'me-nome'; slug.id = 'me-slug';
-      corpo.appendChild(campoTexto('Nome do evento', nome, 'Aparece no painel. O texto do site você edita depois.'));
-      corpo.appendChild(h('div', {}, h('label', { for: 'me-slug', text: 'Endereço do site' }), h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: window.ROTAS.antes() }), slug, window.ROTAS.depois() ? h('span', { class: 'pre', text: window.ROTAS.depois() }) : null), status,
-        h('div', { class: 'dica-campo', text: 'É o link que os convidados vão receber. Dá para trocar depois, mas os links já enviados deixam de funcionar.' })));
-      const mesmoTipo = listaEventos.filter((e) => e.tipo === est.tipo);
-      if (mesmoTipo.length) {
-        const sel = h('select', { id: 'me-copiar' });
-        sel.appendChild(new Option('Começar do padrão do tipo', ''));
-        mesmoTipo.forEach((e) => sel.appendChild(new Option('Copiar de: ' + e.nome + ' (/e/' + e.slug + ')', e.slug)));
-        sel.value = est.copiarDe;
-        sel.addEventListener('change', () => { est.copiarDe = sel.value; });
-        corpo.appendChild(campoTexto('Ponto de partida', sel, 'Copia textos, cores e configurações. Convidados e recados nunca são copiados.'));
-      }
-      const rod = montarRodape([{ rotulo: '← Voltar', fn: () => { est.nome = nome.value; est.slug = slugifyLocal(slug.value); est.passo = 0; renderNovo(est); } }, { rotulo: 'Continuar →', prim: true, desativado: true, fn: () => { est.passo = 2; renderNovo(est); } }]);
-      [nome, slug].forEach((i) => i.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && !rod.querySelector('.prim').disabled) { ev.preventDefault(); est.passo = 2; renderNovo(est); } }));
-      if (est.slug || est.nome) atualizarRodape();
-      setTimeout(() => nome.focus(), 30);
-    }
+    // 2) quem aparece na capa (vai direto para o convite: o anfitrião só confere)
+    const primeiro = inputTexto(est.primeiro, aniv ? 'Ex.: Helena' : 'Ex.: Ana'); primeiro.id = 'me-primeiro'; primeiro.maxLength = 80;
+    const segundo = inputTexto(aniv ? est.idade : est.segundo, aniv ? 'Ex.: 5 anos' : 'Ex.: Beto'); segundo.id = 'me-segundo'; segundo.maxLength = 80;
+    corpo.appendChild(bloco(h('div', { class: 'form-linha', style: 'grid-template-columns:repeat(auto-fit,minmax(200px,1fr));' },
+      h('div', {}, rotulo('me-primeiro', aniv ? 'Nome do aniversariante' : 'Primeiro nome'), primeiro),
+      h('div', {}, rotulo('me-segundo', aniv ? 'Idade ou destaque (opcional)' : 'Segundo nome'), segundo)),
+      h('div', { class: 'dica-campo', text: aniv ? 'Aparece na capa do convite. O anfitrião pode corrigir depois.' : 'Os nomes do casal aparecem na capa do convite. O anfitrião pode corrigir depois.' })));
 
-    if (est.passo === 2) {
-      corpo.appendChild(el('p', 'O anfitrião é quem cuida do evento no dia a dia (noivos, aniversariante ou organizador). Ele entra em ' + window.ROTAS.endereco(est.slug) + '/admin e só enxerga este evento.', 'margin:0 0 14px;color:var(--ink-soft);line-height:1.5;'));
-      const usuario = inputTexto(est.usuario || est.slug); usuario.id = 'me-usuario';
-      const senha = campoSenha(est.senha);
-      const opcao = (valor, titulo, desc) => {
-        const r = h('input', { type: 'radio', name: 'me-login' }); r.checked = est.criarLogin === valor;
-        const l = h('label', { class: 'radio-bloco' + (est.criarLogin === valor ? ' sel' : '') }, r, h('div', {}, h('b', { text: titulo }), h('span', { text: desc })));
-        r.addEventListener('change', () => { est.criarLogin = valor; est.usuario = usuario.value; est.senha = senha.inp.value; renderNovo(est); });
-        return l;
-      };
-      corpo.append(opcao(true, 'Criar o acesso do anfitrião agora', 'Defina usuário e senha para entregar a quem vai cuidar do evento.'), opcao(false, 'Definir depois', 'Por enquanto só você gerencia o evento. Dá para criar o acesso na aba Anfitriões.'));
-      if (est.criarLogin) corpo.append(campoTexto('Usuário', usuario), senha.wrap);
-      const validarLogin = () => !est.criarLogin || (usuario.value.trim() && senha.inp.value.length >= 6);
-      const atualizar = () => { est.usuario = usuario.value; est.senha = senha.inp.value; rod.querySelector('.prim').disabled = !validarLogin(); };
-      usuario.addEventListener('input', atualizar); senha.inp.addEventListener('input', atualizar);
-      const rod = montarRodape([{ rotulo: '← Voltar', fn: () => { atualizar(); est.passo = 1; renderNovo(est); } }, { rotulo: 'Continuar →', prim: true, fn: () => { atualizar(); est.passo = 3; renderNovo(est); } }]);
-      atualizar();
-    }
+    // 3) nome do evento (só no painel) e 4) endereço: os dois já vêm sugeridos a partir dos nomes
+    const nome = inputTexto(est.nome, aniv ? 'Ex.: Aniversário de Helena' : 'Ex.: Casamento de Ana e Beto'); nome.id = 'me-nome';
+    corpo.appendChild(bloco(rotulo('me-nome', 'Nome do evento'), nome, h('div', { class: 'dica-campo', text: 'Aparece só no painel, para você achar a festa na lista.' })));
+    const slug = inputTexto(est.slug, aniv ? 'helena' : 'ana-e-beto'); slug.id = 'me-slug';
+    const status = h('div', { 'aria-live': 'polite' });
+    corpo.appendChild(bloco(rotulo('me-slug', 'Endereço do convite'),
+      h('div', { class: 'campo-url' }, h('span', { class: 'pre', text: window.ROTAS.antes() }), slug, window.ROTAS.depois() ? h('span', { class: 'pre', text: window.ROTAS.depois() }) : null), status,
+      h('div', { class: 'dica-campo', text: 'É o link que os convidados vão receber. Dá para trocar depois, mas os links já enviados deixam de funcionar.' })));
 
-    if (est.passo === 3) {
-      const tipo = tiposCatalogo.find((t) => t.id === est.tipo);
-      const tab = h('table', { class: 'resumo' });
-      const linha = (a, b, passo) => tab.appendChild(h('tr', {}, h('td', { text: a }), h('td', {}, b, ' ', h('button', { type: 'button', class: 'link', style: 'font-size:12px;margin-left:6px;', text: 'alterar', onclick: () => { est.passo = passo; renderNovo(est); } }))));
-      linha('Tipo', tipo ? tipo.nome : est.tipo, 0);
-      linha('Nome', est.nome, 1);
-      linha('Endereço', window.ROTAS.endereco(est.slug), 1);
-      linha('Ponto de partida', est.copiarDe ? 'Cópia de /e/' + est.copiarDe : 'Padrão do tipo', 1);
-      linha('Anfitrião', est.criarLogin ? 'Usuário "' + est.usuario + '"' : 'Definir depois', 2);
-      corpo.appendChild(el('p', 'Confira antes de criar:', 'margin:0 0 8px;color:var(--ink-soft);'));
-      corpo.appendChild(tab);
-      corpo.appendChild(erroBox);
-      montarRodape([
-        { rotulo: '← Voltar', desativado: est.enviando, fn: () => { est.passo = 2; est.erro = ''; renderNovo(est); } },
-        { rotulo: est.enviando ? 'Criando…' : 'Criar evento', prim: true, desativado: est.enviando, fn: async () => {
-          est.enviando = true; est.erro = ''; renderNovo(est);
-          const d = await apiEventos('POST', { nome: est.nome.trim(), slug: est.slug, tipo: est.tipo, copiarDe: est.copiarDe, anfitriaoUsuario: est.criarLogin ? est.usuario.trim() : '', anfitriaoSenha: est.criarLogin ? est.senha : '' });
-          est.enviando = false;
-          if (d.erro) { est.erro = d.erro; renderNovo(est); return; }
-          renderNovoConcluido(est, d);
-        } },
-      ]);
+    // 5) mais opções: ponto de partida e, para quem preferir, usuário e senha no lugar do link de acesso
+    const usuario = inputTexto(est.usuario); usuario.id = 'me-usuario'; usuario.maxLength = 40; usuario.autocomplete = 'off';
+    const senha = campoSenha(est.senha);
+    const camposLogin = h('div', { hidden: !est.criarLogin, style: 'margin-top:12px;' }, h('div', {}, rotulo('me-usuario', 'Usuário'), usuario), h('div', { style: 'margin-top:12px;' }, senha.wrap));
+    const marcar = h('input', { type: 'checkbox', id: 'me-criar-login' }); marcar.checked = est.criarLogin;
+    const mais = h('details', { id: 'me-mais', style: 'margin-top:18px;border-top:1px solid var(--line);padding-top:6px;' },
+      h('summary', { style: 'cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;font-size:13.5px;', text: 'Mais opções' }));
+    mais.open = est.maisAberto || est.criarLogin;
+    mais.addEventListener('toggle', () => { est.maisAberto = mais.open; });
+    const mesmoTipo = listaEventos.filter((e) => e.tipo === est.tipo);
+    if (mesmoTipo.length) {
+      const sel = h('select', { id: 'me-copiar' });
+      sel.appendChild(new Option('Começar do padrão do tipo', ''));
+      mesmoTipo.forEach((e) => sel.appendChild(new Option('Copiar de: ' + e.nome, e.slug)));
+      sel.value = est.copiarDe;
+      sel.addEventListener('change', () => { est.copiarDe = sel.value; });
+      mais.appendChild(h('div', { style: 'margin-bottom:14px;' }, rotulo('me-copiar', 'Ponto de partida'), sel, h('div', { class: 'dica-campo', text: 'Copia textos, cores e configurações. Convidados, recados, data, local e nomes nunca são copiados.' })));
     }
+    mais.append(h('label', { class: 'check', for: 'me-criar-login', style: 'margin-top:0;min-height:44px;' }, marcar, 'Criar usuário e senha para o anfitrião agora'),
+      h('div', { class: 'dica-campo', text: 'Sem marcar, você recebe um link de acesso para mandar ao anfitrião, e ele mesmo escolhe como entrar. É o jeito mais simples.' }), camposLogin);
+    corpo.appendChild(mais);
+    const erroBox = h('div', { class: 'erro-campo', role: 'alert', text: est.erro, hidden: !est.erro }); corpo.appendChild(erroBox);
+
+    // o que foi digitado fica guardado em est (trocar o tipo redesenha a tela sem perder nada)
+    function sincronizar() {
+      est.primeiro = primeiro.value; if (aniv) est.idade = segundo.value; else est.segundo = segundo.value;
+      est.nome = nome.value; est.slug = slugifyLocal(slug.value); est.usuario = usuario.value; est.senha = senha.inp.value; est.criarLogin = marcar.checked;
+    }
+    function sugerir() {
+      sincronizar();
+      if (!est.nomeManual) { nome.value = nomeEventoSugerido(est); est.nome = nome.value; }
+      if (!est.slugManual) { slug.value = enderecoSugerido(est); est.slug = slug.value; }
+      if (!est.usuarioManual) { usuario.value = est.slug; est.usuario = usuario.value; } // o usuário acompanha o endereço (nunca fica vazio ao marcar a opção)
+    }
+    function validarEndereco() {
+      const s = est.slug;
+      if (!s) { status.className = ''; status.textContent = ''; return false; }
+      if (window.ROTAS.RESERVADOS[s]) { status.className = 'erro-campo'; status.textContent = 'Esse nome é reservado pela plataforma. Escolha outro.'; return false; }
+      if (!slugDisponivel(s)) { status.className = 'erro-campo'; status.textContent = 'Esse endereço já está em uso por outro evento.'; return false; }
+      status.className = 'ok-campo'; status.textContent = '✓ Disponível: ' + window.ROTAS.endereco(s);
+      return true;
+    }
+    function pronto() {
+      const nomesOk = est.primeiro.trim() && (aniv || est.segundo.trim());
+      const loginOk = !est.criarLogin || (est.usuario.trim().length >= 3 && est.senha.length >= 6);
+      return !!(nomesOk && est.nome.trim() && validarEndereco() && loginOk);
+    }
+    const atualizar = () => { sugerir(); const b = rod.querySelector('.prim'); if (b) b.disabled = est.enviando || !pronto(); };
+    primeiro.addEventListener('input', atualizar); segundo.addEventListener('input', atualizar);
+    nome.addEventListener('input', () => { est.nomeManual = !!nome.value.trim(); atualizar(); });
+    slug.addEventListener('input', () => { est.slugManual = !!slug.value.trim(); atualizar(); });
+    slug.addEventListener('blur', () => { slug.value = slugifyLocal(slug.value); });
+    usuario.addEventListener('input', () => { est.usuarioManual = !!usuario.value.trim(); atualizar(); });
+    senha.inp.addEventListener('input', atualizar);
+    marcar.addEventListener('change', () => { camposLogin.hidden = !marcar.checked; atualizar(); });
+
+    const criar = async () => {
+      if (est.enviando) return; // clique repetido não cria dois eventos
+      sugerir(); if (!pronto()) return;
+      est.enviando = true; est.erro = ''; erroBox.hidden = true;
+      const b = rod.querySelector('.prim'); b.disabled = true; b.textContent = 'Criando…';
+      const d = await apiEventos('POST', { nome: est.nome.trim(), slug: est.slug, tipo: est.tipo, copiarDe: est.copiarDe,
+        nomes: { primeiro: est.primeiro.trim(), segundo: est.segundo.trim(), idade: est.idade.trim() },
+        anfitriaoUsuario: est.criarLogin ? est.usuario.trim() : '', anfitriaoSenha: est.criarLogin ? est.senha : '' });
+      est.enviando = false;
+      if (d.erro) { est.erro = d.erro; erroBox.textContent = d.erro; erroBox.hidden = false; b.textContent = 'Criar evento'; b.disabled = !pronto(); return; }
+      listaEventos.push({ slug: d.slug, nome: d.nome, tipo: d.tipo });
+      renderNovoConcluido(est, d);
+    };
+    const rod = montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Criar evento', prim: true, desativado: true, fn: criar }]);
+    [primeiro, segundo, nome, slug, usuario, senha.inp].forEach((i) => i.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); criar(); } }));
+    atualizar();
+    // põe o cursor no primeiro campo, sem tirar de quem já começou a digitar em outro
+    setTimeout(() => { const alvo = document.getElementById(focar || 'me-primeiro'); if (alvo && !corpo.contains(document.activeElement)) alvo.focus(); }, 30);
   }
 
-  function renderNovoConcluido(est, criado) {
+  // Evento criado. Caminho principal: o link de primeiro acesso (uso único) para mandar ao anfitrião. Caminho secundário: usuário e senha.
+  async function renderNovoConcluido(est, criado) {
     const corpo = corpoDialogo();
-    montarPassos(PASSOS_NOVO.length, PASSOS_NOVO);
+    montarPassos(0, []);
     delete dlgEvento.dataset.fixo;
     const nome = criado.nome || est.nome.trim(), slug = criado.slug || est.slug;
-    document.getElementById('me-titulo').textContent = nome + ' está pronto';
+    abrirDialogo({ titulo: nome + ' está pronto', largura: '600px', aoFechar: () => { carregarEventos(); } });
     corpo.appendChild(h('div', { class: 'sucesso-selo', html: ICONES.ok }));
-    corpo.appendChild(el('p', est.criarLogin ? 'Envie estes dados ao anfitrião. A senha não poderá ser consultada depois, só trocada.' : 'Sem anfitrião por enquanto. Crie o acesso na aba Anfitriões quando quiser.', 'margin:0 0 14px;color:var(--ink-soft);'));
-    corpo.appendChild(linhaCopiar('Site do evento', urlSiteDe(slug)));
+    const gerir = { rotulo: 'Gerir este evento', esquerda: true, fn: () => irParaEvento(slug) };
     if (est.criarLogin) {
-      corpo.appendChild(linhaCopiar('Painel do anfitrião', urlAnfitriao(slug)));
-      corpo.appendChild(linhaCopiar('Usuário', est.usuario.trim()));
-      corpo.appendChild(linhaCopiar('Senha', est.senha));
+      corpo.appendChild(el('p', 'Envie estes dados ao anfitrião. A senha não poderá ser consultada depois, só trocada.', 'margin:0 0 14px;color:var(--ink-soft);'));
+      corpo.append(linhaCopiar('Endereço do convite', urlSiteDe(slug)), linhaCopiar('Painel do anfitrião', urlAnfitriao(slug)), linhaCopiar('Usuário', est.usuario.trim()), linhaCopiar('Senha', est.senha));
+      montarRodape([gerir, { rotulo: 'Fechar', fn: fecharDialogo }, { rotulo: 'Copiar tudo', prim: true, fn: () => copiar(textoAcesso(nome, slug, est.usuario.trim(), est.senha), 'Acesso') }]);
+      return;
     }
-    montarRodape([
-      { rotulo: 'Copiar tudo', esquerda: true, fn: () => copiar(textoAcesso(nome, slug, est.criarLogin ? est.usuario.trim() : '', est.senha), 'Acesso') },
-      { rotulo: 'Fechar', fn: () => { fecharDialogo(); carregarEventos(); } },
-      { rotulo: 'Gerir este evento →', prim: true, fn: () => irParaEvento(slug) },
-    ]);
+    corpo.appendChild(el('p', 'Mande o link abaixo a quem vai cuidar da festa. A pessoa escolhe entrar com o Google ou criar usuário e senha, e já cai no passo a passo do convite.', 'margin:0 0 14px;color:var(--ink-soft);line-height:1.5;'));
+    const caixa = h('div', { id: 'me-link-acesso' }); corpo.appendChild(caixa);
+    corpo.appendChild(linhaCopiar('Endereço do convite', urlSiteDe(slug)));
+    const gerar = async () => {
+      caixa.innerHTML = ''; caixa.appendChild(h('div', { class: 'carregando', text: 'Gerando o link de acesso…' }));
+      montarRodape([gerir, { rotulo: 'Fechar', fn: fecharDialogo }]);
+      const r = await api('/api/admin/convite-acesso?e=' + encodeURIComponent(slug), 'POST', {});
+      caixa.innerHTML = '';
+      if (r.erro || !r.url) {
+        caixa.append(h('div', { class: 'erro-campo', role: 'alert', style: 'margin:0 0 8px;', text: 'O evento foi criado, mas não consegui gerar o link de acesso agora. ' + (r.erro || '') }), btn('Tentar de novo', gerar, 'sm'));
+        return;
+      }
+      const msg = mensagemConviteAcesso(nome, r);
+      caixa.append(h('div', { class: 'copiavel' }, h('div', { class: 't' }, h('small', { text: 'Link de primeiro acesso do anfitrião' }), h('code', { style: 'overflow-wrap:anywhere;', text: r.url })), btn('Copiar', () => copiar(r.url, 'Link'), 'sm', 'copiar')),
+        h('div', { class: 'dica-campo', style: 'margin:0 0 12px;', text: 'Só funciona uma vez e vale ' + r.dias + ' dias. Se precisar de outro, gere na aba Anfitriões.' }));
+      montarRodape([gerir, { rotulo: 'Copiar mensagem', fn: () => copiar(msg, 'Mensagem') },
+        { rotulo: 'Enviar por WhatsApp', prim: true, fn: () => window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener') }]);
+    };
+    gerar();
   }
 
   // ----- Editar evento -----
@@ -7136,7 +7182,7 @@
     try {
       const chave = 'rsvp-assist-visto:' + eventoAtual;
       const ess = tarefasConvite(d).filter((t) => t.essencial);
-      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => !t.feito).length >= 2) { localStorage.setItem(chave, '1'); abrirAssistente(); }
+      if (!PUB.publicado && !localStorage.getItem(chave) && ess.filter((t) => !t.feito).length >= 2) { localStorage.setItem(chave, '1'); abrirAssistente('nomes'); } // começa pelos nomes: se vieram da criação da festa, o anfitrião confere
     } catch (e) { /* sem armazenamento: não abre sozinho */ }
   }
   function desenharPreparacao(d) {
@@ -7293,6 +7339,8 @@
     if (passo.id === 'nomes') {
       if (aniv) { fs.append(textoCampo('hero.noiva', 'Nome do aniversariante', mudarPadrao('hero.noiva', ''), 'Ex.: Helena'), textoCampo('hero.idade', 'Idade ou destaque (opcional)', d['hero.idade'] || '', 'Ex.: 5 anos')); }
       else fs.append(textoCampo('hero.noiva', 'Nome da noiva', mudarPadrao('hero.noiva', 'Noiva'), 'Ex.: Ana'), textoCampo('hero.noivo', 'Nome do noivo', mudarPadrao('hero.noivo', 'Noivo'), 'Ex.: Beto'));
+      // nomes que já vieram preenchidos (informados na criação da festa): o anfitrião só confere
+      if (Array.from(fs.querySelectorAll('[data-chave="hero.noiva"], [data-chave="hero.noivo"]')).some((i) => i.value.trim())) fs.appendChild(h('div', { class: 'dica-campo', id: 'as-nomes-conferir', style: 'margin-top:12px;', text: 'Já está preenchido. Confira se está certo e corrija aqui se precisar.' }));
     } else if (passo.id === 'data') {
       fs.append(h('div', { style: 'margin-top:14px;' }));
       renderCampoConteudo(fs, { chave: 'hero.data_iso', tipo: 'data_hora', label: 'Dia e hora do evento' });

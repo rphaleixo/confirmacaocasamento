@@ -131,6 +131,8 @@ Acesso do evento: sem acesso → com senha e/ou com Google → sem acesso (revog
 
 Convite de primeiro acesso: pendente → usado | vencido (7 dias). O código de troca (leva o login de vemnafesta.com para o endereço do evento) vale 2 minutos e uma vez. Corrigido: o convite era usado em dois passos (verificar, depois marcar como usado), então duas pessoas com o mesmo convite ao mesmo tempo passavam as duas e a segunda sobrescrevia a senha da primeira. Agora a ordem é validar os dados, reivindicar o convite (uma só instrução, que só vale para o primeiro pedido) e só então gravar o acesso; dados inválidos não gastam o convite. O código de troca passou a ser apagado e lido numa só instrução (RETURNING). Esse segundo ponto não foi reproduzido como defeito antes da mudança (o teste local passava), foi corrigido por construção.
 
+Janela "Novo evento" (uma tela só): preenchendo → criando (o botão trava; clique repetido não cria dois eventos) → criado | erro (volta a preenchendo, com o que foi digitado). Os nomes da capa informados ali vão direto para o convite. Criado, a tela mostra o link de primeiro acesso do anfitrião (caminho principal) ou, se marcado em "Mais opções", o usuário e a senha. Se o link não puder ser gerado, o evento continua criado e a tela oferece tentar de novo.
+
 Criação de evento: o endereço (slug) é único; pedidos simultâneos para o mesmo endereço recebem um deles a mensagem de endereço repetido (testado localmente, sem defeito encontrado). A API não apaga eventos (só revoga o acesso do anfitrião).
 
 Não testado: a conferência do token do Google (precisa de uma conta e de um Client ID reais).
