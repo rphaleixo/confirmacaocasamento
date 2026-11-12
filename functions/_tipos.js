@@ -66,28 +66,22 @@ export function tipoDe(id) {
   return TIPOS[id] ? id : TIPO_PADRAO;
 }
 
-const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-
-// Conteúdo com o qual um evento novo nasce: padrões comuns (módulos ligados, cores, textos neutros,
-// datas provisórias) + os padrões do tipo. Tudo é editável depois pelo painel do evento.
-export function padroesIniciais(tipoId, agora = new Date()) {
-  const dia = (n) => new Date(agora.getTime() + n * 86400000);
-  const evento = dia(90);
-  const prazo = dia(60);
-  const isoBR = (d, h) => `${d.toISOString().slice(0, 10)}T${h}-03:00`;
-  const extenso = (d) => `${d.getUTCDate()} de ${MESES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
+// Conteúdo com o qual um evento novo nasce: padrões comuns (módulos ligados, cores, textos neutros) + os padrões do tipo.
+// Data, prazo de confirmação e local nascem VAZIOS de propósito: o convite e o checklist só tratam como preenchido o que o
+// anfitrião informou (o convite mostra "Data a definir" e "Local a definir" enquanto isso). Tudo é editável depois pelo painel.
+export function padroesIniciais(tipoId) {
   const tipo = TIPOS[tipoDe(tipoId)];
   const base = {
-    'hero.data_iso': isoBR(evento, '15:00:00'),
-    'hero.data_display': extenso(evento),
-    'hero.horario_display': 'às 15h00',
-    'hero.prazo_iso': isoBR(prazo, '23:59:59'),
-    'hero.prazo_display': `${prazo.getUTCDate()} de ${MESES[prazo.getUTCMonth()]}`,
+    'hero.data_iso': '',
+    'hero.data_display': '',
+    'hero.horario_display': '',
+    'hero.prazo_iso': '',
+    'hero.prazo_display': '',
     'hero.foto_url': '',
     'countdown.titulo': 'Faltam apenas',
     'mapa.eyebrow': 'Localização',
-    'mapa.local_nome': 'Local do evento',
-    'mapa.local_endereco': 'Endereço do evento',
+    'mapa.local_nome': '',
+    'mapa.local_endereco': '',
     'mapa.cta_label': 'Como chegar ↗',
     'galeria.eyebrow': 'Galeria',
     'galeria.titulo': 'Momentos para sempre',
@@ -127,7 +121,23 @@ export function padroesIniciais(tipoId, agora = new Date()) {
     'aparencia.cor_fundo': '#EAF1FB',
     'aparencia.cor_texto': '#14213D',
     'aparencia.fontes': 'classico',
+    'aparencia.visual_confirmado': '0', // vira 1 quando o anfitrião escolhe ou confirma cores e letras (o checklist só conta a partir daí)
     'layout.ordem': '[]',
   };
   return { ...base, ...tipo.padroes };
+}
+
+// Textos que o evento novo traz só para a tela não ficar vazia. NÃO contam como "nome preenchido".
+export const NOMES_PROVISORIOS = ['Noiva', 'Noivo', 'Nome do aniversariante'];
+
+// O que ainda falta para o convite poder ser publicado: lista de { id, titulo }, onde id é o passo do assistente que resolve.
+// Só data e nomes bloqueiam; todo o resto é opcional. c = conteúdo do evento (objeto chave/valor).
+export function faltaParaPublicar(c, tipoId) {
+  const v = (k) => String((c && c[k]) || '').trim();
+  const real = (k) => v(k) && !NOMES_PROVISORIOS.includes(v(k));
+  const aniv = tipoDe(tipoId) === 'aniversario';
+  const falta = [];
+  if (!(aniv ? real('hero.noiva') : real('hero.noiva') && real('hero.noivo'))) falta.push({ id: 'nomes', titulo: aniv ? 'Nome do aniversariante' : 'Nomes do casal' });
+  if (!v('hero.data_iso')) falta.push({ id: 'data', titulo: 'Dia e hora' });
+  return falta;
 }

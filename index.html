@@ -197,6 +197,7 @@
   .hero.hl-centro:not(.sem-veu) .hero-veil{background:linear-gradient(180deg, color-mix(in srgb, var(--wine-deep) 60%, transparent), color-mix(in srgb, var(--wine-deep) 62%, transparent)), linear-gradient(0deg, var(--hero-fade, var(--blush)) 0%, transparent 12%);}
   /* esquerda: editorial, alinhado à esquerda embaixo */
   .hero.hl-esquerda .hero-content{align-items:flex-start;text-align:left;padding:0 28px 44px;}
+  .exemplo-tag{display:inline-block;margin-left:8px;padding:2px 8px;border:1px dashed currentColor;border-radius:99px;font:600 10.5px/1.4 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;opacity:.9;}
   .hero.hl-esquerda .hero-convite{margin-left:0;}
   .hero.hl-esquerda h1{font-size:clamp(52px,17vw,72px);line-height:.95;}
   .hero.hl-esquerda .amp{display:inline;font-size:.6em;margin:0 .15em;}
@@ -649,14 +650,14 @@
     </div>
     <div class="hero-content">
       <div class="hero-convite" id="heroConvite" hidden></div>
-      <div class="eyebrow" id="heroEyebrow">Nosso casamento</div>
+      <div class="eyebrow" id="heroEyebrow"></div>
       <h1 class="display"><span id="nomeNoiva">Noiva</span><span class="amp">&amp;</span><span id="nomeNoivo">Noivo</span></h1>
       <div class="eyebrow hero-idade" id="heroIdade" hidden></div>
-      <div class="hero-date flanked"><span class="ln"></span><span id="heroData">12 de junho de 2027</span><span class="ln"></span></div>
+      <div class="hero-date flanked"><span class="ln"></span><span id="heroData">Data a definir</span><span class="ln"></span></div>
       <div class="hero-time display" id="heroHorario">às 15h00</div>
       <div class="hero-cta-wrap" id="heroCtaWrap">
         <a href="#rsvp" class="pill on-dark" id="heroCta">Confirmar Presença →</a>
-        <div class="deadline-chip" id="deadlineChip">confirme até 01 de maio</div>
+        <div class="deadline-chip" id="deadlineChip"></div>
       </div>
     </div>
   </section>
@@ -741,14 +742,14 @@
   <section class="map-section" id="map" data-modulo="mapa" data-bg-top="var(--wine)" data-bg-bottom="var(--wine)">
     <div class="eyebrow" id="mapaEyebrow">Localização</div>
     <h2 class="display" id="mapaTitulo">Local da realização de nossos sonhos</h2>
-    <div class="map-address" id="mapEndereco">Copacabana Palace — Av. Atlântica, 1702, Copacabana, Rio de Janeiro</div>
+    <div class="map-address" id="mapEndereco">Local a definir</div>
     <div class="map-frame-wrap">
       <iframe class="map-frame" loading="lazy" title="Mapa do local" referrerpolicy="no-referrer-when-downgrade"
         src="about:blank">
       </iframe>
     </div>
     <div class="map-cta-bar">
-      <a class="pill ghost-dark small" id="mapaCta" href="https://www.google.com/maps/dir/?api=1&destination=Copacabana%20Palace%2C%20Rio%20de%20Janeiro" target="_blank" rel="noopener">Como chegar ↗</a>
+      <a class="pill ghost-dark small" id="mapaCta" href="#" target="_blank" rel="noopener">Como chegar ↗</a>
       <button class="pill ghost-dark small" id="mapaCopiar" type="button" hidden>Copiar endereço</button>
     </div>
   </section>
@@ -889,7 +890,7 @@
 
   <footer id="rodape">
     <span class="display" id="footerNomes">Noiva &amp; Noivo</span>
-    <span id="footerDataLocal">12 de junho de 2027 · Copacabana Palace, Rio de Janeiro</span>
+    <span id="footerDataLocal">Data e local a definir</span>
     <div class="flinks">
       <a href="#rsvp">Confirmar presença</a>
       <a href="#presentes">Lista de presentes</a>
@@ -908,7 +909,7 @@
 
   <!-- BARRA FIXA -->
   <div class="sticky-bar" id="sticky">
-    <div class="sticky-info"><b id="stickyTitulo">Confirme sua presença</b><span id="stickyPrazo">até 01 de maio</span></div>
+    <div class="sticky-info"><b id="stickyTitulo">Confirme sua presença</b><span id="stickyPrazo"></span></div>
     <a href="#rsvp" class="sticky-cta" id="stickyCta">Confirmar →</a>
   </div>
 
@@ -951,7 +952,11 @@
   // Data do evento como aparece na capa: formato e dia da semana escolhidos no painel (Capa › Data e prazo)
   // data da capa: a versão "Rico" mantém a formatação do painel (negrito, cor…); dataHero() é só texto, para os outros lugares
   function dataHeroRico() {
-    return window.FORMATA_DATA(tOu('hero.data_iso', ''), t('hero.data_formato', 'texto'), t('hero.dia_semana', 'nao'), t('hero.data_display', '12 de junho de 2027'));
+    const iso = tOu('hero.data_iso', ''), livre = t('hero.data_display', '');
+    // sem texto livre mas com data: mostra a data por extenso; sem data nenhuma: texto neutro (nunca uma data de demonstração)
+    const formato = (t('hero.data_formato', 'texto') === 'texto' && !String(livre).trim() && iso) ? 'extenso' : t('hero.data_formato', 'texto');
+    const v = window.FORMATA_DATA(iso, formato, t('hero.dia_semana', 'nao'), livre);
+    return window.HTML_SEGURO.texto(v).trim() ? v : 'Data a definir';
   }
   function dataHero() { return window.HTML_SEGURO.texto(dataHeroRico()); }
   // texto de um campo que aceita formatação, para usar onde só cabe texto simples (título da aba, rodapé, agenda…)
@@ -959,7 +964,8 @@
   // Prazo de confirmação como aparece no site: a data e, se preenchido no painel, o horário limite ("01 de maio às 23h59")
   function prazoCompleto() {
     const hora = tt('hero.prazo_horario_display', '').trim();
-    return tt('hero.prazo_display', '01 de maio') + (hora ? ' ' + hora : '');
+    const dia = tt('hero.prazo_display', '').trim();
+    return dia ? dia + (hora ? ' ' + hora : '') : ''; // sem prazo definido: nada aparece
   }
   // Texto formatado (negrito, cor, link...): passa pela limpeza antes de entrar na página
   function escHtml(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -1057,7 +1063,7 @@
 
   // Endereço completo do local (usado no mapa, "como chegar" e agenda)
   function localCompleto() {
-    return t('mapa.local_nome', 'Copacabana Palace') + ', ' + t('mapa.local_endereco', 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro');
+    return [t('mapa.local_nome', ''), t('mapa.local_endereco', '')].map(function (x) { return String(x).trim(); }).filter(Boolean).join(', ');
   }
   // Local confirmado pelo painel (Google Maps): usa as coordenadas e o id do lugar; sem isso, cai para o texto do endereço
   function coordenadasLocal() {
@@ -1076,7 +1082,8 @@
   }
   // Link do Google Agenda com data, duração de 5h e endereço
   function linkAgenda() {
-    const inicio = new Date(tOu('hero.data_iso', '2027-06-12T15:00:00-03:00'));
+    if (!tOu('hero.data_iso', '')) return ''; // sem data definida não há como salvar na agenda
+    const inicio = new Date(tOu('hero.data_iso', ''));
     if (isNaN(inicio)) return '';
     const fim = new Date(inicio.getTime() + 5 * 3600000);
     const f = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -1222,7 +1229,8 @@
       while (y && q < 5 && y !== sec) { if (y.dataset && y.dataset.k && chaves.indexOf(y.dataset.k) === -1) chaves.push(y.dataset.k); y = y.parentElement; q++; }
       var capaEl = '';
       Object.keys(CAPA_EL).forEach(function (k) { var e2 = document.querySelector(CAPA_EL[k]); if (e2 && e2.contains(alvo)) capaEl = k; });
-      window.parent.postMessage({ tipo: 'previa-clique', secao: sec ? sec.id : '', textos: textos, img: el.tagName === 'IMG' ? (el.getAttribute('src') || '') : '', tag: el.tagName.toLowerCase(), capaEl: capaEl, chaves: chaves }, location.origin);
+      var exemplo = !!(el.closest && el.closest('[data-exemplo]'));
+      window.parent.postMessage({ tipo: 'previa-clique', rotulo: exemplo ? 'Texto “Convite para” (os nomes ao lado são só um exemplo)' : '', secao: sec ? sec.id : '', textos: textos, img: el.tagName === 'IMG' ? (el.getAttribute('src') || '') : '', tag: el.tagName.toLowerCase(), capaEl: capaEl, chaves: chaves }, location.origin);
     }, true);
   }
   function mostrarErroEvento(dados) {
@@ -1271,6 +1279,8 @@
       root.setProperty('--font-body', preset.body);
     }
 
+    // texto de apoio da capa nunca vem do HTML fixo: sem valor gravado, vale o padrão do tipo do evento (um aniversário nunca mostra "casamento")
+    if (conteudo['hero.eyebrow'] === undefined) conteudo['hero.eyebrow'] = ehAniversario() ? 'Você é nosso convidado' : 'Nosso casamento';
     aplicar('heroEyebrow', 'hero.eyebrow');
     aplicar('nomeNoiva', 'hero.noiva');
     aplicar('nomeNoivo', 'hero.noivo');
@@ -1286,7 +1296,7 @@
       document.getElementById('nomeNoivo').style.display = 'none';
       if (t('hero.idade', '')) { const idade = document.getElementById('heroIdade'); definirRico(idade, t('hero.idade', '')); idade.hidden = false; }
     }
-    definirRico(document.getElementById('deadlineChip'), prazoCompleto() ? 'confirme até ' + (t('hero.prazo_display', '01 de maio') + (t('hero.prazo_horario_display', '').trim() ? ' ' + t('hero.prazo_horario_display', '').trim() : '')) : '');
+    definirRico(document.getElementById('deadlineChip'), prazoCompleto() ? 'confirme até ' + prazoCompleto() : '');
     definir(document.getElementById('stickyPrazo'), prazoCompleto() ? t('sticky.subtexto_template', 'até {prazo}').replace('{prazo}', prazoCompleto()) : '');
     montarMidiaCapa();
     aplicarTextosCapa();
@@ -1381,7 +1391,7 @@
     // o selo "Feito com Vem na Festa" é obrigatório: com o rodapé desligado fica só ele
     if (!rodapeLigado) document.querySelector('footer').classList.add('minimo');
     document.getElementById('footerNomes').textContent = ehAniversario() ? tt('hero.noiva', '') : tt('hero.noiva', 'Noiva') + ' & ' + tt('hero.noivo', 'Noivo');
-    document.getElementById('footerDataLocal').textContent = dataHero() + ' · ' + t('mapa.local_nome', 'Copacabana Palace') + (t('mapa.local_nome', 'Copacabana Palace') === 'Copacabana Palace' ? ', Rio de Janeiro' : '');
+    document.getElementById('footerDataLocal').textContent = [dataHero(), String(t('mapa.local_nome', '')).trim()].filter(Boolean).join(' · ');
 
     aplicar('countdownEyebrow', 'countdown.eyebrow');
     aplicar('countdownTitulo', 'countdown.titulo');
@@ -1445,10 +1455,13 @@
     aplicar('mapaEyebrow', 'mapa.eyebrow');
     aplicar('mapaTitulo', 'mapa.titulo');
     aplicar('mapaCta', 'mapa.cta_label');
-    const localNome = t('mapa.local_nome', 'Copacabana Palace');
-    const localEndereco = t('mapa.local_endereco', 'Av. Atlântica, 1702, Copacabana, Rio de Janeiro');
-    document.getElementById('mapEndereco').textContent = localNome + ' — ' + localEndereco;
-    document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(coordenadasLocal() || (localNome + ', ' + localEndereco)) + '&output=embed';
+    const localNome = String(t('mapa.local_nome', '')).trim();
+    const localEndereco = String(t('mapa.local_endereco', '')).trim();
+    const semLocal = !localNome && !localEndereco && !coordenadasLocal();
+    // sem local informado: texto neutro, sem mapa e sem botão "Como chegar" (nunca um endereço de demonstração)
+    document.getElementById('mapEndereco').textContent = semLocal ? 'Local a definir' : [localNome, localEndereco].filter(Boolean).join(' — ');
+    if (semLocal) { document.querySelector('.map-frame').style.display = 'none'; document.getElementById('mapaCta').style.display = 'none'; }
+    else document.querySelector('.map-frame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(coordenadasLocal() || [localNome, localEndereco].filter(Boolean).join(', ')) + '&output=embed';
     document.getElementById('mapaCta').href = linkComoChegar();
     const btnCopiarEndereco = document.getElementById('mapaCopiar');
     if (t('mapa.mostrar_botao_copiar', '0') === '1') {
@@ -1489,11 +1502,19 @@
     escondeSeInativa('recados', 'secRecados');
     carregarRecados();
 
-    const target = new Date(tOu('hero.data_iso', '2027-06-12T15:00:00-03:00')).getTime();
-    const rsvpDeadline = new Date(tOu('hero.prazo_iso', '2027-05-01T23:59:59-03:00')).getTime();
+    // sem data (ou sem prazo) o convite não inventa uma: a contagem mostra "Data a definir" e o aviso de prazo some
+    const target = tOu('hero.data_iso', '') ? new Date(tOu('hero.data_iso', '')).getTime() : NaN;
+    const rsvpDeadline = tOu('hero.prazo_iso', '') ? new Date(tOu('hero.prazo_iso', '')).getTime() : NaN;
     const secCd = document.getElementById('secCountdown');
     function tick() {
       const now = Date.now();
+      if (!isFinite(target)) {
+        ['cd-d', 'cd-h', 'cd-m', 'cd-s'].forEach(function (id) { document.getElementById(id).textContent = '--'; });
+        document.getElementById('cd-resto').textContent = '';
+        document.getElementById('cd-sentence').textContent = 'Data a definir';
+        const pz = document.getElementById('rsvpPrazo'); if (pz) pz.style.display = 'none';
+        return;
+      }
       const diff = Math.max(0, target - now);
       const dias = Math.floor(diff / 86400000), horas = Math.floor(diff % 86400000 / 3600000);
       const min = Math.floor(diff % 3600000 / 60000), seg = Math.floor(diff % 60000 / 1000);
@@ -1514,6 +1535,7 @@
       }
       const restam = Math.ceil(Math.max(0, rsvpDeadline - now) / 86400000);
       const prazoEl = document.getElementById('rsvpPrazo');
+      if (!isFinite(rsvpDeadline)) { prazoEl.style.display = 'none'; return; } // sem prazo: as respostas ficam sempre abertas, sem aviso de prazo
       const textoPrazo = rsvpDeadline - now <= 0 ? 'O prazo para confirmar terminou' + (prazoCompleto() ? ' em ' + escHtml(prazoCompleto()) : '') + '.'
         : restam === 1 ? 'Hoje é o último dia para confirmar'
         : 'restam <b id="rsvp-days">' + restam + '</b> dias para confirmar';
@@ -1986,6 +2008,10 @@
       if (window.__previa && t('hero.mostrar_convite', '1') !== '0') {
         const convite = $('heroConvite');
         montarSaudacao(convite, ehAniversario() ? 'Ana, Beto e Carla' : 'Ana e Beto'); convite.hidden = false;
+        // os nomes são inventados só para mostrar onde a saudação fica: a prévia diz isso, e o toque aqui edita o texto "Convite para"
+        convite.dataset.exemplo = '1';
+        if (window.__editorPrevia) convite.dataset.k = 'hero.convite_prefixo';
+        const marca = document.createElement('small'); marca.className = 'exemplo-tag'; marca.textContent = 'nomes de exemplo'; convite.appendChild(marca);
       }
       return; // mantém a mensagem "sem código" já visível por padrão
     }

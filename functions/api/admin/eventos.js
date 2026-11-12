@@ -85,6 +85,15 @@ export async function onRequestPost({ request, env, data }) {
         )
         .bind(id, origem.id)
         .run();
+      // o que é do evento de origem não vai junto: data, prazo, local, nomes, o que os convidados escolheram e a chave PIX.
+      // O evento novo volta ao que nasceria sem cópia (vazio), e o checklist de cores e letras recomeça.
+      const doEvento = Object.fromEntries(Object.entries(padroesIniciais(tipo)));
+      const SO_DO_EVENTO = ['hero.data_iso', 'hero.data_display', 'hero.horario_display', 'hero.prazo_iso', 'hero.prazo_display', 'hero.prazo_horario_display',
+        'mapa.local_nome', 'mapa.local_endereco', 'mapa.maps_url', 'mapa.lat', 'mapa.lng', 'mapa.place_id',
+        'hero.noiva', 'hero.noivo', 'hero.idade', 'presentes.itens', 'presentes.chave_pix', 'presentes.pix_qrcode_url', 'aparencia.visual_confirmado'];
+      await db.batch(SO_DO_EVENTO.map((chave) => (doEvento[chave] !== undefined
+        ? db.prepare('INSERT INTO conteudo (evento_id, chave, valor) VALUES (?, ?, ?) ON CONFLICT(evento_id, chave) DO UPDATE SET valor = excluded.valor').bind(id, chave, doEvento[chave])
+        : db.prepare('DELETE FROM conteudo WHERE evento_id = ? AND chave = ?').bind(id, chave))));
     }
   }
 

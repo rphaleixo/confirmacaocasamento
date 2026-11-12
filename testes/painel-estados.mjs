@@ -26,6 +26,8 @@ async function api(metodo, caminho, corpo, auth = true) {
 const resultados = [];
 const verificar = (cenario, esperado, obtido) => resultados.push({ cenario, esperado, obtido, ok: JSON.stringify(esperado) === JSON.stringify(obtido) });
 
+const CHAVES_PUBLICAR = ['hero.noiva', 'hero.noivo', 'hero.data_iso'];
+const originais = {};
 const sufixo = Math.random().toString(36).slice(2, 6).toUpperCase();
 const codigo = 'P' + sufixo + '1', nomeGrupo = 'Grupo Teste ' + sufixo;
 
@@ -113,6 +115,10 @@ try {
   await alternar(c2, v2);
   await page.locator('#tab-conteudo .savebar button.action:visible').first().click(); await page.waitForTimeout(1000);
   // ---------- publicar: clique repetido não envia duas vezes ----------
+  // publicar exige nomes e data: guarda o que o evento tem, preenche para o teste e restaura no fim
+  const conteudoAntes = await (await fetch(BASE + '/api/conteudo?e=' + SLUG, { headers: { Authorization: AUTH } })).json();
+  CHAVES_PUBLICAR.forEach((k) => { originais[k] = conteudoAntes[k] === undefined ? '' : conteudoAntes[k]; });
+  await api('POST', '/api/admin/conteudo', { 'hero.noiva': 'Ana', 'hero.noivo': 'Beto', 'hero.data_iso': '2030-05-10T16:00:00-03:00' });
   await api('POST', '/api/admin/publicacao', { publicado: false });
   await page.evaluate((slug) => localStorage.setItem('rsvp-assist-visto:' + slug, '1'), SLUG); // senão o assistente de primeiro acesso abre sozinho por cima
   await page.goto(BASE + '/admin/?e=' + SLUG + '#painel');
@@ -145,6 +151,7 @@ try {
   resultados.push({ cenario: 'ERRO NO TESTE', esperado: 'sem exceção', obtido: String((e && e.message) || e).split('\n')[0], ok: false });
 } finally {
   await api('POST', '/api/admin/publicacao', { publicado: true }).catch(() => {}); // o evento de exemplo volta a ficar publicado
+  if (Object.keys(originais).length) await api('POST', '/api/admin/conteudo', originais).catch(() => {}); // restaura nomes e data depois de republicar
   await api('DELETE', '/api/admin/grupos', { codigo }).catch(() => {});
   await browser.close();
 }

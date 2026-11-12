@@ -3800,8 +3800,8 @@
     const ST = (x) => window.HTML_SEGURO.texto(x); // os textos da capa aceitam formatação: na imagem entra só o texto
     const v = (k, pad) => (d[k] === undefined || d[k] === null || String(d[k]).trim() === '' ? pad : ST(String(d[k])).trim());
     const aniv = d._tipo === 'aniversario';
-    const dataTxt = window.FORMATA_DATA(v('hero.data_iso', ''), d['hero.data_formato'] || 'texto', d['hero.dia_semana'] || 'nao', d['hero.data_display'] === undefined ? '12 de junho de 2027' : ST(d['hero.data_display']));
-    const hor = d['hero.horario_display'] === undefined ? 'às 15h00' : ST(String(d['hero.horario_display'])).trim();
+    const dataTxt = window.FORMATA_DATA(v('hero.data_iso', ''), d['hero.data_formato'] || 'texto', d['hero.dia_semana'] || 'nao', d['hero.data_display'] === undefined ? '' : ST(d['hero.data_display']));
+    const hor = d['hero.horario_display'] === undefined ? '' : ST(String(d['hero.horario_display'])).trim();
     const foto = d['compartilhar.usar_foto'] === '0' ? '' : (d['hero.midia_tipo'] === 'video' ? d['hero.video_poster_url'] : d['hero.foto_url']) || '';
     return {
       estilo: v('compartilhar.estilo', 'foto'),
@@ -3886,7 +3886,7 @@
       { etapa: 'textos', chave: '__bloco_botao__', tipo: 'bloco_texto', liga: 'hero.mostrar_botao', label: 'Botão de confirmar e prazo', sub: 'Com o botão desligado, o botão fixo de confirmação só aparece depois que a capa sai da tela.', campos: [
         { chave: 'hero.cta_label', label: 'Texto do botão' },
       ]},
-      { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
+      { etapa: 'textos', chave: '__bloco_saudacao__', tipo: 'bloco_texto', liga: 'hero.mostrar_convite', label: 'Saudação com o nome de quem foi convidado', sub: 'Aparece em todos os convites, com o primeiro nome de cada pessoa do grupo (ex.: "Convite para Ana, Beto e Carla"). Na prévia, os nomes são só um exemplo: cada convidado vê o próprio nome. No link individual, só a pessoa. Use "Como chamar" e "Tratamento" no cadastro do convidado para mudar como cada um aparece.', campos: [
         { chave: 'hero.convite_prefixo', label: 'Texto antes dos nomes', dica: 'Ex.: "Convite para" ou "Você foi convidado(a),". Em branco: só os nomes. O tamanho e a cor que você aplicar a este texto (lista de tamanho do editor) valem também para os nomes dos convidados, para ficarem iguais.' },
         { chave: 'hero.convite_estilo', label: 'Estilo da saudação', tipo: 'select', padrao: 'padrao', opcoes: [{ valor: 'padrao', label: 'Padrão (fundo translúcido)' }, { valor: 'botao', label: 'Igual ao botão de confirmar' }, { valor: 'sem', label: 'Só o texto, sem fundo' }, { valor: 'personalizado', label: 'Personalizado (escolher as cores)' }], dica: '"Igual ao botão de confirmar" copia o fundo claro e a letra do botão que fica logo abaixo, na capa.' },
         { chave: 'hero.convite_tamanho', label: 'Tamanho geral da saudação', tipo: 'select', padrao: 'normal', opcoes: [{ valor: 'pequeno', label: 'Pequeno' }, { valor: 'normal', label: 'Normal' }, { valor: 'grande', label: 'Grande' }, { valor: 'enorme', label: 'Enorme' }], dica: 'Aumenta ou diminui a saudação inteira, com o fundo. Para mudar só o tamanho das letras, use a lista de tamanho do editor acima.' },
@@ -4955,8 +4955,8 @@
           fonteTitulo: ctDados['aparencia.fonte_titulo'] || leg.titulo,
           eyebrow: modoSTD() ? ler('savethedate.titulo', 'Guarde a data!') : ler('hero.eyebrow', aniv ? 'Você é nosso convidado' : 'Nosso casamento'),
           nomes: aniv ? ler('hero.noiva', 'Nome') : ler('hero.noiva', 'Noiva') + ' & ' + ler('hero.noivo', 'Noivo'),
-          data: ler('hero.data_display', '12 de junho de 2027'), horario: ler('hero.horario_display', 'às 15h00'),
-          cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: 'confirme até ' + ler('hero.prazo_display', '01 de maio') + (ler('hero.prazo_horario_display', '') ? ' ' + ler('hero.prazo_horario_display', '') : ''),
+          data: ler('hero.data_display', '') || (ler('hero.data_iso', '') ? window.FORMATA_DATA(ler('hero.data_iso', ''), 'extenso', 'nao', '') : 'Data a definir'), horario: ler('hero.horario_display', ''),
+          cta: ler('hero.cta_label', 'Confirmar Presença →'), prazo: ler('hero.prazo_display', '') ? 'confirme até ' + ler('hero.prazo_display', '') + (ler('hero.prazo_horario_display', '') ? ' ' + ler('hero.prazo_horario_display', '') : '') : '',
           mostrar: { eyebrow: ler('hero.mostrar_eyebrow', '1') !== '0', nomes: ler('hero.mostrar_nomes', '1') !== '0', data: ler('hero.mostrar_data', '1') !== '0', horario: ler('hero.mostrar_horario', '1') !== '0', botao: ler('hero.mostrar_botao', '1') !== '0' },
         };
         cel.atualizar(estado);
@@ -5956,7 +5956,7 @@
       eb.textContent = lerCampo('savethedate.titulo', 'Guarde a data!') || 'Guarde a data!';
       nm.textContent = ctDados._tipo === 'aniversario' ? (ctDados['hero.noiva'] || 'Nome') : ((ctDados['hero.noiva'] || 'Noiva') + ' & ' + (ctDados['hero.noivo'] || 'Noivo'));
       nm.style.fontFamily = CAT.familia(ft); nm.style.fontStyle = ft.estiloTitulo;
-      dt.textContent = ctDados['hero.data_display'] || '12 de junho de 2027';
+      dt.textContent = ctDados['hero.data_display'] || 'Data a definir';
       tx.textContent = lerCampo('savethedate.texto', '');
     };
     setTimeout(pintar, 0);
@@ -6259,7 +6259,7 @@
       '<div class="mk-hero"><span class="rt cor">Primária</span>' +
         '<div class="mk-eb"><span class="t-eb">' + (ehAniv ? 'Você é nosso convidado' : 'Nosso casamento') + '</span><span class="rt cor in" style="margin-left:6px">Destaque</span></div>' +
         '<div class="mk-nomes disp">' + nomes + '</div>' +
-        '<div class="mk-data">12 de junho de 2027 · 15h00</div>' +
+        '<div class="mk-data">Data e hora do evento</div>' +
         '<div class="mk-btn">Confirmar presença</div></div>' +
       '<div class="mk-sec"><span class="rt cor">Fundo</span>' +
         '<div class="mk-eb"><span class="t-eb2">Para o grande dia</span><span class="rt cor in">Secundária</span></div>' +
@@ -6819,7 +6819,7 @@
       if (!achado) achado = campos.filter((e) => { const v = ed2Plano(e.value); return v.length >= 3 && (x.indexOf(v) !== -1 || v.indexOf(x) !== -1); }).sort((a, b) => ed2Plano(b.value).length - ed2Plano(a.value).length)[0] || null;
     }
     const trecho = ((m.textos || [])[0] || '').slice(0, 42);
-    ed2MostrarBarra({ g, tipo: m.img ? 'foto' : 'texto', tag: m.tag, capaEl: m.capaEl || '', chaveAchado: achado ? achado.dataset.chave : '', rotulo: m.img ? 'Foto em ' + g.titulo : '“' + trecho + (((m.textos || [])[0] || '').length > 42 ? '…' : '') + '”' });
+    ed2MostrarBarra({ g, tipo: m.img ? 'foto' : 'texto', tag: m.tag, capaEl: m.capaEl || '', chaveAchado: achado ? achado.dataset.chave : '', rotulo: m.rotulo ? m.rotulo : m.img ? 'Foto em ' + g.titulo : '“' + trecho + (((m.textos || [])[0] || '').length > 42 ? '…' : '') + '”' });
     ed2Rolar();
   }
   window.addEventListener('message', (ev) => {
@@ -7063,12 +7063,12 @@
     const json = (k) => { try { const v = JSON.parse(d[k] || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
     const algum = (pref) => Object.keys(d).some((k) => k.indexOf(pref) === 0 && !vazio(k));
     const lista = [
-      { id: 'nomes', essencial: true, min: 1, titulo: aniv ? 'Nome do aniversariante' : 'Nomes do casal', passo: 'nomes', feito: aniv ? mudou('hero.noiva', '') : (mudou('hero.noiva', 'Noiva') && mudou('hero.noivo', 'Noivo')), alvo: { grupo: 'Capa', etapa: 'textos', chave: 'hero.noiva' } },
+      { id: 'nomes', essencial: true, min: 1, titulo: aniv ? 'Nome do aniversariante' : 'Nomes do casal', passo: 'nomes', feito: aniv ? mudou('hero.noiva', 'Nome do aniversariante') : (mudou('hero.noiva', 'Noiva') && mudou('hero.noivo', 'Noivo')), alvo: { grupo: 'Capa', etapa: 'textos', chave: 'hero.noiva' } },
       { id: 'data', essencial: true, min: 1, titulo: 'Dia e hora', passo: 'data', feito: !vazio('hero.data_iso'), alvo: { grupo: 'Capa', etapa: 'data', chave: 'hero.data_iso' } },
-      { id: 'local', essencial: true, min: 2, modulo: 'mapa', titulo: 'Local do evento', passo: 'local', feito: !vazio('mapa.maps_url') || !vazio('mapa.lat') || mudou('mapa.local_nome', 'Copacabana Palace'), alvo: { grupo: 'Localização', chave: '__lugar__' } },
+      { id: 'local', essencial: true, min: 2, modulo: 'mapa', titulo: 'Local do evento', passo: 'local', feito: !vazio('mapa.maps_url') || !vazio('mapa.lat') || (mudou('mapa.local_nome', 'Copacabana Palace') && mudou('mapa.local_nome', 'Local do evento')), alvo: { grupo: 'Localização', chave: '__lugar__' } },
       { id: 'capa', essencial: true, min: 1, titulo: 'Foto ou vídeo da capa', passo: 'capa', feito: !vazio('hero.foto_url') || !vazio('hero.video_url'), alvo: { grupo: 'Capa', etapa: 'midia', chave: '__midia__' } },
-      { id: 'prazo', essencial: true, min: 1, modulo: 'rsvp', titulo: 'Prazo para confirmar presença', passo: 'data', feito: !vazio('hero.prazo_iso'), alvo: { grupo: 'Capa', etapa: 'data', chave: 'hero.prazo_iso' } },
-      { id: 'visual', essencial: true, min: 1, titulo: 'Escolher o visual (cores e letras)', passo: 'tema', feito: !vazio('aparencia.tema') || !vazio('aparencia.cor_primaria'), alvo: { aba: 'cores' } },
+      { id: 'prazo', essencial: true, min: 1, modulo: 'rsvp', titulo: 'Prazo para confirmar presença', passo: 'data', feito: !vazio('hero.prazo_iso') || d['hero.prazo_sem_prazo'] === '1', alvo: { grupo: 'Capa', etapa: 'data', chave: 'hero.prazo_iso' } },
+      { id: 'visual', essencial: true, min: 1, titulo: 'Escolher o visual (cores e letras)', passo: 'tema', feito: d['aparencia.visual_confirmado'] === '0' ? false : (!vazio('aparencia.tema') || !vazio('aparencia.cor_primaria')), alvo: { aba: 'cores' } },
       { id: 'historia', modulo: 'timeline', min: 5, titulo: 'Contar a história de vocês', feito: algum('timeline.node'), alvo: { grupo: 'Linha do tempo' } },
       { id: 'padrinhos', modulo: 'padrinhos', min: 3, titulo: 'Padrinhos e madrinhas', feito: json('padrinhos.pessoas').length > 0, alvo: { grupo: 'Padrinhos e madrinhas' } },
       { id: 'pais', modulo: 'madrinhas_pais', min: 3, titulo: 'Pais e daminhas', feito: json('madrinhas_pais.pessoas').length > 0, alvo: { grupo: 'Pais e daminhas' } },
@@ -7190,12 +7190,18 @@
     CONT_PREP = d;
     montarPassos(0, []); delete dlgEvento.dataset.fixo;
     const corpo = corpoDialogo();
-    const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial), pend = ess.filter((t) => !t.feito);
+    const tarefas = tarefasConvite(d), ess = tarefas.filter((t) => t.essencial);
+    // só os nomes e a data impedem de publicar (o servidor confere de novo); o resto continua opcional
+    const bloqueio = ess.filter((t) => (t.id === 'nomes' || t.id === 'data') && !t.feito), pend = ess.filter((t) => !t.feito && t.id !== 'nomes' && t.id !== 'data');
     const opcPend = tarefas.filter((t) => t.opcional && !t.feito && t.modulo);
     corpo.appendChild(h('p', { class: 'hint', style: 'margin:0 0 12px;', text: 'Ao publicar, o link do convite passa a mostrar o site para quem receber. Antes disso, os convidados veem uma página de "Em breve".' }));
+    if (bloqueio.length) {
+      corpo.appendChild(h('div', { class: 'aviso-midia', role: 'alert', style: 'margin:0 0 12px;' }, h('b', { text: 'Para publicar, falta: ' }), bloqueio.map((t) => t.titulo.toLowerCase()).join(' e ') + '.',
+        h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;' }, bloqueio.map((t) => btn('Preencher: ' + t.titulo.toLowerCase(), () => { fecharDialogo(); abrirAssistente(t.passo); }, 'sm prim')))));
+    }
     if (pend.length) {
       corpo.appendChild(h('div', { class: 'aviso-midia', style: 'margin:0 0 12px;' }, h('b', { text: 'Ainda falta: ' }), pend.map((t) => t.titulo.toLowerCase()).join(', ') + '. Dá para publicar assim mesmo e completar depois.'));
-    } else corpo.appendChild(h('div', { class: 'ok-aviso', style: 'margin:0 0 12px;', text: 'Todos os passos essenciais estão feitos.' }));
+    } else if (!bloqueio.length) corpo.appendChild(h('div', { class: 'ok-aviso', style: 'margin:0 0 12px;', text: 'Todos os passos essenciais estão feitos.' }));
     let modo = 'convite';
     const opcModo = (id, tit, sub) => {
       const r = h('input', { type: 'radio', name: 'pb-modo', id: 'pb-' + id }); r.checked = modo === id; r.addEventListener('change', () => { modo = id; });
@@ -7211,7 +7217,7 @@
     // Estados: aguardando → publicando (clique repetido é ignorado) → publicado | erro (dá para tentar de novo: os dois passos são repetíveis)
     let publicando = false;
     const publicar = async () => {
-      if (publicando) return;
+      if (publicando || bloqueio.length) return;
       publicando = true;
       try {
         const extras = {};
@@ -7220,14 +7226,14 @@
         erro.hidden = true;
         const r1 = await api('/api/admin/conteudo', 'POST', extras); if (r1.erro) { erro.textContent = r1.erro; erro.hidden = false; return; }
         Object.assign(ctDados, extras);
-        const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; }
+        const r2 = await api('/api/admin/publicacao', 'POST', { publicado: true }); if (r2.erro) { erro.textContent = r2.erro; erro.hidden = false; return; } // (o servidor também barra publicar sem nomes ou data)
         PUB.publicado = true; desenharFaixaRascunho();
         mostrarPublicado();
         if (typeof atualizarSTD === 'function') atualizarSTD();
         carregarPreparacao();
       } finally { publicando = false; }
     };
-    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Publicar agora', prim: true, fn: publicar }]);
+    montarRodape([{ rotulo: 'Cancelar', fn: fecharDialogo }, { rotulo: 'Publicar agora', prim: true, desativado: bloqueio.length > 0, fn: publicar }]);
     abrirDialogo({ titulo: 'Publicar o convite', largura: '540px' });
   }
   function mostrarPublicado() {
@@ -7305,11 +7311,13 @@
         const sugestoes = [['15 dias antes', 15], ['30 dias antes', 30], ['Na véspera', 1]];
         sugestoes.forEach(([rot, dias]) => { const dt = new Date(base); dt.setDate(dt.getDate() - dias); const iso = dt.toISOString().slice(0, 10);
           const b = h('button', { type: 'button', class: 'sugestao' + (prazoAtual === iso ? ' on' : ''), text: rot + ' (' + textoSugerido('curto', iso) + ')' });
-          b.addEventListener('click', () => { lig('hero.prazo_iso', iso + 'T23:59:00-03:00'); lig('hero.prazo_display', textoSugerido('curto', iso)); lig('hero.prazo_horario_display', ''); aoMudarData(); }); cx.appendChild(b); });
-        const sem = h('button', { type: 'button', class: 'sugestao' + (!prazoAtual ? ' on' : ''), text: 'Sem prazo' }); sem.addEventListener('click', () => { lig('hero.prazo_iso', ''); lig('hero.prazo_display', ''); aoMudarData(); }); cx.appendChild(sem);
+          b.addEventListener('click', () => { lig('hero.prazo_iso', iso + 'T23:59:00-03:00'); lig('hero.prazo_sem_prazo', '0'); lig('hero.prazo_display', textoSugerido('curto', iso)); lig('hero.prazo_horario_display', ''); aoMudarData(); }); cx.appendChild(b); });
+        const semPrazoEscolhido = (fs.querySelector('[data-chave="hero.prazo_sem_prazo"]') || {}).value === '1';
+        const sem = h('button', { type: 'button', class: 'sugestao' + (!prazoAtual && semPrazoEscolhido ? ' on' : ''), text: 'Sem prazo' }); sem.addEventListener('click', () => { lig('hero.prazo_iso', ''); lig('hero.prazo_sem_prazo', '1'); lig('hero.prazo_display', ''); aoMudarData(); }); cx.appendChild(sem);
       };
       // prazo guardado entra no formulário como campo escondido
       const pz = h('input', { type: 'hidden', 'data-chave': 'hero.prazo_iso' }); pz.value = d['hero.prazo_iso'] || ''; fs.appendChild(pz);
+      const sp = h('input', { type: 'hidden', 'data-chave': 'hero.prazo_sem_prazo' }); sp.value = d['hero.prazo_sem_prazo'] || '0'; fs.appendChild(sp);
       fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.data_iso') aoMudarData(); });
       setTimeout(aoMudarData, 0);
     } else if (passo.id === 'local') {
@@ -7372,6 +7380,8 @@
   }
   async function irPasso(delta, salvar) {
     if (salvar && !(await salvarPasso())) return;
+    // seguir adiante no passo do visual é confirmar o que está valendo (o checklist só conta cores e letras a partir daí)
+    if (salvar && delta > 0 && ASSIST.passos[ASSIST.passo].id === 'tema' && !(await salvarChaves({ 'aparencia.visual_confirmado': '1' }))) return;
     const novo = ASSIST.passo + delta;
     if (novo < 0 || novo >= ASSIST.passos.length) return;
     ASSIST.passo = novo; desenharPasso();
