@@ -101,6 +101,10 @@ limpo → (mexeu) → sujo → (salvar) → salvando → limpo; erro mantém suj
 
 Os campos ficam travados enquanto o salvamento está em andamento (antes, o que fosse digitado nesse intervalo era sobrescrito pelo valor salvo).
 
+Rascunho neste aparelho (formulário com barra de salvar): sem rascunho → guardado (600 ms depois de mexer; só os campos mexidos e o valor que cada um tinha antes) → oferecido ao reabrir a parte | descartado. Só é oferecido se o conteúdo salvo ainda for o de quando o rascunho nasceu; se a parte foi salva depois (aqui, em outra tela ou em outro aparelho), o rascunho é descartado. Enquanto a oferta está na tela, a barra diz "Há alterações guardadas neste aparelho", nunca "Tudo salvo". Corrigido: cada parte visitada continuava escutando o formulário, então uma edição gravava um rascunho por parte já visitada, e esses rascunhos sobravam depois de salvar.
+
+Save the Date: desligado ↔ ligado, só ao salvar (a chave entra no formulário como os outros campos; antes valia na hora).
+
 ### 11. Fila offline
 
 Alterações sem internet ficam em `localStorage`, na ordem, e são reenviadas quando a internet volta. Uma alteração que o servidor recusa sai da fila e a pessoa é avisada. Revisada, sem mudanças.

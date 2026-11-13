@@ -952,6 +952,29 @@
   @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important;}}
 </style>
 <link rel="stylesheet" href="/admin/vnf.css">
+<style>
+  /* Topo: as ações ficam em um menu só (abre pelo botão "Menu") */
+  header.hd{position:relative;flex-wrap:nowrap;}
+  header.hd #hdMenuBtn{flex-shrink:0;}
+  header.hd .hd-acoes{display:none;position:absolute;right:12px;top:calc(100% - 4px);z-index:70;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:0 14px 34px rgba(10,20,40,.24);min-width:240px;max-width:calc(100vw - 24px);}
+  header.hd .hd-acoes.aberto{display:flex;}
+  header.hd .hd-acoes .hd-btn{color:var(--ink);border-color:transparent;background:transparent;justify-content:flex-start;border-radius:10px;width:100%;min-height:44px;padding:0 12px;font-weight:600;}
+  header.hd .hd-acoes .hd-btn:hover,header.hd .hd-acoes .hd-btn:focus-visible{background:var(--muted-bg);}
+  header.hd .hd-acoes .hd-btn .rot-longo{display:inline;}
+  header.hd .hd-acoes .hd-btn[hidden]{display:none;}
+  /* Editar no convite e Conteúdo: a página e a prévia rolam; a lista de partes acompanha a página (sem rolagem própria) */
+  @media (min-width:1000px){ .ed2-menu,.ct-side{position:static !important;max-height:none !important;overflow:visible !important;} }
+  /* Barra de salvar do editor: a mesma do Conteúdo, no mesmo lugar */
+  #ed2-savebar[hidden]{display:none;}
+  @media (min-width:1000px){ .ed2-painel{display:flex;flex-direction:column;min-height:calc(100vh - 215px);} .ed2-painel > #ed2-savebar{margin-top:auto;} }
+  .ed2-caixa-acoes.savebar{justify-content:flex-end;}
+  .ed2-caixa-acoes.savebar .estado{margin-right:auto;}
+  #subheader button.mais-abas{font-weight:600;}
+  details.ajuste-fino-wrap > summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;list-style:none;}
+  details.ajuste-fino-wrap > summary::-webkit-details-marker{display:none;}
+  details.ajuste-fino-wrap > summary::after{content:'abrir';font-size:11.5px;font-weight:700;text-transform:none;letter-spacing:0;color:var(--info);margin-left:auto;}
+  details.ajuste-fino-wrap[open] > summary::after{content:'fechar';}
+</style>
 </head>
 <body>
 
@@ -981,7 +1004,8 @@
     <h1 id="tituloAdmin">Plataforma</h1>
     <div class="hd-sub" id="hdSub">Administração geral</div>
   </div>
-  <div class="hd-acoes">
+  <button id="hdMenuBtn" class="hd-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="hdAcoes"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu</button>
+  <div class="hd-acoes" id="hdAcoes">
     <a id="voltarPlataforma" class="hd-btn" href="/admin/" hidden>← <span class="rot-longo">Plataforma</span></a>
     <a id="verSite" class="hd-btn" href="/" target="_blank" rel="noopener" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Testar convite</a>
     <button id="copiarSite" class="hd-btn" type="button" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="rot-longo">Copiar link do site</span></button>
@@ -1152,11 +1176,10 @@
 
   <!-- ===== EVENTO: SITE › EDITAR NO CONVITE (novo modo, convive com Conteúdo, Cores, Tipografia e Ordem) ===== -->
   <section id="tab-editor" class="tab">
-    <div class="pag-head"><div><h2>Editar no convite <span class="hd-badge" style="background:var(--gold);color:#241700;">novo</span></h2><p>Escolha o módulo ao lado e toque no que quer mudar, direto na prévia. É o mesmo conteúdo das outras abas do Site: o que você salva aqui aparece lá, e vice-versa.</p></div></div>
     <div class="ed2-layout">
       <details class="ed2-menu" id="ed2-menu" aria-label="Módulos do convite"></details>
       <div class="ed2-prev" id="ed2-prev"></div>
-      <div class="ed2-painel" id="ed2-painel"><div id="ed2-vista" class="ed2-vista"></div><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div></div>
+      <div class="ed2-painel" id="ed2-painel"><div id="ed2-vista" class="ed2-vista"></div><div id="ed2-chips" class="ed2-chips" hidden></div><div id="ed2-form" style="min-width:0;"><div class="carregando">Carregando...</div></div><div class="savebar" id="ed2-savebar"><span class="estado" id="ed2-estado">Tudo salvo</span><button type="button" class="action" id="ed2-salvar" disabled>Salvar alterações</button></div></div>
     </div>
   </section>
 
@@ -1616,6 +1639,15 @@
       marcar();
     });
   })();
+  // Menu do topo: abre e fecha pelo botão; fecha ao escolher um item, ao clicar fora e com Esc (o foco volta ao botão)
+  (function () {
+    const b = document.getElementById('hdMenuBtn'), m = document.getElementById('hdAcoes'); if (!b || !m) return;
+    const abrir = (v) => { m.classList.toggle('aberto', v); b.setAttribute('aria-expanded', String(v)); if (v) { const p = Array.from(m.querySelectorAll('.hd-btn')).find((e) => !e.hidden); if (p) p.focus(); } };
+    b.addEventListener('click', (ev) => { ev.stopPropagation(); abrir(!m.classList.contains('aberto')); });
+    m.addEventListener('click', (ev) => { if (ev.target.closest('.hd-btn')) abrir(false); });
+    document.addEventListener('click', (ev) => { if (m.classList.contains('aberto') && !m.contains(ev.target)) abrir(false); });
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && m.classList.contains('aberto')) { abrir(false); b.focus(); } });
+  })();
   document.getElementById('btnSair').addEventListener('click', async () => {
     if (!(await confirmar({ titulo: 'Sair do painel?', texto: 'Você vai precisar do usuário e da senha para entrar de novo neste aparelho.', rotulo: 'Sair' }))) return;
     AUTH = null; apagarAuth();
@@ -1837,7 +1869,7 @@
   const NAV_EVENTO = [
     { id: 'painel', rotulo: 'Painel', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>', abas: [{ tab: 'painel', rotulo: 'Painel' }] },
     { id: 'convidados', rotulo: 'Convidados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>', abas: [{ tab: 'respostas', rotulo: 'Respostas' }, { tab: 'importar', rotulo: 'Importar lista' }, { tab: 'mover', rotulo: 'Mover convidado' }, { tab: 'mesclar', rotulo: 'Mesclar grupos' }, { tab: 'removidos', rotulo: 'Removidos recentemente' }] },
-    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'editor', rotulo: 'Editar no convite (novo)' }, { tab: 'cores', rotulo: 'Cores' }, { tab: 'tipografia', rotulo: 'Tipografia' }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos' }] },
+    { id: 'site', rotulo: 'Site', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg>', abas: [{ tab: 'editor', rotulo: 'Editar no convite' }, { tab: 'conteudo', rotulo: 'Conteúdo' }, { tab: 'cores', rotulo: 'Cores', aparencia: true }, { tab: 'tipografia', rotulo: 'Tipografia', aparencia: true }, { tab: 'formas', rotulo: 'Formas e estilo', avancada: true, aparencia: true }, { tab: 'ordem', rotulo: 'Ordem dos módulos', aparencia: true }] },
     { id: 'presentes', rotulo: 'Presentes', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>', abas: [{ tab: 'presentes', rotulo: 'Presentes' }] },
     { id: 'lembrancas', rotulo: 'Lembranças', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>', abas: [{ tab: 'lembrancas', rotulo: 'Lembranças' }] },
     { id: 'recados', rotulo: 'Recados', icone: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>', abas: [{ tab: 'recados', rotulo: 'Recados' }] },
@@ -1869,9 +1901,13 @@
     document.getElementById('tab-' + secao).classList.add('active');
     if (CARREGADORES[tab]) CARREGADORES[tab]();
   }
+  // Tela estreita (menos de 700 px): a prévia fica pequena demais para tocar nos textos, então o caminho padrão do Site é o formulário
+  const mqEstreita = window.matchMedia('(max-width:699px)');
+  // Caminho padrão para editar o convite: "Editar no convite" no computador; "Conteúdo" (formulário) na tela estreita
+  function abaPadraoDoSite() { return mqEstreita.matches ? 'conteudo' : 'editor'; }
   function abrirAreaEvento(areaId, tabInicial) {
     const area = NAV_EVENTO.find((a) => a.id === areaId);
-    navegar(tabInicial || area.abas[0].tab);
+    navegar(tabInicial || (areaId === 'site' ? abaPadraoDoSite() : area.abas[0].tab));
   }
   function marcarNavEvento(tab) {
     const area = areaDaAba(tab);
@@ -1879,13 +1915,19 @@
     const sub = document.getElementById('subheader');
     const inn = document.getElementById('subheaderIn');
     inn.innerHTML = '';
-    const abasVisiveis = area.abas.filter((a) => AVANCADO || !a.avancada || a.tab === tab);
-    if (abasVisiveis.length > 1) {
+    // As abas de aparência (cores, letras, formas e ordem) só aparecem quando a pessoa pede, pelo botão "Cores, letras e ordem",
+    // ou quando ela já está em uma delas. O caminho padrão vem primeiro; o outro fica ao lado, como atalho.
+    const naAparencia = area.abas.some((a) => a.aparencia && a.tab === tab);
+    let abasVisiveis = area.abas.filter((a) => (AVANCADO || !a.avancada || a.tab === tab) && (!a.aparencia || naAparencia));
+    if (area.id === 'site' && abaPadraoDoSite() === 'conteudo') abasVisiveis = abasVisiveis.slice().sort((x, y) => (y.tab === 'conteudo') - (x.tab === 'conteudo'));
+    const temAparencia = area.abas.some((a) => a.aparencia);
+    if (abasVisiveis.length > 1 || temAparencia) {
       abasVisiveis.forEach((a) => {
         const b = h('button', { type: 'button', class: a.tab === tab ? 'active' : '', 'aria-current': a.tab === tab ? 'page' : null }, a.rotulo);
         b.addEventListener('click', () => navegar(a.tab));
         inn.appendChild(b);
       });
+      if (temAparencia && !naAparencia) inn.appendChild(h('button', { type: 'button', class: 'mais-abas', id: 'sub-aparencia', title: 'Cores, tipos de letra e ordem das partes do convite', onclick: () => navegar('cores') }, 'Cores, letras e ordem'));
       if (area.abas.some((a) => a.avancada)) {
         const chk = h('input', { type: 'checkbox', id: 'sw-avancado' }); chk.checked = AVANCADO;
         chk.addEventListener('change', () => {
@@ -3985,7 +4027,7 @@
       { etapa: 'estilo', chave: 'countdown.mostrar_segundos', tipo: 'liga', label: 'Mostrar os segundos', sub: 'Desligado, a contagem mostra só dias, horas e minutos (mais calma para quem olha por muito tempo).' },
       { etapa: 'previa', chave: '__previa_modulo__', tipo: 'previa_modulo' },
     ]},
-    { titulo: 'Presentes (chamada)', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', etapas: [{ id: 'conteudo', titulo: 'Texto e destino' }, { id: 'visual', titulo: 'Aparência' }], campos: [
+    { titulo: 'Chamada para presentes', toggle: 'presente_teaser', ancora: 'secPresenteTeaser', etapas: [{ id: 'conteudo', titulo: 'Texto e destino' }, { id: 'visual', titulo: 'Aparência' }], campos: [
       { etapa: 'conteudo', chave: '__aviso_chamada__', tipo: 'aviso_chamada' },
       { etapa: 'conteudo', chave: 'presente_teaser.destino', label: 'Para onde o botão leva', tipo: 'select', opcoes: [
         { valor: 'secao', label: 'A seção de presentes deste site' },
@@ -4058,7 +4100,7 @@
       { chave: 'hero.cta_label_encerrado', label: 'Botão da capa depois do prazo', dica: 'Em branco: "Ver minha resposta".' },
       { chave: 'hero.texto_depois', label: 'Frase na capa depois do evento', dica: 'Depois do dia da festa o botão some e esta frase aparece. Em branco: "Obrigado por celebrar este dia com a gente!".' },
     ]},
-    { titulo: 'Presentes', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'como', titulo: 'Como presentear' }], campos: [
+    { titulo: 'Presentes', rotuloLista: 'Presentes (lista, PIX e dicas)', toggle: 'presentes', ancora: 'presentes', etapas: [{ id: 'textos', titulo: 'Textos' }, { id: 'como', titulo: 'Como presentear' }], campos: [
       { etapa: 'textos', chave: 'presentes.eyebrow', label: 'Texto pequeno' },
       { etapa: 'textos', chave: 'presentes.titulo', label: 'Título' },
       { etapa: 'textos', chave: 'presentes.texto', label: 'Texto', tipo: 'textarea', dica: 'É a primeira coisa que o convidado lê nesta seção. Abaixo aparecem só as formas de presentear que você ligar na próxima etapa.' },
@@ -4308,7 +4350,7 @@
     if (!aplicarAlvoPendente()) renderConteudoGrupo();
   }
   function iconeDoGrupo(g) {
-    const porToggle = { countdown: '⏳', presente_teaser: '🎁', timeline: '📖', padrinhos: '🤵', madrinhas_pais: '👨‍👩‍👧', mapa: '📍', galeria: '📷', presentes: '🎁', recados: '💬' };
+    const porToggle = { countdown: '⏳', presente_teaser: '📣', timeline: '📖', padrinhos: '🤵', madrinhas_pais: '👨‍👩‍👧', mapa: '📍', galeria: '📷', presentes: '🎁', recados: '💬' };
     if (g.especial === 'savethedate') return '🗓️';
     if (g.toggle) return porToggle[g.toggle] || '▫️';
     if (g.titulo === 'Capa') return '🖼️';
@@ -5199,12 +5241,15 @@
       const restaurarTudo = () => { Object.entries(ocultos).forEach(([k, i]) => { const [el, prop] = k.split('.'); i.value = padraoDe(el, prop); emitir(i); }); desenharControles(); pintarChips(); avisarPersonalizado(); };
       fs.addEventListener('ajuste-restaurar', restaurarTudo);
       fs.addEventListener('input', (ev) => { if (ev.target && ev.target.dataset && ev.target.dataset.chave === 'hero.layout') { pintarChips(); avisarPersonalizado(); } });
-      const painelAjuste = h('div', { class: 'ajuste-fino-wrap', hidden: true }, h('div', { class: 'separador-campo', text: '3. Ajuste fino' }), h('div', { class: 'ajuste-fino' },
+      const painelAjuste = h('details', { class: 'ajuste-fino-wrap', id: 'ajuste-fino', hidden: true }, h('summary', { class: 'separador-campo', text: '3. Ajuste fino' }), h('div', { class: 'ajuste-fino' },
         h('p', { class: 'dica-campo', style: 'margin:0 0 10px;', text: 'Escolha o elemento e ajuste só ele: alinhamento, altura, tamanho e cor. "Todos os textos" mexe no conjunto. Vale para o convite e para o Save the Date. Para voltar a um modelo pronto, escolha-o na lista de modelos acima.' }),
         chips, controles));
       fs.appendChild(painelAjuste);
       // o ajuste fino só aparece no modo "Personalizado" (escolhido na lista de modelos ou já em uso)
-      fs.addEventListener('modo-personalizado', (ev) => { painelAjuste.hidden = !ev.detail; });
+      // Abre fechado: quem só quer trocar a foto ou o modelo não precisa ver os oito ajustes. Abre sozinho só quando a pessoa
+      // escolhe "Personalizado" agora (o primeiro aviso é o da abertura da tela e não conta).
+      let primeiroAviso = true;
+      fs.addEventListener('modo-personalizado', (ev) => { painelAjuste.hidden = !ev.detail; if (!primeiroAviso && ev.detail) painelAjuste.open = true; primeiroAviso = false; });
       desenharControles(); pintarChips();
       setTimeout(avisarPersonalizado, 0);
       return;
@@ -5937,6 +5982,12 @@
   new MutationObserver(() => { clearTimeout(agendaTemPrevia); agendaTemPrevia = setTimeout(atualizarTemPrevia, 60); }).observe(document.querySelector('main'), { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
   mqCelular.addEventListener('change', atualizarTemPrevia);
 
+  // No computador a lista de partes acompanha a página: ao escolher uma parte lá embaixo, a tela volta ao começo da área de edição
+  function mostrarTopoDe(id) {
+    const e = document.getElementById(id); if (!e || mqCelular.matches) return;
+    const topo = e.getBoundingClientRect().top;
+    if (topo < 0) window.scrollTo({ top: window.pageYOffset + topo - 12 });
+  }
   function renderConteudoGrupo() {
     atualizarBarraModulo();
     ctItens.forEach((b, i) => { b.classList.toggle('active', i === ctGrupoAtivo); b.setAttribute('aria-current', i === ctGrupoAtivo ? 'true' : 'false'); });
@@ -5952,6 +6003,7 @@
         GRUPOS_ATIVOS.forEach((_, i) => atualizarEstadoItem(i));
       },
     });
+    mostrarTopoDe('ct-form');
   }
 
   // Lê um link do Google Maps (completo) e tira dele o que der: nome, endereço, coordenadas e id do lugar.
@@ -6012,36 +6064,28 @@
     const lista = on
       ? ['O site mostra só a capa, com a mensagem abaixo.', 'Confirmação de presença, presentes, recados e demais módulos ficam escondidos.', 'Quem abrir um convite já enviado vê apenas a capa até você desligar.']
       : ['Ideal para avisar a data antes de o convite oficial estar pronto.', 'O site passa a mostrar só a capa, com título e mensagem.', 'A confirmação de presença fica escondida até você desligar.'];
-    const acao = btn(on ? 'Desligar e abrir as confirmações' : 'Ligar o Save the Date', async () => {
-      const ligar = !on;
-      const ok = await confirmar({
-        titulo: ligar ? 'Ligar o Save the Date?' : 'Desligar o Save the Date?',
-        texto: ligar
-          ? 'O site vai mostrar só a capa. A confirmação de presença e todos os outros módulos ficam escondidos, inclusive para quem já recebeu o link do convite. Você pode desligar a qualquer momento.'
-          : 'O site volta ao normal, com todos os módulos ativos e a confirmação de presença aberta para quem tiver o link do convite.',
-        rotulo: ligar ? 'Ligar agora' : 'Desligar agora',
-      });
-      if (!ok) return;
-      acao.disabled = true;
-      const payload = { 'config.modo_save_the_date': ligar ? '1' : '0' };
-      form.querySelectorAll('[data-chave^="savethedate."]').forEach((e) => { payload[e.dataset.chave] = e.value; });
-      const d = await api('/api/admin/conteudo', 'POST', payload);
-      acao.disabled = false;
-      if (d.erro) { toast(d.erro, 'err'); return; }
-      Object.assign(ctDados, payload);
-      atualizarSTD();
-      toast(ligar ? 'Save the Date ligado. O site já mostra só a capa.' : 'Save the Date desligado. A confirmação de presença está aberta.');
-      rerenderAtual();
-    }, on ? 'sm' : 'prim grande');
-    if (on) acao.classList.add('grande');
+    // Chave de ligar e desligar: entra no formulário como os outros campos e só vale depois de "Salvar alterações".
+    // Antes disso, um aviso diz o que vai mudar no site (ligado, ele esconde a confirmação de presença).
+    const chk = h('input', { type: 'checkbox', 'data-chave': 'config.modo_save_the_date', id: 'std-chave' }); chk.checked = on;
+    const rotChave = h('span');
+    const avisoSTD = h('div', { class: 'aviso-midia', role: 'status', id: 'std-aviso', hidden: true, style: 'margin-top:10px;' });
+    const rotular = () => {
+      rotChave.textContent = chk.checked ? 'Ligado' : 'Desligado';
+      avisoSTD.hidden = chk.checked === on;
+      avisoSTD.textContent = chk.checked
+        ? 'Ao salvar, o site passa a mostrar só a capa. A confirmação de presença e todas as outras partes ficam escondidas, inclusive para quem já recebeu o link do convite.'
+        : 'Ao salvar, o site volta ao normal e a confirmação de presença fica aberta para quem tiver o link do convite.';
+    };
+    chk.addEventListener('change', rotular); rotular();
+    const acao = h('div', {}, h('label', { class: 'switch', for: 'std-chave', style: 'min-height:44px;' }, chk, h('span', { class: 'trilho' }), rotChave), avisoSTD);
 
     const esq = h('div', {},
-      h('span', { class: 'std-estado' }, h('i'), on ? 'Ligado agora' : 'Desligado'),
+      h('span', { class: 'std-estado' }, h('i'), on ? 'Ligado no site' : 'Desligado no site'),
       h('h4', { text: on ? 'O site está no modo Save the Date' : 'Modo Save the Date' }),
       h('p', { text: on ? 'Quem abre o site vê só a capa. Quando o convite oficial estiver pronto, desligue para liberar as confirmações.' : 'Use quando quiser avisar a data antes de abrir as confirmações.' }),
       h('ul', {}, lista.map((t) => h('li', { text: t }))),
       acao,
-      h('p', { style: 'margin:12px 0 0;font-size:12px;', text: 'Escreva o título e a mensagem abaixo e confira a prévia ao lado. Ligar ou desligar vale na hora, sem precisar salvar.' }));
+      h('p', { style: 'margin:12px 0 0;font-size:12px;', text: 'Escreva o título e a mensagem abaixo e confira a prévia ao lado. Ligar ou desligar só vale depois de salvar.' }));
     form.appendChild(h('div', { class: 'std-card' + (on ? ' on' : '') }, esq));
   }
 
@@ -6084,6 +6128,9 @@
 
   function renderGrupoEm(grupo, form, opcoes) {
     opcoes = opcoes || {};
+    // o mesmo formulário é reaproveitado por todas as partes do convite: desliga o que a montagem anterior deixou ligado
+    // (sem isso, cada parte visitada continuava escutando as edições e gravava um rascunho com o nome dela)
+    if (form._limparMontagem) { form._limparMontagem(); form._limparMontagem = null; }
     grupoEmEdicao = { grupo, form };
     rerenderAtual = () => {
       if (capturarRolagemPrevia) capturarRolagemPrevia();
@@ -6152,6 +6199,7 @@
 
     const kRasc = chaveRascunho(grupo, opcoes);
     rascunhoMontado = { chave: kRasc, form };
+    const txt = (v) => String(v === undefined || v === null ? '' : v);
     const coletar = () => {
       const payload = {};
       if (opcoes.rascunho) Object.assign(payload, opcoes.rascunho); // inclui o que foi mexido na outra etapa
@@ -6159,6 +6207,17 @@
         payload[e.dataset.chave] = e.type === 'checkbox' ? (e.checked ? '1' : '0') : e.value;
       });
       return payload;
+    };
+    // Rascunho neste aparelho: guarda só o que foi mexido e, para cada campo, o valor que ele tinha antes ("base"). Ao voltar, o
+    // rascunho só é oferecido se o conteúdo salvo ainda for aquele: se a parte foi salva depois (aqui, em outra tela ou em outro
+    // aparelho), o rascunho ficou velho e é descartado. "base" atravessa as remontagens da mesma parte e recomeça a cada salvamento.
+    if (!opcoes._baseRasc) opcoes._baseRasc = coletar();
+    const baseDe = (k) => txt(opcoes._baseRasc[k] !== undefined ? opcoes._baseRasc[k] : ctDados[k]);
+    const guardarRascunho = (pendente) => {
+      const tudo = coletar(), chaves = {}, base = {};
+      Object.keys(tudo).forEach((k) => { if (txt(tudo[k]) !== baseDe(k)) { chaves[k] = tudo[k]; base[k] = baseDe(k); } });
+      if (!Object.keys(chaves).length) { apagarRascunhoLocal(kRasc); return; }
+      gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: !!pendente, chaves, base });
     };
     // Estados da barra: limpo → sujo (mexeu) → salvando → limpo | sujo (erro) | guardado neste aparelho (sem internet).
     // "rev" conta as edições: se alguém mexe DEPOIS de clicar em salvar, o que foi enviado já não é tudo e a tela continua "suja".
@@ -6175,7 +6234,8 @@
       if (d.erro) {
         if (d.rede) {
           // sem internet: guarda neste aparelho e envia sozinho quando a conexão voltar
-          gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: true, chaves: payload });
+          const base = {}; Object.keys(payload).forEach((k) => { base[k] = baseDe(k); });
+          gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: true, chaves: payload, base });
           estado.textContent = 'Guardado neste aparelho · aguardando internet';
           msg(msgDiv.id, 'Sem conexão agora. Suas alterações estão guardadas neste aparelho e serão enviadas sozinhas quando a internet voltar.', false);
         } else msg(msgDiv.id, d.erro, false);
@@ -6189,10 +6249,14 @@
         agendarCompartilhar();
         return;
       }
+      clearTimeout(esperaRasc); // um rascunho que ainda ia ser gravado não pode renascer depois do salvamento
       apagarRascunhoLocal(kRasc);
+      opcoes._baseRasc = coletar();
       if (opcoes.rascunho) Object.keys(opcoes.rascunho).forEach((k) => delete opcoes.rascunho[k]);
       msgDiv.textContent = '';
       ficarSujo(false);
+      // o Save the Date segue a regra das outras partes: liga ou desliga só ao salvar
+      if (payload['config.modo_save_the_date'] !== undefined) { atualizarSTD(); if (grupo.especial === 'savethedate') { toast(payload['config.modo_save_the_date'] === '1' ? 'Salvo. O site agora mostra só a capa (Save the Date).' : 'Salvo. O Save the Date foi desligado e a confirmação de presença está aberta.'); agendarCompartilhar(); renderGrupoEm(grupo, form, opcoes); return; } }
       toast(automatico ? 'Conexão de volta: alterações enviadas. Tudo salvo.' : (opcoes.msgSalvo || 'Salvo. O site já está atualizado.'));
       agendarCompartilhar();
     };
@@ -6210,25 +6274,40 @@
       ficarSujo(true);
       // guarda uma cópia neste aparelho (sem travar a digitação)
       clearTimeout(esperaRasc);
-      esperaRasc = setTimeout(() => { const anterior = lerRascunhoLocal(kRasc); gravarRascunhoLocal(kRasc, { ts: Date.now(), pendente: !!(anterior && anterior.pendente), chaves: coletar() }); }, 600);
+      esperaRasc = setTimeout(() => { esperaRasc = null; const anterior = lerRascunhoLocal(kRasc); guardarRascunho(anterior && anterior.pendente); }, 600);
     };
     form.addEventListener('input', mexeu); form.addEventListener('change', mexeu);
+    form._limparMontagem = () => {
+      form.removeEventListener('input', mexeu); form.removeEventListener('change', mexeu);
+      if (esperaRasc) { clearTimeout(esperaRasc); esperaRasc = null; const anterior = lerRascunhoLocal(kRasc); guardarRascunho(anterior && anterior.pendente); } // grava já o que estava para ser gravado
+      clearInterval(intervaloRetentar); window.removeEventListener('online', tentarDeNovo);
+    };
+    const veioDeRestaurar = restaurouRascunho;
     if (restaurouRascunho) { restaurouRascunho = false; ficarSujo(true); }
 
     // alterações não salvas de uma visita anterior (página recarregada, aba fechada, internet caída): oferece restaurar
-    const rasc = lerRascunhoLocal(kRasc);
+    const rasc = veioDeRestaurar ? null : lerRascunhoLocal(kRasc);
     if (rasc && rasc.chaves) {
-      const iguais = (a, b) => String(a === undefined || a === null ? '' : a) === String(b === undefined || b === null ? '' : b);
+      const UM_DIA = 24 * 3600 * 1000;
       const diferentes = {};
-      Object.keys(rasc.chaves).forEach((k) => { if (!iguais(rasc.chaves[k], ctDados[k])) diferentes[k] = rasc.chaves[k]; });
-      if (!Object.keys(diferentes).length) apagarRascunhoLocal(kRasc);
+      Object.keys(rasc.chaves).forEach((k) => {
+        if (txt(rasc.chaves[k]) === txt(ctDados[k])) return;                   // já é o que está salvo
+        if (rasc.base && txt(rasc.base[k]) !== txt(ctDados[k])) return;        // a parte foi salva depois deste rascunho: ele ficou velho
+        diferentes[k] = rasc.chaves[k];
+      });
+      // rascunhos de versões anteriores não dizem em que conteúdo se basearam: só valem os recentes (ou os que esperam internet)
+      const antigoSemBase = !rasc.base && !rasc.pendente && Date.now() - (rasc.ts || 0) > UM_DIA;
+      if (!Object.keys(diferentes).length || antigoSemBase) apagarRascunhoLocal(kRasc);
       else {
-        const aviso = h('div', { class: 'aviso-midia', role: 'status', style: 'margin:0 0 14px;' },
-          h('div', { text: (rasc.pendente ? 'Estas alterações não chegaram ao servidor por falta de internet' : 'Você tem alterações não salvas') + ' (de ' + quando(rasc.ts) + '). Quer restaurá-las?' }),
+        // Enquanto a oferta estiver na tela, a barra não diz "Tudo salvo": um aviso só, sem contradição.
+        const semOferta = () => { aviso.remove(); if (!barra.classList.contains('sujo')) estado.textContent = 'Tudo salvo'; };
+        const aviso = h('div', { class: 'aviso-midia', role: 'status', id: 'aviso-rascunho', style: 'margin:0 0 14px;' },
+          h('div', { text: (rasc.pendente ? 'Estas alterações não chegaram ao servidor por falta de internet' : 'Você mexeu nesta parte e saiu sem salvar') + ' (em ' + quando(rasc.ts) + '). Quer trazer essas alterações de volta?' }),
           h('div', { style: 'margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;' },
-            btn('Restaurar alterações', () => { Object.assign(ctDados, diferentes); if (opcoes.rascunho) Object.assign(opcoes.rascunho, diferentes); restaurouRascunho = true; renderGrupoEm(grupo, form, opcoes); }, 'sm prim'),
-            btn('Descartar', () => { apagarRascunhoLocal(kRasc); aviso.remove(); }, 'sm fantasma')));
+            btn('Trazer de volta', () => { Object.assign(ctDados, diferentes); if (opcoes.rascunho) Object.assign(opcoes.rascunho, diferentes); restaurouRascunho = true; renderGrupoEm(grupo, form, opcoes); }, 'sm prim'),
+            btn('Descartar', () => { apagarRascunhoLocal(kRasc); semOferta(); }, 'sm fantasma')));
         form.insertBefore(aviso, form.firstChild);
+        estado.textContent = 'Há alterações guardadas neste aparelho';
       }
     }
   }
@@ -6378,7 +6457,7 @@
   // =====================================================================
   const BLOCOS_ORDENAVEIS = [
     { chave: 'countdown', nome: 'Contagem regressiva', toggle: true },
-    { chave: 'presente_teaser', nome: 'Presentes (chamada)', toggle: true },
+    { chave: 'presente_teaser', nome: 'Chamada para presentes', toggle: true },
     { chave: 'timeline', nome: 'Linha do tempo', toggle: true },
     { chave: 'padrinhos', nome: 'Padrinhos e madrinhas', toggle: true },
     { chave: 'madrinhas_pais', nome: 'Pais e daminhas', toggle: true },
@@ -6535,7 +6614,7 @@
       const ligado = !g.toggle || moduloLigado(g);
       const k = L.ord.indexOf(chave);
       const row = h('div', { class: 'ed2-linha' + (ligado ? '' : ' off') });
-      row.appendChild(h('button', { type: 'button', class: 'nm', 'aria-current': String(ed2Sel.tipo === 'grupo' && ed2Sel.i === i), onclick: () => ed2Abrir({ tipo: 'grupo', i }) }, h('span', { text: iconeDoGrupo(g), 'aria-hidden': 'true' }), h('span', { text: g.titulo })));
+      row.appendChild(h('button', { type: 'button', class: 'nm', 'aria-current': String(ed2Sel.tipo === 'grupo' && ed2Sel.i === i), onclick: () => ed2Abrir({ tipo: 'grupo', i }) }, h('span', { text: iconeDoGrupo(g), 'aria-hidden': 'true' }), h('span', { text: g.rotuloLista || g.titulo })));
       if (ordenavel) {
         const mover = async (d) => {
           const ord = L.ord.slice(), a = ord.indexOf(chave), b = a + d;
@@ -6558,6 +6637,8 @@
           row.appendChild(h('label', { class: 'mini-switch', title: 'Mostrar no site' }, chk, h('span')));
         }
       } else row.appendChild(h('span', { class: 'fixo', text: 'fixo' }));
+      // parte que dá para mover mas não para desligar (a confirmação de presença): leva a etiqueta "fixo" no lugar da chave
+      if (ordenavel && !g.toggle) row.appendChild(h('span', { class: 'fixo', title: 'Esta parte aparece sempre no convite', text: 'fixo' }));
       det.appendChild(row);
     };
     L.topo.forEach((g) => linha(g, false));
@@ -6578,6 +6659,7 @@
     if (!igual && !semConfirmar && !(await ed2Confirmar())) return;
     if (sel.tipo === 'visual' && sel.chip) ed2Chip = sel.chip;
     ed2Sel = sel.tipo === 'visual' ? { tipo: 'visual' } : sel;
+    mostrarTopoDe('ed2-painel');
     Object.keys(rolagemPrevias).forEach((k) => delete rolagemPrevias[k]);
     if (mqCelular.matches) document.getElementById('ed2-menu').open = false;
     ed2DesenharMenu(); ed2Chips();
@@ -6694,9 +6776,8 @@
   function ed2Corpo() { return document.getElementById('ed2-vista'); }
   function ed2Rolar() { if (mqCelular.matches) { const v = ed2Corpo(); if (v) v.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
   function ed2Cabecalho(titulo, sub, voltar) {
-    const sal = h('button', { type: 'button', class: 'action', id: 'ed2-salvar', text: 'Tudo salvo', disabled: true, onclick: ed2SalvarAtivo });
-    const topo = h('div', { class: 'ed2-barra-topo' }, h('div', { class: 'tt' }, voltar ? h('button', { type: 'button', class: 'ed2-voltar', text: '← ' + voltar.rotulo, onclick: voltar.fn }) : null, h('b', { text: titulo }), sub ? h('span', { text: sub }) : null), sal);
-    return topo;
+    // o aviso de salvo e o botão de salvar ficam na barra de baixo (a mesma do Conteúdo), não mais aqui no alto
+    return h('div', { class: 'ed2-barra-topo' }, h('div', { class: 'tt' }, voltar ? h('button', { type: 'button', class: 'ed2-voltar', text: '← ' + voltar.rotulo, onclick: voltar.fn }) : null, h('b', { text: titulo }), sub ? h('span', { text: sub }) : null));
   }
   function ed2VistaVazia() { const v = ed2Corpo(); if (v) v.innerHTML = ''; return v; }
   function ed2MostrarFormulario(v) { const f = document.getElementById('ed2-form'); if (f) f.hidden = !v; }
@@ -6751,23 +6832,23 @@
     if (!campos.length) { if (p.chaveAchado) { const a = ed2Achar(desc); if (a) { ed2IrParaCampo(a, g); return; } } toast('Este ajuste não está disponível neste módulo.'); return; }
     const fs = h('fieldset');
     campos.forEach((c) => renderCampoConteudo(fs, c));
-    const estado = h('span', { class: 'estado', text: 'Sem alterações' });
+    const estado = h('span', { class: 'estado', text: 'Tudo salvo' });
     const msgDiv = h('div', { class: 'msg' });
-    const sal = h('button', { type: 'button', class: 'action', text: 'Salvar' });
+    const sal = h('button', { type: 'button', class: 'action', text: 'Salvar alterações' });
     const voltar = () => { ed2FecharCaixa(); ed2Atualizar(); ed2MostrarBarra(desc); };
     const v = ed2VistaVazia();
     v.append(ed2Cabecalho(p.ic + ' ' + p.rot, desc.rotulo, { rotulo: 'Outras opções deste pedaço', fn: voltar }),
-      h('div', { class: 'ed2-caixa-box', role: 'group', 'aria-label': p.rot }, fs, msgDiv, h('div', { class: 'ed2-caixa-acoes' }, estado, btn('Cancelar', voltar, 'fantasma'), sal)));
+      h('div', { class: 'ed2-caixa-box', role: 'group', 'aria-label': p.rot }, fs, msgDiv, h('div', { class: 'ed2-caixa-acoes savebar' }, estado, btn('Cancelar', voltar, 'fantasma'), sal)));
     ed2MostrarFormulario(false);
     ed2Caixa = { desc, p, fs, sal, mexeu: false };
-    const vivo = () => { ed2Caixa.mexeu = true; estado.textContent = 'Alterações não salvas'; estado.classList.add('sujo'); Object.assign(previaExtra, ed2LerCaixa(fs)); ed2Atualizar(); ed2SincronizarSalvar(); };
+    const vivo = () => { ed2Caixa.mexeu = true; estado.textContent = 'Alterações não salvas'; estado.parentNode.classList.add('sujo'); Object.assign(previaExtra, ed2LerCaixa(fs)); ed2Atualizar(); ed2SincronizarSalvar(); };
     fs.addEventListener('input', vivo); fs.addEventListener('change', vivo);
     sal.addEventListener('click', async () => {
       const payload = ed2LerCaixa(fs);
       sal.disabled = true; sal.textContent = 'Salvando…';
       fs.disabled = true; // travar os campos: o que for digitado durante o envio seria sobrescrito pelo valor salvo
       const d = await api('/api/admin/conteudo', 'POST', payload);
-      fs.disabled = false; sal.disabled = false; sal.textContent = 'Salvar';
+      fs.disabled = false; sal.disabled = false; sal.textContent = 'Salvar alterações';
       if (d.erro) { msgDiv.textContent = d.rede ? 'Sem conexão agora. Suas alterações continuam aqui; tente salvar de novo quando a internet voltar.' : d.erro; msgDiv.className = 'msg err'; return; }
       Object.assign(ctDados, payload);
       Object.keys(payload).forEach((k) => document.querySelectorAll('#ed2-form [data-chave="' + k + '"]').forEach((e) => { if (e.type === 'checkbox') e.checked = payload[k] === '1'; else e.value = payload[k]; }));
@@ -6827,6 +6908,7 @@
     v.appendChild(h('button', { type: 'button', class: 'ed2-link', text: 'Ver todos os campos do módulo', onclick: () => ed2MostrarTodos(g) }));
     ed2SincronizarSalvar();
   }
+  document.getElementById('ed2-salvar').addEventListener('click', () => ed2SalvarAtivo());
   function ed2SalvarAtivo() {
     if (ed2Caixa) { ed2Caixa.sal.click(); return; }
     const b = document.querySelector('#ed2-form .savebar button.action'); if (b) b.click();
@@ -6834,8 +6916,13 @@
   function ed2SincronizarSalvar() {
     const b = document.getElementById('ed2-salvar'); if (!b) return;
     const sujoAgora = ed2Caixa ? ed2Caixa.mexeu : !!(sujo && (sujo.onde === 'conteudo' || sujo.onde === 'aparencia'));
+    // Um aviso só, sempre embaixo: quando a vista já tem a própria barra (formulário completo ou caixa de edição), a barra geral some
+    const barra = document.getElementById('ed2-savebar'), form = document.getElementById('ed2-form');
+    const temBarraPropria = !!ed2Caixa || !!(form && !form.hidden && form.querySelector('.savebar'));
+    barra.hidden = temBarraPropria;
+    barra.classList.toggle('sujo', sujoAgora);
+    document.getElementById('ed2-estado').textContent = sujoAgora ? 'Alterações não salvas' : 'Tudo salvo';
     b.disabled = !sujoAgora;
-    b.textContent = sujoAgora ? 'Salvar alterações' : 'Tudo salvo';
   }
   async function ed2Clique(m) {
     if (ed2Sel.tipo === 'visual') {

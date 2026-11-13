@@ -4,7 +4,7 @@
 
 export const MODULOS = {
   countdown: 'Contagem regressiva',
-  presente_teaser: 'Presentes (chamada)',
+  presente_teaser: 'Chamada para presentes',
   timeline: 'Linha do Tempo',
   padrinhos: 'Padrinhos e Madrinhas',
   madrinhas_pais: 'Pais e Daminhas',

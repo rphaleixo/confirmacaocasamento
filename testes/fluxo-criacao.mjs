@@ -1,6 +1,7 @@
 // Teste do FLUXO DE CRIAÇÃO DO CONVITE: evento novo nasce sem dados inventados, checklist, bloqueio de publicação,
 // prévia do assistente e marca de exemplo (etapa 1); criação em uma tela, nomes na criação e link de primeiro acesso (etapa 2);
-// assistente com rótulos neutros, local sem depender do Google Maps, publicar no último passo, passo dos convidados e retomada em outro aparelho (etapa 3).
+// assistente com rótulos neutros, local sem depender do Google Maps, publicar no último passo, passo dos convidados e retomada em outro aparelho (etapa 3);
+// menu do topo, caminho padrão de edição, rascunho x "Tudo salvo", Save the Date só ao salvar, ajuste fino fechado e lista de partes (etapa 4).
 //
 //   1. Servidor local rodando (README, "Rodar no computador") com os dados de exemplo.
 //   2. PLAYWRIGHT_PATH=<pasta node_modules do Playwright> node testes/fluxo-criacao.mjs [http://localhost:8799] [slug-de-um-evento-existente]
@@ -287,6 +288,101 @@ try {
     { assistenteFechado: true, janelaGrupo: true, concluido: true },
     { assistenteFechado: await h2.evaluate(() => document.getElementById('assistente').hidden), janelaGrupo: /grupo/i.test(await h2.textContent('#me-titulo')), concluido: (await estadoAssist()).concluido });
   await ap1.close(); await ap2.close();
+
+  // ================= ETAPA 4: painel de edição do convite =================
+  const slugI = 'etapa4-' + sufixo;
+  await api('POST', '/api/admin/eventos', { nome: 'Etapa 4 ' + sufixo, slug: slugI, tipo: 'casamento', nomes: { primeiro: 'Dora', segundo: 'Enzo' } });
+  await api('POST', '/api/admin/publicacao', { assistente: { passo: 'fim', concluido: true } }, slugI); // sem o assistente abrindo por cima
+  const abrirPainel = async (largura, altura, hash) => {
+    const c = await browser.newContext({ viewport: { width: largura, height: altura } });
+    await c.addInitScript((a) => { sessionStorage.setItem('rsvp-acesso:master', a); }, AUTH);
+    const pg = await c.newPage();
+    pg.on('pageerror', (e) => erros.push('etapa 4: ' + e.message));
+    pg.on('dialog', (d) => d.accept()); // aviso do navegador ao recarregar com alteração não salva
+    await pg.goto(BASE + '/admin/?e=' + slugI + hash); await pg.waitForSelector('#app:not([hidden])'); await pg.waitForTimeout(2500);
+    return pg;
+  };
+  const rascunhos = (pg) => pg.evaluate(() => Object.keys(localStorage).filter((k) => k.indexOf('rascunho-painel:') === 0));
+  const estadoBarra = (pg) => pg.evaluate(() => { const e = Array.from(document.querySelectorAll('#tab-conteudo .savebar .estado')).find((x) => x.getClientRects().length); return e ? e.textContent.trim() : null; });
+  const abrirParte = async (pg, nome) => { await pg.locator('#ct-subnav .ct-item', { hasText: nome }).first().click(); await pg.waitForTimeout(900); };
+
+  // ---------- topo, abas e caminho padrão ----------
+  const d1 = await abrirPainel(1366, 630, '#painel');
+  verificar('I1 os botões do topo ficam recolhidos em um menu', { visiveis: ['Menu'], aberto: false },
+    await d1.evaluate(() => ({ visiveis: Array.from(document.querySelectorAll('header.hd button, header.hd a')).filter((e) => e.getClientRects().length).map((e) => e.textContent.trim()), aberto: document.getElementById('hdAcoes').classList.contains('aberto') })));
+  await d1.click('#hdMenuBtn'); await d1.waitForTimeout(250);
+  const itensMenu = await d1.$$eval('#hdAcoes .hd-btn', (bs) => bs.filter((e) => e.getClientRects().length).map((e) => ({ t: e.textContent.trim(), h: Math.round(e.getBoundingClientRect().height) })));
+  await d1.keyboard.press('Escape');
+  verificar('I1b o menu abre com as ações (cada uma com 44 px de altura) e fecha com Esc, devolvendo o foco ao botão',
+    { tem: true, altura: true, fechou: true, foco: 'hdMenuBtn' },
+    { tem: ['Testar convite', 'Copiar link do site', 'Sair'].every((t) => itensMenu.some((i) => i.t === t)), altura: itensMenu.every((i) => i.h >= 44), fechou: await d1.evaluate(() => !document.getElementById('hdAcoes').classList.contains('aberto')), foco: await d1.evaluate(() => document.activeElement.id) });
+  await d1.click('#navEvento [data-area=site]'); await d1.waitForTimeout(2500);
+  verificar('I2 no computador, "Site" abre em Editar no convite; Conteúdo é o atalho ao lado e as abas de aparência ficam recolhidas',
+    { aba: '#editor', abas: ['Editar no convite', 'Conteúdo', 'Cores, letras e ordem'] }, { aba: await d1.evaluate(() => location.hash), abas: await d1.$$eval('#subheaderIn button', (bs) => bs.map((e) => e.textContent)) });
+  verificar('I3 em 630 px de altura o convite a editar aparece sem rolar, a lista de partes não tem rolagem própria e o aviso de salvo fica embaixo',
+    { previaNoAlto: true, listaSemRolagem: true, barra: { estado: 'Tudo salvo', botao: 'Salvar alterações', travado: true, noRodape: true }, botaoNoAlto: false },
+    await d1.evaluate(() => { const m = document.getElementById('ed2-menu'), b = document.getElementById('ed2-savebar').getBoundingClientRect();
+      return { previaNoAlto: document.getElementById('ed2-prev').getBoundingClientRect().top <= innerHeight / 2 /* metade de cima, mesmo com a faixa de "não publicado" */, listaSemRolagem: m.scrollHeight <= m.clientHeight + 2 && getComputedStyle(m).overflowY === 'visible',
+        barra: { estado: document.getElementById('ed2-estado').textContent, botao: document.getElementById('ed2-salvar').textContent, travado: document.getElementById('ed2-salvar').disabled, noRodape: b.bottom > innerHeight - 60 && b.bottom <= innerHeight + 2 },
+        botaoNoAlto: !!document.querySelector('#ed2-painel .ed2-barra-topo .action') }; }));
+  const linhas = await d1.$$eval('#ed2-menu .ed2-linha', (ls) => ls.map((l) => ({ nome: l.querySelector('.nm span:last-child').textContent, icone: l.querySelector('.nm span').textContent, fixo: !!l.querySelector('.fixo'), chave: !!l.querySelector('input[type=checkbox]') })));
+  const lin = (n) => linhas.find((l) => l.nome === n) || {};
+  verificar('I4 lista de partes: a confirmação tem a etiqueta "fixo" e as duas partes de presentes têm nomes e ícones diferentes',
+    { confirmacaoFixo: true, chamada: true, lista: true, iconesDiferentes: true },
+    { confirmacaoFixo: lin('Confirmação de presença').fixo === true, chamada: !!lin('Chamada para presentes').nome, lista: !!lin('Presentes (lista, PIX e dicas)').nome, iconesDiferentes: lin('Chamada para presentes').icone !== lin('Presentes (lista, PIX e dicas)').icone });
+  await d1.click('#sub-aparencia'); await d1.waitForTimeout(1500);
+  verificar('I5 "Cores, letras e ordem" mostra as abas de aparência só quando a pessoa pede', { aba: '#cores', abas: ['Editar no convite', 'Conteúdo', 'Cores', 'Tipografia', 'Ordem dos módulos'] },
+    { aba: await d1.evaluate(() => location.hash), abas: await d1.$$eval('#subheaderIn button', (bs) => bs.map((e) => e.textContent)) });
+  await d1.context().close();
+  const m1 = await abrirPainel(390, 800, '#painel');
+  await m1.click('#navEvento [data-area=site]'); await m1.waitForTimeout(2500);
+  verificar('I6 em tela estreita (390 px), "Site" abre no formulário Conteúdo, que vem primeiro', { aba: '#conteudo', primeira: 'Conteúdo', lateral: false },
+    { aba: await m1.evaluate(() => location.hash), primeira: await m1.$eval('#subheaderIn button', (e) => e.textContent), lateral: await m1.evaluate(() => document.documentElement.scrollWidth > innerWidth) });
+  await m1.context().close();
+
+  // ---------- rascunho guardado no aparelho x "Tudo salvo" ----------
+  const CAMPO = '#ct-form [data-chave="sticky.cta_label"]';
+  const d2 = await abrirPainel(1366, 800, '#conteudo');
+  verificar('I7 no Conteúdo a lista de partes também não tem rolagem própria', true, await d2.evaluate(() => { const m = document.getElementById('ct-subnav'); return m.scrollHeight <= m.clientHeight + 2; }));
+  await abrirParte(d2, 'Galeria'); await abrirParte(d2, 'Recados'); await abrirParte(d2, 'Rodapé');
+  await d2.fill(CAMPO, 'Quero ir'); await d2.waitForTimeout(1000);
+  verificar('I8 depois de passar por várias partes, uma edição grava um rascunho só (antes gravava um por parte visitada)', 1, (await rascunhos(d2)).length);
+  await d2.reload(); await d2.waitForSelector('#app:not([hidden])'); await d2.waitForTimeout(2500); await abrirParte(d2, 'Rodapé');
+  verificar('I9 alteração não salva de verdade: a tela oferece trazer de volta e NÃO diz "Tudo salvo" ao mesmo tempo',
+    { oferta: true, estado: 'Há alterações guardadas neste aparelho' }, { oferta: await d2.evaluate(() => !!document.getElementById('aviso-rascunho')), estado: await estadoBarra(d2) });
+  await d2.locator('#aviso-rascunho button', { hasText: 'Descartar' }).click(); await d2.waitForTimeout(300);
+  verificar('I9b descartar tira a oferta e a barra volta a "Tudo salvo"', { oferta: false, estado: 'Tudo salvo', rascunhos: 0 }, { oferta: await d2.evaluate(() => !!document.getElementById('aviso-rascunho')), estado: await estadoBarra(d2), rascunhos: (await rascunhos(d2)).length });
+  // rascunho que ficou velho: a parte foi salva depois (aqui simulado por outro aparelho) → nada de oferta
+  await d2.fill(CAMPO, 'Rascunho velho'); await d2.waitForTimeout(1000);
+  await api('POST', '/api/admin/conteudo', { 'sticky.cta_label': 'Salvo em outro aparelho' }, slugI);
+  await d2.reload(); await d2.waitForSelector('#app:not([hidden])'); await d2.waitForTimeout(2500); await abrirParte(d2, 'Rodapé');
+  verificar('I10 rascunho mais velho que o conteúdo salvo não é oferecido: fica só "Tudo salvo", com o valor salvo no campo',
+    { oferta: false, estado: 'Tudo salvo', campo: 'Salvo em outro aparelho', rascunhos: 0 },
+    { oferta: await d2.evaluate(() => !!document.getElementById('aviso-rascunho')), estado: await estadoBarra(d2), campo: await d2.inputValue(CAMPO), rascunhos: (await rascunhos(d2)).length });
+  // salvar logo depois de digitar: o rascunho não renasce depois do salvamento
+  await d2.fill(CAMPO, 'Confirmar já');
+  await d2.locator('#tab-conteudo .savebar button.action:visible').first().click(); await d2.waitForTimeout(1500);
+  verificar('I11 salvar logo depois de digitar não deixa rascunho para trás', { estado: 'Tudo salvo', rascunhos: 0, salvo: 'Confirmar já' }, { estado: await estadoBarra(d2), rascunhos: (await rascunhos(d2)).length, salvo: (await conteudoDe(slugI))['sticky.cta_label'] });
+
+  // ---------- Save the Date: só vale depois de salvar ----------
+  await abrirParte(d2, 'Save the Date');
+  let gravacoes = 0;
+  d2.on('request', (r) => { if (r.method() === 'POST' && /\/api\/admin\/conteudo/.test(r.url())) gravacoes++; });
+  await d2.locator('label[for="std-chave"]').click(); await d2.waitForTimeout(800);
+  verificar('I12 ligar o Save the Date não grava nada na hora: avisa que esconde a confirmação e espera o salvar',
+    { gravacoes: 0, noServidor: '0', aviso: true, estado: 'Alterações não salvas' },
+    { gravacoes, noServidor: (await conteudoDe(slugI))['config.modo_save_the_date'] || '0', aviso: /confirmação de presença/i.test(await d2.evaluate(() => { const a = document.getElementById('std-aviso'); return a && !a.hidden ? a.textContent : ''; })), estado: await estadoBarra(d2) });
+  await d2.locator('#tab-conteudo .savebar button.action:visible').first().click(); await d2.waitForTimeout(1800);
+  verificar('I12b depois de salvar, o Save the Date fica ligado no servidor e a faixa de aviso aparece', { noServidor: '1', faixa: true, estado: 'Tudo salvo' },
+    { noServidor: (await conteudoDe(slugI))['config.modo_save_the_date'], faixa: await d2.evaluate(() => !document.getElementById('stdBar').hidden), estado: await estadoBarra(d2) });
+  await api('POST', '/api/admin/conteudo', { 'config.modo_save_the_date': '0' }, slugI);
+
+  // ---------- ajuste fino da Capa: fechado ----------
+  await api('POST', '/api/admin/conteudo', { 'hero.el.nomes.dy': '12' }, slugI);
+  await d2.reload(); await d2.waitForSelector('#app:not([hidden])'); await d2.waitForTimeout(2500); await abrirParte(d2, 'Capa');
+  verificar('I13 na Capa, o ajuste fino aparece fechado mesmo quando o evento já tem ajustes', { existe: true, visivel: true, aberto: false },
+    await d2.evaluate(() => { const a = document.getElementById('ajuste-fino'); return { existe: !!a, visivel: !!a && !a.hidden, aberto: !!a && a.open }; }));
+  await d2.context().close();
 
   if (erros.length) resultados.push({ cenario: 'F11 erros de página no painel', esperado: [], obtido: erros.slice(0, 3), ok: false });
 } catch (e) {
